@@ -37,4 +37,11 @@ elseif logic_type == 5
 elseif logic_type == 6
 
     output = .5;
+
+% MAJORITY
+elseif logic_type == 7
+    
+    N = length(input);
+    output = (sum(input)/N >= .5);
+    
 end

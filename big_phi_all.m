@@ -15,6 +15,7 @@ function [Big_phi_M phi_M prob_M M_cell MIP_M] = big_phi_all(x0_s,p,b_table,opti
 
 op_fb = options(1);
 op_context = options(6);
+op_console = options(10);
 
 N = log2(size(p,1)); % number of elements in the whole system
 
@@ -47,7 +48,9 @@ end
 
 for M_i = 1: 2^N-1 % for all proper subsets of the system
     M = M_cell{M_i}; % get the subset
-    fprintf('M=%s\n',mod_mat2str(M));
+    if op_console
+        fprintf('M=%s\n',mod_mat2str(M));
+    end
     if op_fb == 3 % YES - fb simultaneously
         if op_context == 0 % YES, CONSERVATIVE
             [Big_phi phi prob_cell MIP] = big_phi_comp_fb(M,x0_s,p,b_table,options,BRs,FRs);
@@ -69,6 +72,7 @@ end
 
 
 %% display
+
 fprintf('\n')
 fprintf('--------------------------------------------------------------\n')
 fprintf('Big phi values in subset M\n')

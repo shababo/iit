@@ -28,4 +28,4 @@ h = bar(1:2^N-1,phi_vec2);
 set(h,'facecolor','black');
 set(gca,'XTick',1:2^N-1)
 set(gca,'XTickLabel',string) % uncomment this to have a binary valued x-axis
-rotateXLabels( gca(), 90)
+% rotateXLabels( gca(), 90)

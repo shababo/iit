@@ -114,7 +114,7 @@ for i_C=1: 2^N-1
         
     if op_console
         if i > 1 || op_single == 1        
-            [string_p string] = make_title_fb(MIP{i_C},op_context,op_min);
+    %         [string_p string] = make_title_fb(MIP{i_C},op_context,op_min);
             fprintf('C=%s: Core Concept: %s\n',mod_mat2str(C),string{3});
             fprintf('Partition: %s',string_p{3});
         end

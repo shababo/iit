@@ -24,7 +24,8 @@ function [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M M
 %% options
 op_fb = options(1); % 0: forward repertoire, 1: backward repertoire, 2: both, 3: simultaneous
 op_phi = options(2); % two versions of small phi 0:Difference of entropy, 1:KL-divergence 
-op_disp = options(3);  % 0: No figures, 1: only complex 2: complex and whole system, 3: all figures
+op_figures = options(3);  % 0: No figures, 1: only complex 2: complex and whole system, 3: all figures
+op_console = options(10);
 
 op_context = options(6);
 op_min = options(9);
@@ -73,8 +74,8 @@ elseif op_fb == 0 || op_fb == 1 || op_fb == 3
 end
 
 %% plot irreducible points in the complex
-% op_disp = 1;
-if op_disp ~= 0
+% op_figures = 1;
+if op_figures ~= 0
     if op_fb == 2
         if length(IRR_phi{1}) > 8 || length(IRR_phi{2}) > 8
             fig_co = 2;

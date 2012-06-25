@@ -13,7 +13,7 @@ op_parallel = 0; % 1: parallel computing, 0: not
 op_network = 4; % 1: random with self-connectivity, 2: random without self-connectivity, 3: modular, 4: logic gates, 0: some given connectivity matrix
 op_TPM = 0; % 1: load TPM
 op_ave = 0; % 0: use a specific current state 1: average over all possible current states
-op_disp = 0; % 0: No figures, 1: only complex, 2: complex and whole system, 3: all figures
+op_disp = 2; % 0: No figures, 1: only complex, 2: complex and whole system, 3: all figures
 op_context = 0; % 0: conservative 1: progressive
 op_empty = 1; % 0: excluding empty set in the past and the future 1: including empty set 
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
@@ -30,7 +30,7 @@ options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min];
 save options options
 
 %% define the connectivty of the network
-N = 5; % Number of elements in the network
+N = 3; % Number of elements in the network
 Na = 3; % Number of afferent connections
 
 % current state
@@ -84,27 +84,27 @@ elseif op_network == 4
 % THIS IS MY 5 NODE NETWORK!!!!
 
     % 1 XOR, 1 AND, 2 ORs
-    logic_type(1) = 3;
-    logic_type(2) = 1;
-    logic_type(3) = 2;
-    logic_type(4) = 2;
-    logic_type(5) = 1;
-    J(1,[3 4]) = 1;
-    J(2,[3 4]) = 1;
-    J(3,[1 4]) = 1;
-    J(4,[2 3]) = 1;
-    J(5,[2 4]) = 1;
+%     logic_type(1) = 3;
+%     logic_type(2) = 1;
+%     logic_type(3) = 2;
+%     logic_type(4) = 2;
+%     logic_type(5) = 1;
+%     J(1,[3 4]) = 1;
+%     J(2,[3 4]) = 1;
+%     J(3,[1 4]) = 1;
+%     J(4,[2 3]) = 1;
+%     J(5,[2 4]) = 1;
 
 
 % THIS IS MY 3 NODE NETOWRK
 
 % 1 XOR, 2 OR
-%     logic_type(1) = 3;
-%     logic_type(2) = 2;
-%     logic_type(3) = 2;
-%     J(1,[2 3]) = 1;
-%     J(2,[1 3]) = 1;
-%     J(3,[1 2]) = 1;
+    logic_type(1) = 3;
+    logic_type(2) = 2;
+    logic_type(3) = 2;
+    J(1,[2 3]) = 1;
+    J(2,[1 3]) = 1;
+    J(3,[1 2]) = 1;
 
 % 1 XOR, 2 NOT
 %     logic_type(1) = 5;

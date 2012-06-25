@@ -9,7 +9,6 @@ function [phi prob prob_prod_MIP MIP] = phi_comp_ex(options,M,x0,x0_s,p,b_table,
 op_context = options(6);
 op_empty = options(8);
 op_min = options(9);
-op_console = options(10);
 
 N = length(M);
 M_p{2^N} = []; % add empty set
@@ -103,10 +102,8 @@ if op_context == 0
     end
 end
 
-if op_console
-    fprintf('Core concept: x0=%s xp=%s  xf=%s\n',mod_mat2str(x0),mod_mat2str(xp),mod_mat2str(xf));
-    fprintf('phi=%f\n',phi);
-end
+fprintf('Core concept: x0=%s xp=%s  xf=%s\n',mod_mat2str(x0),mod_mat2str(xp),mod_mat2str(xf));
+fprintf('phi=%f\n',phi);
 % figure(1)
 % subplot(1,2,1),imagesc(prob)
 % subplot(1,2,2),imagesc(prob_prod_MIP)
