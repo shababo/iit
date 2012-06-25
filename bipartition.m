@@ -27,8 +27,8 @@ for i=0: N_max
         i_b = i_b + 1;
     else
         C_b = nchoosek(1:N,i);
-        N_C = size(C_b,1);
-        for j=1: N_C
+        N_C = size(C_b,1); % this equals nchoosek(N,i)
+        for j= 1:N_C
             B1{i_b} = X(C_b(j,:));
             B2_temp = 1:N;
             B2_temp(C_b(j,:)) = [];

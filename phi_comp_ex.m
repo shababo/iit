@@ -1,5 +1,6 @@
 function [phi prob prob_prod_MIP MIP] = phi_comp_ex(options,M,x0,x0_s,p,b_table,M_p,BRs,FRs)
 
+
 % M_p: power set of M
 % op_disp = 1;
 % op_single = 1;
@@ -11,7 +12,7 @@ op_min = options(9);
 N = length(M);
 M_p{2^N} = []; % add empty set
 
-if op_min == 0
+if op_min == 0 % take sum of forward and backward
     phi_MIP = zeros(2^N-1,2^N-1);
     prob_cand = cell(2^N-1,2^N-1);
     prob_prod_MIP_cand = cell(2^N-1,2^N-1);
@@ -23,17 +24,17 @@ if op_min == 0
         i_max = 2^N;
     end
     
-    for i=1: i_max
+    for i = 1:i_max
         xp = M_p{i};
         for j=1: i_max
             xf = M_p{j};
             N_p = length(xp);
             N_f = length(xf);
             if N_p ~= 0 || N_f ~= 0
-                if op_context == 0
+                if op_context == 0 % conservative
                     [phi_MIP(i,j) prob_cand{i,j} prob_prod_MIP_cand{i,j} MIP_cand{i,j}] ...
                         = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table,BRs,FRs);
-                else
+                else % progressive
                     [phi_MIP(i,j) prob_cand{i,j} prob_prod_MIP_cand{i,j} MIP_cand{i,j}] ...
                         = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table);
                 end
@@ -47,7 +48,12 @@ if op_min == 0
     MIP = MIP_cand{i,j};
     prob = prob_cand{i,j};
     prob_prod_MIP = prob_prod_MIP_cand{i,j};
-else
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THE CURRENT SETTINGS TAKE US HERE    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+else % take minimum of forward and backward
+    
     phi_MIP = zeros(2^N-1,2);
     prob_cand = cell(2^N-1,1);
     prob_prod_MIP_cand = cell(2^N-1,1);
@@ -64,7 +70,7 @@ else
     MIP = cell(2,2,2);
     prob = cell(2,1);
     prob_prod_MIP = cell(2,1);
-    for bf=1: 2
+    for bf = 1:2
         [max_phi_MIP_bf(bf) j_max] = max_ex(phi_MIP(:,bf),M_p);
         MIP(:,:,bf) = MIP_cand{j_max}(:,:,bf);
         prob{bf} = prob_cand{j_max}{bf};
@@ -80,8 +86,8 @@ end
 
 %% imposing maxent on units outside of perspectives
 if op_context == 0
-    for i=1: 2
-        if i== 1
+    for i = 1:2
+        if i == 1
             x = xp;
         else
             x = xf;

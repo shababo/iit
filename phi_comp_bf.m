@@ -1,10 +1,23 @@
 function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table,BRs,FRs)
+% WHAT DOES THIS FUNCTION DO??
+% 
+% options = the options
+% M = a system
+% x0 = state of the system??
+% xp = 
+% xf = 
+% x0_s = 
+% p = TPM as a 2^N x N matrix
+% b_table
+% BRs
+% FRs
 
-op_fb = options(1);
-op_phi = options(2);
-op_disp = options(3);
-op_single = options(4);
-op_ex = options(5);
+
+% op_fb = options(1);
+% op_phi = options(2);
+% op_disp = options(3);
+% op_single = options(4);
+% op_ex = options(5);
 op_context = options(6);
 op_whole = options(7);
 op_min = options(9);
@@ -14,13 +27,13 @@ N0 = length(x0);
 Nf = length(xf);
 
 %% unpartitioned transition repertoire
-if op_context == 0
+if op_context == 0 % conservative
     prob_bw = BRs{convi(x0),convi(xp)};
     prob_fw = FRs{convi(x0),convi(xf)};
     prob = cell(2,1);
     prob{1} = prob_bw;
     prob{2} = prob_fw;
-else
+else % progressive
     prob = partial_prob_comp_bf(M,x0,xp,xf,x0_s,p,b_table,op_whole,op_context);
 end
 
@@ -37,9 +50,9 @@ else
 end
 [x0_b1 x0_b2 N0_b] = bipartition(x0,N0,1); % partition of x0
 
-if op_min == 0
+if op_min == 0 % PHI IS SUM OF BACKWARD AND FORWARD
     
-    phi_cand = zeros(Np_b,N0_b,Nf_b,2);
+    phi_cand = zeros(Np_b,N0_b,Nf_b,2); % THE LAST DIMENSION IS PHI, PHI_NORM
     prob_prod_vec = cell(Np_b,N0_b,Nf_b);
     
     for i=1: Np_b % past
@@ -101,10 +114,12 @@ if op_min == 0
     MIP{2,2} = x0_b2{j};
     MIP{1,3} = xf_b1{k};
     MIP{2,3} = xf_b2{k};
-else
+
+
+else % OP_MIN = 1, PHI IS MINIMUM OF BACKWARDS AND FORWARDS COMPUTATIONS
     
     phi_cand = zeros(Np_b,N0_b,2,2);
-    prob_prod_vec = cell(Np_b,N0_b,2,2);
+    prob_prod_vec = cell(Np_b,N0_b,2);
     
     for i=1: Np_b % past or future
         xp_1 = xp_b1{i};

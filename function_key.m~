@@ -1,0 +1,5 @@
+% binary_net = this is the main script which creates a network and
+%       computes over it
+
+% comp_pers = this computes the forward and backward probabilities of each
+% subset

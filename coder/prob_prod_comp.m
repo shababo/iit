@@ -1,22 +1,6 @@
 function prob_prod = prob_prod_comp(prob1,prob2,M,x0_p1,op_fb)
-
-% COMPUTES THE DISTRIBUTION OVER THE STATES OF THE WHOLE SET GIVEN THE DISTRIBUTIONS OF
-% THE STATES OF THE SUBSETS
-% prob1 = distribution over subset x0_p1
-% prob2 = distribution over complement of subset x0_p1
-% M = the "whole" system
-% x0_p1 = one of the partitions
-% op_fb = a currently unnecessary 
-
-% disp('PROB1');
-% disp(prob1);
-% disp('PROB2');
-% disp(prob2);
-% disp('M');
-% disp(M);
-% disp('x0_p1');
-% disp(x0_p1);
-
+%#codegen
+coder.inline('never')
 
 N = length(M);
 
@@ -28,17 +12,25 @@ if isempty(prob2) == 1
     prob_prod = prob1;
 elseif isempty(prob1) == 1
     prob_prod = prob2;
-else 
-    
+else
     N1 = length(x0_p1);
     N2 = N - N1;
     x0_p1_or = x0_p1;
     N_vec = 1:N;
-    for i= 1:N1
+    for i=1: N1
         x0_p1(i) = N_vec(M==x0_p1_or(i)); % re-index of x0_p1 in terms of M
     end
-    x0_p2 = 1:N;
-    x0_p2(x0_p1) = [];
+    
+    x0_p2_test = 1:N2;
+    j = 1;
+    for i = 1:N
+        test = all(x0_p1 ~= i);
+        if test
+            x0_p2_test(j) = i;
+            j = j+1;
+        end
+    end
+        
     
     if op_fb == 3
         prob1_s = reshape(prob1,[2^N1 2^N1]);

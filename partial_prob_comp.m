@@ -1,5 +1,6 @@
 function prob = partial_prob_comp(x0_b,x1_b,x1,p,b_table,op_fb,M,C_j)
-% compute the conditional probability
+% compute the conditional probability p(x0_b | x1_b)
+%
 % x1: data, x0_b: partition of x0, x1_b: partition of x1
 % p: probability matrix in the whole system
 
@@ -7,13 +8,15 @@ function prob = partial_prob_comp(x0_b,x1_b,x1,p,b_table,op_fb,M,C_j)
 
 
 N = log2(size(p,1)); % number of elements in the whole system
-two_pow = zeros(N,1);
-for i=1: N
-    two_pow(i) = 2^(i-1);
-end
+% two_pow = zeros(N,1);
+% for i=1: N
+%     two_pow(i) = 2^(i-1);
+% end
+
+two_pow = 2.^(0:(N-1))';
 
 N0_b = length(x0_b); % number of elements in x0
-x0_r = 1: N;
+x0_r = 1:N;
 x0_r(x0_b) = []; % the rest of x0
 N0_r = length(x0_r); % number of elements in the rest of x0
 
@@ -27,11 +30,11 @@ N1_r = length(x1_r); % number of elements in the rest of x1
 if N0_r == 0
     x0_i2_vec = 0;
 else
-    x0_i2_vec = zeros(2^N0_r,1);
+    x0_i2_vec = zeros(2^N0_r,1); % a vector the size of the number of states over the complement of x0_b
     for j=1: 2^N0_r
         % x0_rs = trans2(j-1,N0_r);
-        x0_rs = b_table{j,N0_r};
-        x0_i2 = sum(two_pow(x0_r).*x0_rs);
+        x0_rs = b_table{j,N0_r}; %this gets the column of b_table that holds binary values the size of N0_r
+        x0_i2 = sum(two_pow(x0_r).*x0_rs); % this converts back to decimal? - doesn't appear to happen anyway
         x0_i2_vec(j) = x0_i2;
     end
 end
@@ -57,7 +60,7 @@ if op_fb == 1
         x0_bs = b_table{i,N0_b};
         x0_i1 = sum(two_pow(x0_b).*x0_bs);
         for k=1: N1_b %% index of x1 neurons
-            x1_s = x1(x1_b(k));
+            x1_s = x1(x1_b(k)); % state of the x1 neuron
             p_k = 0;
             for j=1: 2^N0_r % summation over the rest of x0 (outside the partition)
                 x0_i2 = x0_i2_vec(j);

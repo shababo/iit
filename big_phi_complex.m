@@ -1,20 +1,28 @@
 function [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] = big_phi_complex(x0,p,b_table,options)
 
-%% compute big phi in the complex
-%% outputs
-% Big_phi_MIP: Big phi MIP in the complex
-% MIP: MIP in the complex
-% Big_phi_M: Big phi in every subsets
-% IRR_phi: small phi values of irreducible points
-% IRR_REP: actual repertoires of irreducible points
+% [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] = big_phi_complex(x0,p,b_table,options)
+% 
+% INPUTS:
+% x0            current state of the whole system as a binary Nx1 column vector
+% p             transition probability matrix
+% b_table       a cell array of binary values stored as vectors
+% options       algorithm options
+%
+% OUTPUTS:
+% Big_phi_MIP   Big phi MIP in the complex    
+% MIP           MIP in the complex
+% Big_phi_M     Big phi in every subsets
+% IRR_phi       small phi values of irreducible points
+% IRR_REP       actual repertoires of irreducible points
+% IRR_MIP
+% M_IRR
+% prob_M
+% phi_M
+% MIP_M
 
-%% inputs
-% x0: current state
-% p: transition probability matrix
-% b_table: convesion from a binary sequence to a decimal index
 
 %% options
-op_fb = options(1); % 0: forward repertoire, 1: backward repertoire 2: both
+op_fb = options(1); % 0: forward repertoire, 1: backward repertoire, 2: both, 3: simultaneous
 op_phi = options(2); % two versions of small phi 0:Difference of entropy, 1:KL-divergence 
 op_disp = options(3);  % 0: No figures, 1: only complex 2: complex and whole system, 3: all figures
 
@@ -51,6 +59,9 @@ if op_fb == 2
     M_IRR{1} = M_IRR_f;
     M_IRR{2} = M_IRR_b;
     
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THE CURRENT SETTINGS TAKE US HERE    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 elseif op_fb == 0 || op_fb == 1 || op_fb == 3
     % 0: forward or 1: backward computation or 3: simultaneous forward and
     % backward computation
@@ -62,7 +73,7 @@ elseif op_fb == 0 || op_fb == 1 || op_fb == 3
 end
 
 %% plot irreducible points in the complex
-op_disp = 1;
+% op_disp = 1;
 if op_disp ~= 0
     if op_fb == 2
         if length(IRR_phi{1}) > 8 || length(IRR_phi{2}) > 8
@@ -82,8 +93,7 @@ if op_disp ~= 0
     elseif op_fb == 3
         fprintf('Irreducible points\n');
         fprintf('Core concepts: MIP: Small phi\n');
-        % COMMENTED OUT FOR PROFILED - BS 6/4/12
-%         plot_REP(IRR_REP,IRR_phi,IRR_MIP, 1, Complex, op_context, op_min)
+        plot_REP(IRR_REP,IRR_phi,IRR_MIP, 1, Complex, op_context, op_min)
     end
 end
 

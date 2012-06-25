@@ -1,11 +1,10 @@
 function output = logic_gates(input,logic_type)
-% LOGIC_GATES the probability an element will turn on given the inputs
+% LOGIC_GATES determines the p
+%   OUTPUT = logic_gates(INPUT, LOGIC_TYPE)
 %
-% OUTPUT = logic_gates(INPUT, LOGIC_TYPE)
-%
-% Given a binary input vector, input, and the logic type, logic_type, of
-% the element of interest, this function will return the probability that
-% the element of interest will be on
+%   Given a binary input vector, input, and the logic type, logic_type, of
+%   the element of interest, this function will return the probability that
+%   the element of interest will be on
 
 
 % AND

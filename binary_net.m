@@ -80,24 +80,39 @@ elseif op_network == 4
 %     logic_type(2) = 4;
 %     J(1,2) = 1;
 %     J(2,1) = 1;
-    
+
+% THIS IS MY 5 NODE NETWORK!!!!
+
     % 1 XOR, 1 AND, 2 ORs
 %     logic_type(1) = 3;
 %     logic_type(2) = 1;
 %     logic_type(3) = 2;
 %     logic_type(4) = 2;
+%     logic_type(5) = 1;
 %     J(1,[3 4]) = 1;
 %     J(2,[3 4]) = 1;
 %     J(3,[1 4]) = 1;
 %     J(4,[2 3]) = 1;
+%     J(5,[2 4]) = 1;
 
-    % 1 XOR, 2 OR
-    logic_type(1) = 3;
-    logic_type(2) = 2;
-    logic_type(3) = 2;
-    J(1,[2 3]) = 1;
-    J(2,[1 3]) = 1;
-    J(3,[1 2]) = 1;
+
+% THIS IS MY 3 NODE NETOWRK
+
+% 1 XOR, 2 OR
+%     logic_type(1) = 3;
+%     logic_type(2) = 2;
+%     logic_type(3) = 2;
+%     J(1,[2 3]) = 1;
+%     J(2,[1 3]) = 1;
+%     J(3,[1 2]) = 1;
+
+% 1 XOR, 2 NOT
+    logic_type(1) = 5;
+    logic_type(2) = 5;
+    logic_type(3) = 3;
+    J(1, [1 3]) = 1;
+    J(2, [2 3]) = 1;
+    J(3,[]) = 1;
 
 % 1 AND, 2 NULL
 %     logic_type(1) = 1;
@@ -254,7 +269,7 @@ for z=1: z_max
     
     % partial_prob_comp(partition, partition, state, prob_matrix, binary
     % table, op_fb
-    check_prob = partial_prob_comp(1:N,1:N,x1,p,b_table,1);
+    check_prob = partial_prob_comp(1:N,1:N,x1,p,b_table,1); % last argument is op_fb = 1;
     state_check = sum(check_prob);
     if state_check == 0
         fprintf('This state cannot be realized!\n')
@@ -315,7 +330,7 @@ if op_ave == 1
     if op_fb == 0
         Big_phi_ave = sum(Big_phi_st)/2^N;
     else
-        Big_phi_ave = sum(p_x1 .* Big_phi_st); %hmmm... interesting, weighted ave
+        Big_phi_ave = sum(p_x1 .* Big_phi_st); %weighted ave/expected value
     end
     fprintf('Big_phi_ave=%f\n',Big_phi_ave);
 end

@@ -6,3 +6,4 @@ for i=1: N
     sigma(i) = C-floor(C/2)*2;
     C = floor(C/2);
 end
+

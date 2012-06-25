@@ -1,9 +1,12 @@
 function [Big_phi phi prob_cell MIP prob_cell2] = big_phi_comp_fb(M,x0_s,p,b_table,options,BRs,FRs)
 
-%%  compute big phi in a subset M
+%%  compute big phi for a subset, M
 % M: a subset of the whole system (can be the whole system itself)
 % x0_s: given data about the current state
 % p: transition probability matrix in the whole system (p(x1|x0))
+
+% THE FINAL TWO ARGS ARE OPTIONS, IF THEY ARE THERE THEN WE ARE DOING
+% CONSERVATIVE, OTHERWISE PROGRESSIVE...
 
 N = length(M);
 
@@ -18,7 +21,7 @@ op_whole = 1;
 
 if op_disp == 0 || op_disp == 1
     disp_flag = 0;
-elseif op_disp == 2 && N ~= log2(size(p,1))
+elseif op_disp == 2 && N ~= log2(size(p,1)) % or we are not dealing with the whole complex
     disp_flag = 0;
 else
     disp_flag = 1;
@@ -30,15 +33,17 @@ else
 end
 
 %% x0 data
+
+
 C_x0 = cell(2^N-1,1);
 k = 1;
-for i=1: N
-    C = nchoosek(M,i);
+for i = 1:N % can this be done in one for-loop over k = 1:2^N-1 ?
+    C = nchoosek(M,i); % create a matrix of combinations of M of size i
     N_C = size(C,1);
     % fprintf('i=%d N_c=%d\n',i,N_C);
-    for j=1: N_C
-        x0 = C(j,:);
-        C_x0{k} = x0;
+    for j = 1:N_C % for all combos of size i
+        x0 = C(j,:); % pick a combination
+        C_x0{k} = x0;% store combo
         k = k + 1;
     end
 end
@@ -56,6 +61,10 @@ parfor ci=1: 2^N-1
     if op_disp ~= 2
         fprintf('C=%s\n',mod_mat2str(x0));
     end
+    
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % THE CURRENT SETTINGS TAKE US HERE    
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if op_context == 0
         [phi(ci) prob{ci} prob_prod{ci} MIP{ci}] ...
         =  phi_comp_ex(options,M,x0,x0_s,p,b_table, M_p, BRs, FRs);
@@ -71,6 +80,7 @@ prob_cell{2} = prob_prod;
 
 phi_m = zeros(N,3); % cumulative sum
 
+% PRETTY SURE THIS CAN JUST BE DONE WITH A SUM() CALL
 for i_C=1: 2^N-1
     C = C_x0{i_C};
     i = length(C);
@@ -78,6 +88,7 @@ for i_C=1: 2^N-1
     phi_m(i,2) = phi_m(i,2) + phi(i_C)/nchoosek(N,i);
 end
 
+% THIS SEEMS LIKE IT CAN BE DONE A SMARTER WAY
 for i=1: N
     if i > 1
         phi_m(i,3) = phi_m(i-1,3) + phi_m(i,1);

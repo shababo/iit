@@ -8,12 +8,12 @@ tic;
 %put options in array... TODO: this should be a struct and maybe also
 %global
 
-op_complex = 1;  % 0: only consider the whole system %1: find the complex
+op_complex = 0;  % 0: only consider the whole system %1: find the complex
 op_parallel = 0; % 1: parallel computing, 0: not
 op_network = 4; % 1: random with self-connectivity, 2: random without self-connectivity, 3: modular, 4: logic gates, 0: some given connectivity matrix
-op_TPM = 0; % 1: load TPM
+op_TPM = 1; % 1: load TPM
 op_ave = 0; % 0: use a specific current state 1: average over all possible current states
-op_disp = 0; % 0: No figures, 1: only complex, 2: complex and whole system, 3: all figures
+op_disp = 3; % 0: No figures, 1: only complex, 2: complex and whole system, 3: all figures
 op_context = 0; % 0: conservative 1: progressive
 op_empty = 1; % 0: excluding empty set in the past and the future 1: including empty set 
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
@@ -30,156 +30,156 @@ options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min];
 save options options
 
 %% define the connectivty of the network
-N = 3; % Number of elements in the network
+N = 2; % Number of elements in the network
 Na = 3; % Number of afferent connections
 
 % current state
 if op_ave == 0
-    current_state = zeros(N,1); % all OFF
-    % current_state = ones(N,1); % all ON
+%     current_state = zeros(N,1); % all OFF
+    current_state = ones(N,1); % all ON
     % current_state = [0 1 0 1]';
     z_max = 1;
 else
     z_max = 2^N;
 end
 
-J = zeros(N,N); % connectivity matrix
-if op_network == 1     % random network with self-connectivity
-    
-    for i=1: N % for each element
-        x = 1:N;
-        y = randsample(N,Na); %Na samples from list N w/o replacement, if N=Na, then this is equiv to randperm(Na)
-        z = x(y);
-        J(i,z) = 1;
-        % J(i,z) = 0.5/Na;
-    end
-    
-elseif op_network == 2
-    % random network without self-connectivity
-    for i=1: N
-        x = 1: N;
-        x(i) = [];
-        y = randsample(N-1,Na);
-        z = x(y);
-        J(i,z) = 1;
-        % J(i,z) = 0.5/Na;
-    end
-elseif op_network == 3
-    % modular network
-    for i=1: N/2
-        i1 = 2*i-1;
-        i2 = 2*i;
-        J(i1:i2,i1:i2) = (N-1)*[0 1; 1 0];
-    end
-elseif op_network == 4
-    %% logic gates
-    % logic type: 1-> AND, 2-> OR, 3-> XOR, 4 -> COPY, 5-> NOT, 6 -> NULL
-    logic_type = zeros(N,1);
-    % 2 COPY
-%     logic_type(1) = 4;
-%     logic_type(2) = 4;
-%     J(1,2) = 1;
-%     J(2,1) = 1;
-
-% THIS IS MY 5 NODE NETWORK!!!!
-
-    % 1 XOR, 1 AND, 2 ORs
-%     logic_type(1) = 3;
-%     logic_type(2) = 1;
-%     logic_type(3) = 2;
-%     logic_type(4) = 2;
-%     logic_type(5) = 1;
-%     J(1,[3 4]) = 1;
-%     J(2,[3 4]) = 1;
-%     J(3,[1 4]) = 1;
-%     J(4,[2 3]) = 1;
-%     J(5,[2 4]) = 1;
-
-
-% THIS IS MY 3 NODE NETOWRK
-
-% 1 XOR, 2 OR
+% J = zeros(N,N); % connectivity matrix
+% if op_network == 1     % random network with self-connectivity
+%     
+%     for i=1: N % for each element
+%         x = 1:N;
+%         y = randsample(N,Na); %Na samples from list N w/o replacement, if N=Na, then this is equiv to randperm(Na)
+%         z = x(y);
+%         J(i,z) = 1;
+%         % J(i,z) = 0.5/Na;
+%     end
+%     
+% elseif op_network == 2
+%     % random network without self-connectivity
+%     for i=1: N
+%         x = 1: N;
+%         x(i) = [];
+%         y = randsample(N-1,Na);
+%         z = x(y);
+%         J(i,z) = 1;
+%         % J(i,z) = 0.5/Na;
+%     end
+% elseif op_network == 3
+%     % modular network
+%     for i=1: N/2
+%         i1 = 2*i-1;
+%         i2 = 2*i;
+%         J(i1:i2,i1:i2) = (N-1)*[0 1; 1 0];
+%     end
+% elseif op_network == 4
+%     %% logic gates
+%     % logic type: 1-> AND, 2-> OR, 3-> XOR, 4 -> COPY, 5-> NOT, 6 -> NULL
+%     logic_type = zeros(N,1);
+%     % 2 COPY
+% %     logic_type(1) = 4;
+% %     logic_type(2) = 4;
+% %     J(1,2) = 1;
+% %     J(2,1) = 1;
+% 
+% % THIS IS MY 5 NODE NETWORK!!!!
+% 
+%     % 1 XOR, 1 AND, 2 ORs
+% %     logic_type(1) = 3;
+% %     logic_type(2) = 1;
+% %     logic_type(3) = 2;
+% %     logic_type(4) = 2;
+% %     logic_type(5) = 1;
+% %     J(1,[3 4]) = 1;
+% %     J(2,[3 4]) = 1;
+% %     J(3,[1 4]) = 1;
+% %     J(4,[2 3]) = 1;
+% %     J(5,[2 4]) = 1;
+% 
+% 
+% % THIS IS MY 3 NODE NETOWRK
+% 
+% % 1 XOR, 2 OR
 %     logic_type(1) = 3;
 %     logic_type(2) = 2;
 %     logic_type(3) = 2;
 %     J(1,[2 3]) = 1;
 %     J(2,[1 3]) = 1;
 %     J(3,[1 2]) = 1;
-
-% 1 AND, 2 NULL
-%     logic_type(1) = 1;
-%     logic_type(2) = 6;
-%     logic_type(3) = 6;
-%     J(1,[2 3]) = 1;
-%     J(2, []) = 1;
-%     J(3, []) = 1;
-
-    % 1 AND, 2 COPY
-%     logic_type(1) = 4;
-%     logic_type(2) = 1;
-%     logic_type(3) = 4;
-%     J(1,[2]) = 1;
-%     J(2, [1 3]) = 1;
-%     J(3, [2]) = 1;
-
-% 1 AND, 1 COPY, 2 NULL
-%     logic_type(1) = 1;
-%     logic_type(2) = 6;
-%     logic_type(3) = 6;
-%     logic_type(4) = 4;
-%     J(1,[2 3]) = 1;
-%     % J(2,[3 4]) = 1;
-%     % J(3,[1 4]) = 1;
-%     J(4,[1]) = 1;
-else
-    load J_fix;
-end
-
-%% compute the transition probability matrix
-p_x0 = zeros(2^N,N);
-if op_network == 4
-    % logic gates
-    for k=1: 2^N
-        x0 = trans2(k-1,N);
-        for i=1: N
-            i_vec = find(J(i,:)==1);
-            input_vec = x0(i_vec);
-            p_x0(k,i) = logic_gates(input_vec,logic_type(i));
-        end
-    end
-else
-    % sigmoid function
-    % a: threshold T: the level of noise
-    a = floor(Na/2) + 0.5; % majority vote
-    % a = N;
-    % a = max(max(J)) - 0.1; % generalized OR
-    T = 0.01; % T=0: no noise
-    for i=1: 2^N
-        x0 = trans2(i-1,N);
-        p_x0(i,:) = (1+tanh((J*x0-a)/T))/2; % probability of turning on given the data x0
-        % p_x0(i,:) = J*x0;
-    end
-end
-
-%% p(t=1|t=0)
-
-% This section computes the forward probability of each state given the
-% current state
-
-p1 = ones(2^N,2^N); % p(x0,x1) = p(x1|x0)
-
-for i=1: 2^N
-    for j=1: 2^N
-        x1 = trans2(j-1,N);
-        for k=1: N
-            if x1(k) == 1
-                p1(i,j) = p1(i,j)*p_x0(i,k);
-            else
-                p1(i,j) = p1(i,j)*(1-p_x0(i,k));
-            end
-        end
-    end
-end
+% 
+% % 1 AND, 2 NULL
+% %     logic_type(1) = 1;
+% %     logic_type(2) = 6;
+% %     logic_type(3) = 6;
+% %     J(1,[2 3]) = 1;
+% %     J(2, []) = 1;
+% %     J(3, []) = 1;
+% 
+%     % 1 AND, 2 COPY
+% %     logic_type(1) = 4;
+% %     logic_type(2) = 1;
+% %     logic_type(3) = 4;
+% %     J(1,[2]) = 1;
+% %     J(2, [1 3]) = 1;
+% %     J(3, [2]) = 1;
+% 
+% % 1 AND, 1 COPY, 2 NULL
+% %     logic_type(1) = 1;
+% %     logic_type(2) = 6;
+% %     logic_type(3) = 6;
+% %     logic_type(4) = 4;
+% %     J(1,[2 3]) = 1;
+% %     % J(2,[3 4]) = 1;
+% %     % J(3,[1 4]) = 1;
+% %     J(4,[1]) = 1;
+% else
+%     load J_fix;
+% end
+% 
+% %% compute the transition probability matrix
+% p_x0 = zeros(2^N,N);
+% if op_network == 4
+%     % logic gates
+%     for k=1: 2^N
+%         x0 = trans2(k-1,N);
+%         for i=1: N
+%             i_vec = find(J(i,:)==1);
+%             input_vec = x0(i_vec);
+%             p_x0(k,i) = logic_gates(input_vec,logic_type(i));
+%         end
+%     end
+% else
+%     % sigmoid function
+%     % a: threshold T: the level of noise
+%     a = floor(Na/2) + 0.5; % majority vote
+%     % a = N;
+%     % a = max(max(J)) - 0.1; % generalized OR
+%     T = 0.01; % T=0: no noise
+%     for i=1: 2^N
+%         x0 = trans2(i-1,N);
+%         p_x0(i,:) = (1+tanh((J*x0-a)/T))/2; % probability of turning on given the data x0
+%         % p_x0(i,:) = J*x0;
+%     end
+% end
+% 
+% %% p(t=1|t=0)
+% 
+% % This section computes the forward probability of each state given the
+% % current state
+% 
+% p1 = ones(2^N,2^N); % p(x0,x1) = p(x1|x0)
+% 
+% for i=1: 2^N
+%     for j=1: 2^N
+%         x1 = trans2(j-1,N);
+%         for k=1: N
+%             if x1(k) == 1
+%                 p1(i,j) = p1(i,j)*p_x0(i,k);
+%             else
+%                 p1(i,j) = p1(i,j)*(1-p_x0(i,k));
+%             end
+%         end
+%     end
+% end
 
 % p = p1; % practical version
 if op_TPM == 0
@@ -189,37 +189,37 @@ else
     N = size(p,2);
 end
 
-% if op_disp > 1
-%     figure(100)
-%     subplot(1,2,1),imagesc(J)
-%     colormap('gray')
-%     subplot(1,2,2),imagesc(p)
-% end
+if op_disp > 1
+    figure(100)
+    subplot(1,2,1),imagesc(J)
+    colormap('gray')
+    subplot(1,2,2),imagesc(p)
+end
 % pause;
 
-f = zeros(N,1); % averaged firing rates
-for i=1: N
-    f(i) = sum(p_x0(:,i))/2^N;
-end
-avef = sum(f)/N;
-fprintf('avef=%f\n',avef);
+% f = zeros(N,1); % averaged firing rates
+% for i=1: N
+%     f(i) = sum(p_x0(:,i))/2^N;
+% end
+% avef = sum(f)/N;
+% fprintf('avef=%f\n',avef);
 
-p_x1 = zeros(2^N,1);
-for i=1: 2^N
-    x1 = trans2(i-1,N);
-    for j=1: 2^N
-        p_temp = 1;
-        for k=1: N
-            if x1(k) == 1
-                p_temp = p_temp*p_x0(j,k);
-            else
-                p_temp = p_temp*(1-p_x0(j,k));
-            end
-        end
-        p_x1(i) = p_x1(i) + p_temp;
-    end
-end
-p_x1 = p_x1/2^N;
+% p_x1 = zeros(2^N,1);
+% for i=1: 2^N
+%     x1 = trans2(i-1,N);
+%     for j=1: 2^N
+%         p_temp = 1;
+%         for k=1: N
+%             if x1(k) == 1
+%                 p_temp = p_temp*p_x0(j,k);
+%             else
+%                 p_temp = p_temp*(1-p_x0(j,k));
+%             end
+%         end
+%         p_x1(i) = p_x1(i) + p_temp;
+%     end
+% end
+% p_x1 = p_x1/2^N;
 
 %% binary table
 b_table = cell(2^N,N);
@@ -261,7 +261,7 @@ for z=1: z_max
     
     % partial_prob_comp(partition, partition, state, prob_matrix, binary
     % table, op_fb
-    check_prob = partial_prob_comp(1:N,1:N,x1,p,b_table,1); % last argument is op_fb = 1;
+    check_prob = partial_prob_comp(1:N,1:N,x1,p,b_table,1);
     state_check = sum(check_prob);
     if state_check == 0
         fprintf('This state cannot be realized!\n')
@@ -322,7 +322,7 @@ if op_ave == 1
     if op_fb == 0
         Big_phi_ave = sum(Big_phi_st)/2^N;
     else
-        Big_phi_ave = sum(p_x1 .* Big_phi_st); %weighted ave/expected value
+        Big_phi_ave = sum(p_x1 .* Big_phi_st); %hmmm... interesting, weighted ave
     end
     fprintf('Big_phi_ave=%f\n',Big_phi_ave);
 end

@@ -8,7 +8,7 @@ function [Big_phi_M phi_M prob_M M_cell MIP_M] = big_phi_all(x0_s,p,b_table,opti
 % this should not show up
 
 %% compute Big-phi in every possible subset
-% x0_s : given data about the current neural state
+% x0 : given data about the current neural state
 % p: transition matrix in the whole system
 % op: the way how small phi is computed (0: difference of entropy, 1: KLD)
 % op_disp: (1: display the results, 0: not)
@@ -33,9 +33,9 @@ for i=1: 2^N-1
 end
 
 %% compute big phi in every possible subset
-Big_phi_M = zeros(2^N-1,1); % Big_phi for each subset except the empty set
+Big_phi_M = zeros(2^N-1,1); % Big_phi for each subset
 phi_M = cell(2^N-1,1);
-prob_M = cell(2^N-1,2); 
+prob_M = cell(2^N-1,2);
 MIP_M = cell(2^N-1,1); % the partition that gives Big_phi_MIP for each subset
 
 %% For only conservative, compute BRs and FRs in every possible perspectives 
