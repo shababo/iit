@@ -62,9 +62,9 @@ parfor ci=1: 2^N-1
         fprintf('C=%s\n',mod_mat2str(x0));
     end
     
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % THE CURRENT SETTINGS TAKE US HERE    
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % THE CURRENT SETTINGS TAKE US HERE    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if op_context == 0
         [phi(ci) prob{ci} prob_prod{ci} MIP{ci}] ...
         =  phi_comp_ex(options,M,x0,x0_s,p,b_table, M_p, BRs, FRs);

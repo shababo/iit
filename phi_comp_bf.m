@@ -1,5 +1,5 @@
 function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table,BRs,FRs)
-% WHAT DOES THIS FUNCTION DO??
+% compute small phi of a given purview...?
 % 
 % options = the options
 % M = a system

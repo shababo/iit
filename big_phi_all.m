@@ -58,9 +58,12 @@ for M_i = 1: 2^N-1 % for all proper subsets of the system
     else
         [Big_phi phi prob_cell] = big_phi_comp(M,x0_s,p,b_table,options);
     end
-    Big_phi_M(M_i) = Big_phi;
-    phi_M{M_i} = phi;
-    prob_M{M_i,1} = prob_cell{1}; % prob_cell{2} & prob_cell{3} are repertoires in parts
+    Big_phi_M(M_i) = Big_phi; % Big_phi for each subset
+    phi_M{M_i} = phi; % Set of small_phis for each subset of each subset
+    
+    % I THINK THE POINTS IN CONCEPT SPACE ARE SOMEHOW ENCODED IN THE CELL
+    % ARRAY prob_M
+    prob_M{M_i,1} = prob_cell{1}; % prob_cell{2} & prob_cell{3} are repertoires in parts <--?
     prob_M{M_i,2} = prob_cell{2};
 end
 

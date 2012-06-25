@@ -1,0 +1,39 @@
+function big_phi(varargin)
+
+if (nargin ~= 0 || nargin ~= 3)
+    fprintf('\nYou have not entered a valid number of arguments...\n\n');
+    fprintf(['This function can be run with no arguments, in which case\n'...
+             'you will be prompted for information about the system,\n'...
+             'or you must run big_phi(J,logic_types,state),\n'...
+             'where J is the connectivity matrix, logic_types is a vector\n'...
+             'of logical types, and state is the current state of the system.\n']);
+end
+
+% get information about system from user
+if(nargin == 0)
+    
+    fprintf('\n');
+    N = input('How many nodes in the system?  ');
+    
+    logic_types = zeros(N,1);
+    
+    fprintf(['Please enter logic types for each element.\n'...
+             '1-> AND, 2-> OR, 3-> XOR, 4 -> COPY, 5-> NOT, 6 -> NULL\n']);
+    for i = 1:N
+        valid = 0;
+        while(~valid)
+            type = input(['Logic type for element ' num2str(i) ':  ']);
+            if (type > 0 && type < 7)
+                valid = 1;
+            else
+                fprintf('Invalid logic type, please enter again...\n');
+            end
+        end
+        logic_type(i) = type;     
+    end
+    
+    fprintf(['Please enter connectivity for each element.\n'...
+             'Enter connectivity as a vector. For example,\n'...
+             'if element 1 is connected to 2 and 3, enter: 
+    
+end
