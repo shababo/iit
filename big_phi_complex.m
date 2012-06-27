@@ -68,7 +68,7 @@ elseif op_fb == 0 || op_fb == 1 || op_fb == 3
     % backward computation
     [Big_phi_M phi_M prob_M M_cell MIP_M] = big_phi_all(x0,p,b_table,options);
     % complex search
-    [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,N);
+    [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,N,prob_M,phi_M);
     % irreducible points
     [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M,phi_M,MIP_M,Complex, M_i_max,op_fb);
 end
@@ -92,9 +92,9 @@ if op_figures ~= 0
     elseif op_fb == 0 || op_fb == 1
         plot_IRR(IRR_REP,IRR_phi,M_IRR, op_fb, fig_max*fig_co,fig_co,IRR_MIP)
     elseif op_fb == 3
-        fprintf('Irreducible points\n');
-        fprintf('Core concepts: MIP: Small phi\n');
-        plot_REP(IRR_REP,IRR_phi,IRR_MIP, 1, Complex, op_context, op_min)
+        fprintf('\nCORE CONCEPTS (Purview || MIP || Small phi):\n\n');
+%         fprintf('Purview || MIP || Small phi\n');
+        plot_REP(Big_phi_M(M_i_max), IRR_REP,IRR_phi,IRR_MIP, 1, Complex, op_context, op_min)
     end
 end
 

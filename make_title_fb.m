@@ -56,18 +56,18 @@ else
             sp = mod_mat2str(xpf);
             sp_1 = mod_mat2str(xpf_b1);
             sp_2 = mod_mat2str(xpf_b2);
-            string{bf} = [sp,'-',s0];
-            string_p{bf} = [sp_1,'-',s0_1,'x',sp_2,'-',s0_2];
+            string{bf} = [sp,' <- ',s0];
+            string_p{bf} = ['(',sp_1,' <- ',s0_1,') x (',sp_2,' <- ',s0_2,')'];
         else
             sf = mod_mat2str(xpf);
             sf_1 = mod_mat2str(xpf_b1);
             sf_2 = mod_mat2str(xpf_b2);
-            string{bf} = [s0,'-',sf];
-            string_p{bf} = [s0_1,'-',sf_1,'x',s0_2,'-',sf_2];
+            string{bf} = [s0,' -> ',sf];
+            string_p{bf} = ['(',s0_1,' -> ',sf_1,') x (',s0_2,' -> ',sf_2,')'];
         end
     end
-    string{3} = [sp,'-',s0,'-',sf];
-    string_p{3} = [sp_1,'-',s0_1,'x',sp_2,'-',s0_2,'&',s0_1,'-',sf_1,'x',s0_2,'-',sf_2];
+    string{3} = ['(',sp,'<-',s0,'->',sf,')'];
+    string_p{3} = ['(',sp_1,'<-',s0_1,') x (',sp_2,'<-',s0_2,') & (',s0_1,'->',sf_1,') x (',s0_2,'->',sf_2,')'];
 end
 
 end

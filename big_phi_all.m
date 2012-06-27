@@ -22,10 +22,10 @@ N = log2(size(p,1)); % number of elements in the whole system
 %% subset - build a cell array that contains all of the subsets
 M_cell = cell(2^N-1,1); % subtract one since we don't consider the empty system
 
-for i=1: 2^N-1
+for i = 1:2^N-1
     x = trans2(i,N); % we have b_table for this, no?
     C = [];
-    for j=1: N % this can all be done with a any() or something like that
+    for j= 1:N % this can all be done with a any() or something like that
         if x(j) == 1
             C = [C j];
         end
@@ -64,10 +64,10 @@ for M_i = 1: 2^N-1 % for all proper subsets of the system
     Big_phi_M(M_i) = Big_phi; % Big_phi for each subset
     phi_M{M_i} = phi; % Set of small_phis for each subset of each subset
     
-    % I THINK THE POINTS IN CONCEPT SPACE ARE SOMEHOW ENCODED IN THE CELL
+    % THE POINTS IN CONCEPT SPACE
     % ARRAY prob_M
-    prob_M{M_i,1} = prob_cell{1}; % prob_cell{2} & prob_cell{3} are repertoires in parts <--?
-    prob_M{M_i,2} = prob_cell{2};
+    prob_M{M_i,1} = prob_cell{1}; % first layer is subset, second is purview, third is backward/forward
+    prob_M{M_i,2} = prob_cell{2}; % same as above but for MIP
 end
 
 

@@ -8,6 +8,8 @@ function [Big_phi phi prob_cell MIP prob_cell2] = big_phi_comp_fb(M,x0_s,p,b_tab
 % THE FINAL TWO ARGS ARE OPTIONS, IF THEY ARE THERE THEN WE ARE DOING
 % CONSERVATIVE, OTHERWISE PROGRESSIVE...
 
+global grain;
+    
 N = length(M);
 
 op_fb = options(1);
@@ -81,26 +83,54 @@ prob_cell = cell(2,1);
 prob_cell{1} = prob;
 prob_cell{2} = prob_prod;
 
-phi_m = zeros(N,3); % cumulative sum
+% phi_m = zeros(N,3); % cumulative sum
+% 
+% % PRETTY SURE THIS CAN JUST BE DONE WITH A SUM() CALL
+% for i_C=1: 2^N-1
+%     C = C_x0{i_C};
+%     i = length(C);
+%     phi_m(i,1) = phi_m(i,1) + phi(i_C);
+%     phi_m(i,2) = phi_m(i,2) + phi(i_C)/nchoosek(N,i);
+% end
+% 
+% % THIS SEEMS LIKE IT CAN BE DONE A SMARTER WAY
+% for i=1: N
+%     if i > 1
+%         phi_m(i,3) = phi_m(i-1,3) + phi_m(i,1);
+%     else
+%         phi_m(i,3) = phi_m(i,1);
+%     end
+% end
+% 
+% Big_phi = phi_m(end,3);
 
-% PRETTY SURE THIS CAN JUST BE DONE WITH A SUM() CALL
-for i_C=1: 2^N-1
-    C = C_x0{i_C};
-    i = length(C);
-    phi_m(i,1) = phi_m(i,1) + phi(i_C);
-    phi_m(i,2) = phi_m(i,2) + phi(i_C)/nchoosek(N,i);
-end
 
-% THIS SEEMS LIKE IT CAN BE DONE A SMARTER WAY
-for i=1: N
-    if i > 1
-        phi_m(i,3) = phi_m(i-1,3) + phi_m(i,1);
-    else
-        phi_m(i,3) = phi_m(i,1);
+if (~all(phi == 0))
+    
+    concepts = zeros(2^N,sum(phi ~= 0));
+    concept_phis = zeros(1,sum(phi ~= 0));
+
+    for i = 1:2^N-1
+
+        if (phi(i) ~= 0)
+
+            concepts(:,i) = prob{i}{1};
+            concept_phis(i) = phi(i);
+
+        end
+
     end
+
+%     disp(concepts);
+%     disp(concept_phis);
+%     disp(phi);
+
+    Big_phi = big_phi_volume(concepts,concept_phis,grain);
+
+else
+    Big_phi = 0;
 end
 
-Big_phi = phi_m(end,3);
 
 %% display
 

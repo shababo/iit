@@ -1,4 +1,4 @@
-function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,prob_M, phi_M)
+function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,prob, phi)
 
 %%
 % Find the Big-phi MIP in a subset M
@@ -9,9 +9,6 @@ function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,prob_M, phi_M)
 % phi - phi values for each purview in prob
 
 %%
-
-global grain;
-
 N_M = length(M);
 N_Bp = 0;
 for i=1: floor(N_M/2)
@@ -34,7 +31,7 @@ for i=1: floor(N_M/2)
         M1_i = trans_M(M1,N);
         M2_i = trans_M(M2,N);
         
-        phi = [phi_M{M1_i}; phi_M{M2_i}];
+        phi = [phi{M1_i} phi{M2_i}]
         
         if (~all(phi == 0))
     
@@ -44,11 +41,10 @@ for i=1: floor(N_M/2)
             for k = 1:2^N_M-1
 
                 if (phi(k) ~= 0)
-                    if(k <= sum(phi_M{M1_i} ~= 0))
-                        concepts(:,k) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
+                    if(k <= sum(phi{M1_i} ~= 0))
+                        concepts(:,k) = prob{k}{1};
                     else
-                        concepts(:,k) = expand_prob(prob_M{M1_i,1}{k}{1},M,M2);
-                    end
+                        concepts(:,k) = prob{M1_i}{k}{1};
                     concept_phis(i) = phi(i);
 
                 end
@@ -59,7 +55,7 @@ for i=1: floor(N_M/2)
         %     disp(concept_phis);
         %     disp(phi);
 
-            Big_phi_partition = big_phi_volume(concepts,concept_phis,grain);
+            Big_phi_partition = big_phi_volume(concepts,concept_phis,100);
 
         else
             Big_phi_partition = 0;

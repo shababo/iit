@@ -18,26 +18,30 @@ op_context = 0; % 0: conservative 1: progressive
 op_empty = 1; % 0: excluding empty set in the past and the future 1: including empty set 
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
                      % 1: phi is the minimum of phi_b and phi_f (separate partition)
+op_console = 0; % 0: limited console output, 1: full console output
                      
 %% inactive options, which are not used anymore
 op_fb = 3; % 0: forward repertoire, 1: backward repertoire 2: both separately 3: both simultaneously
 op_phi = 1; % two versions of small phi 0:Difference of entropy, 1:KL-divergence
 op_whole = 0; % KLD is computed in 0: small system 1: whole system (previous version)
 
+global grain;
+grain = 100;
 
-options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min];
+
+options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console];
 
 save options options
 
 %% define the connectivty of the network
-N = 3; % Number of elements in the network
+N = 2; % Number of elements in the network
 Na = 3; % Number of afferent connections
 
 % current state
 if op_ave == 0
-    current_state = zeros(N,1); % all OFF
+%     current_state = zeros(N,1); % all OFF
     % current_state = ones(N,1); % all ON
-    % current_state = [0 1 0 1]';
+    current_state = [1 0 0]';
     z_max = 1;
 else
     z_max = 2^N;
@@ -76,10 +80,10 @@ elseif op_network == 4
     % logic type: 1-> AND, 2-> OR, 3-> XOR, 4 -> COPY, 5-> NOT, 6 -> NULL
     logic_type = zeros(N,1);
     % 2 COPY
-%     logic_type(1) = 4;
-%     logic_type(2) = 4;
-%     J(1,2) = 1;
-%     J(2,1) = 1;
+    logic_type(1) = 4;
+    logic_type(2) = 4;
+    J(1,2) = 1;
+    J(2,1) = 1;
 
 % THIS IS MY 5 NODE NETWORK!!!!
 
@@ -99,20 +103,20 @@ elseif op_network == 4
 % THIS IS MY 3 NODE NETOWRK
 
 % 1 XOR, 2 OR
-    logic_type(1) = 3;
-    logic_type(2) = 2;
-    logic_type(3) = 2;
-    J(1,[2 3]) = 1;
-    J(2,[1 3]) = 1;
-    J(3,[1 2]) = 1;
+%     logic_type(1) = 3;
+%     logic_type(2) = 2;
+%     logic_type(3) = 2;
+%     J(1,[2 3]) = 1;
+%     J(2,[1 3]) = 1;
+%     J(3,[1 2]) = 1;
 
 % 1 XOR, 2 NOT
-%     logic_type(1) = 5;
-%     logic_type(2) = 5;
+%     logic_type(1) = 2;
+%     logic_type(2) = 4;
 %     logic_type(3) = 3;
-%     J(1, [1 3]) = 1;
-%     J(2, [2 3]) = 1;
-%     J(3,[]) = 1;
+%     J(1, [2 3]) = 1;
+%     J(2, [3]) = 1;
+%     J(3,[1 2]) = 1;
 
 % 1 AND, 2 NULL
 %     logic_type(1) = 1;
@@ -209,8 +213,8 @@ f = zeros(N,1); % averaged firing rates
 for i=1: N
     f(i) = sum(p_x0(:,i))/2^N;
 end
-avef = sum(f)/N;
-fprintf('avef=%f\n',avef);
+% avef = sum(f)/N;
+% fprintf('avef=%f\n',avef);
 
 p_x1 = zeros(2^N,1);
 for i=1: 2^N

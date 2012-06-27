@@ -54,7 +54,7 @@ if(nargin == 0)
         valid = 0;
         while(~valid)
             type = input(['Logic type for element ' num2str(i) ':  ']);
-            if (type > 0 && type < 7)
+            if (type > 0 && type < 8)
                 valid = 1;
             else
                 fprintf('Invalid logic type, please enter again...\n');
@@ -64,21 +64,21 @@ if(nargin == 0)
     end
     
     fprintf(['\nPlease enter connectivity for each element.\n'...
-             'Enter connectivity as a vector of efferents. For example,\n'...
-             'if element 1 has directed edges to 2 and 3, enter: "[2 3]"\n']);
+             'Enter connectivity as a vector of afferents. For example,\n'...
+             'if element 1 has incoming directed edges from 2 and 3, enter: "[2 3]"\n']);
     
     J = zeros(N,N);
     for i = 1:N
         valid = 0;
         while(~valid)
-            efferents = input(['Connectivity for element ' num2str(i) ':  ']);
-            if (all(efferents > 0) && all(efferents <= N))
+            afferents = input(['Connectivity for element ' num2str(i) ':  ']);
+            if (all(afferents > 0) && all(afferents <= N))
                 valid = 1;
             else
                 fprintf('Invalid vector, please enter again...\n');
             end
         end
-        J(i,efferents) = 1;     
+        J(i,afferents) = 1;     
     end
     
     fprintf(['\nPlease enter the state of each element.\n'...
@@ -112,18 +112,14 @@ else
     
 end
 
-fprintf(['\nPlease enter the name of the file to save results in.\n'...
-             'DO NOT include the .mat extension.\n']);
+fprintf(['\nPlease enter the name of the file to save results in.\n']);
      
-filename = [input('Filename (w/o extension):  ','s') '.mat'];
+filename = [input('Filename:  ','s') '.mat'];
 
 
 tic
 %% current state
 if op_ave == 0
-    current_state = zeros(N,1); % all OFF
-    % current_state = ones(N,1); % all ON
-    % current_state = [0 1 0 1]';
     z_max = 1;
 else
     z_max = 2^N;
