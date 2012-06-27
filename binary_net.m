@@ -1,6 +1,7 @@
 clear all;
 close all;
 
+fprintf('\nRunning...\n\n');
 tic;
 
 %% options
@@ -19,6 +20,7 @@ op_empty = 1; % 0: excluding empty set in the past and the future 1: including e
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
                      % 1: phi is the minimum of phi_b and phi_f (separate partition)
 op_console = 0; % 0: limited console output, 1: full console output
+op_volume = 1;
                      
 %% inactive options, which are not used anymore
 op_fb = 3; % 0: forward repertoire, 1: backward repertoire 2: both separately 3: both simultaneously
@@ -29,7 +31,7 @@ global grain;
 grain = 100;
 
 
-options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console];
+options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_volume];
 
 save options options
 
@@ -41,7 +43,8 @@ Na = 3; % Number of afferent connections
 if op_ave == 0
 %     current_state = zeros(N,1); % all OFF
     % current_state = ones(N,1); % all ON
-    current_state = [1 0 0]';
+%     current_state = [1 0 0]';
+    current_state = [1 0]';
     z_max = 1;
 else
     z_max = 2^N;
@@ -269,7 +272,7 @@ for z=1: z_max
     else
         x1 = trans2(z-1,N);
     end
-    fprintf('x1=%s\n',mat2str(x1));
+%     fprintf('x1=%s\n',mat2str(x1));
     
     % partial_prob_comp(partition, partition, state, prob_matrix, binary
     % table, op_fb
@@ -344,5 +347,7 @@ isOpen = matlabpool('size');
 if isOpen > 0 && op_close == 1
     matlabpool close;
 end
+
+fprintf('\n');
 
 toc;

@@ -2,6 +2,8 @@ function big_phi(varargin)
 % big_phi([J, logic_type, current_state)
 
 close all;
+
+fprintf('\nRunning...\n\n');
 % clearvars -except 'varargin'
 %% options
 
@@ -19,6 +21,7 @@ op_empty = 1; % 0: excluding empty set in the past and the future 1: including e
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
                      % 1: phi is the minimum of phi_b and phi_f (separate partition)
 op_console = 0; % 0: limited console output, 1: full console output
+op_volume = 1;
 
                      
 %% inactive options, which are not used anymore
@@ -27,7 +30,7 @@ op_phi = 1; % two versions of small phi 0:Difference of entropy, 1:KL-divergence
 op_whole = 0; % KLD is computed in 0: small system 1: whole system (previous version)
 
 
-options = [op_fb op_phi op_figures 1 1 op_context op_whole op_empty op_min op_console];
+options = [op_fb op_phi op_figures 1 1 op_context op_whole op_empty op_min op_console op_volume];
 save options options
 
 %% check that there are either no arguments or all arguments
@@ -326,8 +329,9 @@ if isOpen > 0 && op_close == 1
     matlabpool close;
 end
 
-toc;
+fprintf('\n');
 
+toc;
 
 save(filename);
 

@@ -1,4 +1,4 @@
-function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,prob_M, phi_M)
+function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,prob_M, phi_M,op_volume)
 
 %%
 % Find the Big-phi MIP in a subset M
@@ -34,39 +34,42 @@ for i=1: floor(N_M/2)
         M1_i = trans_M(M1,N);
         M2_i = trans_M(M2,N);
         
-        phi = [phi_M{M1_i}; phi_M{M2_i}];
-        
-        if (~all(phi == 0))
-    
-            concepts = zeros(2^N_M,sum(phi ~= 0));
-            concept_phis = zeros(1,sum(phi ~= 0));
+        if(op_volume == 1)
+            phi = [phi_M{M1_i}; phi_M{M2_i}];
 
-            for k = 1:2^N_M-1
+            if (~all(phi == 0))
 
-                if (phi(k) ~= 0)
-                    if(k <= sum(phi_M{M1_i} ~= 0))
-                        concepts(:,k) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
-                    else
-                        concepts(:,k) = expand_prob(prob_M{M1_i,1}{k}{1},M,M2);
+                concepts = zeros(2^N_M,sum(phi ~= 0));
+                concept_phis = zeros(1,sum(phi ~= 0));
+
+                for k = 1:2^N_M-1
+
+                    if (phi(k) ~= 0)
+                        if(k <= sum(phi_M{M1_i} ~= 0))
+                            concepts(:,k) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
+                        else
+                            concepts(:,k) = expand_prob(prob_M{M1_i,1}{k}{1},M,M2);
+                        end
+                        concept_phis(i) = phi(i);
+
                     end
-                    concept_phis(i) = phi(i);
 
                 end
 
+            %     disp(concepts);
+            %     disp(concept_phis);
+            %     disp(phi);
+
+                Big_phi_partition = big_phi_volume(concepts,concept_phis,grain);
+
+            else
+                Big_phi_partition = 0;
             end
-
-        %     disp(concepts);
-        %     disp(concept_phis);
-        %     disp(phi);
-
-            Big_phi_partition = big_phi_volume(concepts,concept_phis,grain);
-
         else
-            Big_phi_partition = 0;
+            Big_phi_partition = Big_phi_M(M1_i) + Big_phi_M(M2_i);
         end
         
-%         Big_phi1 = Big_phi_M(M1_i);
-%         Big_phi2 = Big_phi_M(M2_i);
+
 %         
         d_Big_phi = Big_phi_w - Big_phi_partition;
 %         
@@ -86,9 +89,13 @@ for i=1: floor(N_M/2)
     
 end
 
-[min_norm_Big_phi i_phi_min] = min(Big_phi_cand(:,2));
+if (op_volume == 0)
+    [min_norm_Big_phi i_phi_min] = min(Big_phi_cand(:,1));
+else
+    [min_norm_Big_phi i_phi_min] = min(Big_phi_cand(:,2));
+end
 Big_phi_MIP = Big_phi_cand(i_phi_min,1);
 MIP = MIP_cand{i_phi_min};
 M2 = pick_rest(M,MIP);
 
-fprintf('M=%s: MIP=%s-%s: Big_phi_MIP=%f\n',mat2str(M),mod_mat2str(MIP),mod_mat2str(M2),Big_phi_MIP);
+fprintf('M = %s, MIP = %s-%s, Big_phi_MIP = %f\n',mat2str(M),mod_mat2str(MIP),mod_mat2str(M2),Big_phi_MIP);

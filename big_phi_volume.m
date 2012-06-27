@@ -9,7 +9,6 @@ function big_phi = big_phi_volume(C, C_phi, steps_per_dimension)
 
 % big_phi = BIG PHI!!
 
-tic
 
 % get dimension of simplex
 N = size(C,1) - 1;
@@ -121,7 +120,7 @@ big_phi = big_phi_unnormalized / nPerSphere;
 % disp(['nVolSpheres: ' num2str(big_phi_unnormalized)]);
 % disp(['nCovered: ' num2str(nCovered)]);
 
-toc
+
 
 end
 

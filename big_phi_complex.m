@@ -26,6 +26,7 @@ op_fb = options(1); % 0: forward repertoire, 1: backward repertoire, 2: both, 3:
 op_phi = options(2); % two versions of small phi 0:Difference of entropy, 1:KL-divergence 
 op_figures = options(3);  % 0: No figures, 1: only complex 2: complex and whole system, 3: all figures
 op_console = options(10);
+op_volume = options(11);
 
 op_context = options(6);
 op_min = options(9);
@@ -68,7 +69,7 @@ elseif op_fb == 0 || op_fb == 1 || op_fb == 3
     % backward computation
     [Big_phi_M phi_M prob_M M_cell MIP_M] = big_phi_all(x0,p,b_table,options);
     % complex search
-    [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,N,prob_M,phi_M);
+    [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,N,prob_M,phi_M,op_volume);
     % irreducible points
     [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M,phi_M,MIP_M,Complex, M_i_max,op_fb);
 end
@@ -92,7 +93,7 @@ if op_figures ~= 0
     elseif op_fb == 0 || op_fb == 1
         plot_IRR(IRR_REP,IRR_phi,M_IRR, op_fb, fig_max*fig_co,fig_co,IRR_MIP)
     elseif op_fb == 3
-        fprintf('\nCORE CONCEPTS (Purview || MIP || Small phi):\n\n');
+        fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
 %         fprintf('Purview || MIP || Small phi\n');
         plot_REP(Big_phi_M(M_i_max), IRR_REP,IRR_phi,IRR_MIP, 1, Complex, op_context, op_min)
     end

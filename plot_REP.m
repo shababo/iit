@@ -187,7 +187,7 @@ if op_context == 0
 %         'FontSize',10,...
 %         'Position', subtit_pos);
         
-        s = [string{3}, ' || ', string_p{3},' || phi = ',num2str(phi_vec(i))];
+        s = [string{3}, ', ', string_p{3},', phi = ',num2str(phi_vec(i))];
         fprintf('%s\n',s);
     end
     

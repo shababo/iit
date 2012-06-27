@@ -10,6 +10,7 @@ op_context = options(6);
 op_empty = options(8);
 op_min = options(9);
 op_console = options(10);
+op_volume = options(11);
 
 N = length(M);
 M_p{2^N} = []; % add empty set
@@ -85,7 +86,11 @@ else % take minimum of forward and backward
             xf = M_p{j_max};
         end
     end
-    phi = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
+    if (op_volume == 0)
+        phi = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
+    else
+        phi = max_phi_MIP_bf(1);
+    end
 end
 
 %% imposing maxent on units outside of perspectives

@@ -1,15 +1,15 @@
-function [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,N,prob_M, phi_M)
+function [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,N,prob_M, phi_M,op_volume)
 %% Find complex
 Big_phi_MIP_M = zeros(2^N-1,1);
 MIP_M = cell(2^N-1,1);
 
 fprintf('\n')
-fprintf('Big_phi_MIP in subset M\n')
+fprintf('\nBig_phi_MIP in subset M:\n')
 for M_i = 1: 2^N-1
     M = M_cell{M_i};
     if length(M) > 1
         
-        [Big_phi_MIP_M(M_i) MIP_M{M_i}] = MIP_search(M,N,Big_phi_M,prob_M, phi_M);
+        [Big_phi_MIP_M(M_i) MIP_M{M_i}] = MIP_search(M,N,Big_phi_M,prob_M, phi_M,op_volume);
         
     end
 end
@@ -24,8 +24,8 @@ Big_phi = Big_phi_M(M_i_max);
 MIP{2} = pick_rest(Complex,MIP{1});
 
 fprintf('\n')
-fprintf('---------------------------------------------------------------------\n')
- fprintf('Complex=%s Big_phi=%f MIP=%s-%s Big_phi_MIP=%f\n', ...
+fprintf('---------------------------------------------------------------------\n\n')
+ fprintf('Complex = %s\nBig_phi = %f\nMIP = %s-%s\nBig_phi_MIP = %f\n', ...
      mat2str(Complex),Big_phi, mod_mat2str(MIP{1}),mod_mat2str(MIP{2}),Big_phi_MIP);
  
  
