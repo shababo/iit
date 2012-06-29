@@ -1,4 +1,4 @@
-function [Big_phi_M phi_M prob_M M_cell MIP_M] = big_phi_all(x0_s,p,b_table,options)
+function [Big_phi_M phi_M prob_M M_cell MIP_M M_IRR_M] = big_phi_all(x0_s,p,b_table,options)
 % [Big_phi_M phi_M prob_M M_cell MIP_M] = big_phi_all(x0_s,p,b_table,options)
 % this is a test.
 %
@@ -38,6 +38,7 @@ Big_phi_M = zeros(2^N-1,1); % Big_phi for each subset except the empty set
 phi_M = cell(2^N-1,1);
 prob_M = cell(2^N-1,2); 
 MIP_M = cell(2^N-1,1); % the partition that gives Big_phi_MIP for each subset
+M_IRR_M = cell(2^N-1,1);
 
 %% For only conservative, compute BRs and FRs in every possible perspectives 
 if op_context == 0
@@ -53,9 +54,9 @@ for M_i = 1: 2^N-1 % for all proper subsets of the system
     end
     if op_fb == 3 % YES - fb simultaneously
         if op_context == 0 % YES, CONSERVATIVE
-            [Big_phi phi prob_cell MIP] = big_phi_comp_fb(M,x0_s,p,b_table,options,BRs,FRs);
+            [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,b_table,options,BRs,FRs);
         else % NO, PROGRESSIVE
-            [Big_phi phi prob_cell MIP] = big_phi_comp_fb(M,x0_s,p,b_table,options);
+            [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,b_table,options);
         end
         MIP_M{M_i} = MIP;
     else
@@ -63,6 +64,7 @@ for M_i = 1: 2^N-1 % for all proper subsets of the system
     end
     Big_phi_M(M_i) = Big_phi; % Big_phi for each subset
     phi_M{M_i} = phi; % Set of small_phis for each subset of each subset
+    M_IRR_M{M_i} = M_IRR;
     
     % THE POINTS IN CONCEPT SPACE
     % ARRAY prob_M

@@ -1,4 +1,4 @@
-function [Big_phi phi prob_cell MIP prob_cell2] = big_phi_comp_fb(M,x0_s,p,b_table,options,BRs,FRs)
+function [Big_phi phi prob_cell MIP prob_cell2 M_IRR] = big_phi_comp_fb(M,x0_s,p,b_table,options,BRs,FRs)
 
 %%  compute big phi for a subset, M
 % M: a subset of the whole system (can be the whole system itself)
@@ -19,7 +19,7 @@ op_single = options(4);
 op_context = options(6);
 op_min = options(9);
 op_console = options(10);
-op_volume = options(11);
+op_big_phi = options(11);
 
 op_whole = 1;
 
@@ -84,7 +84,7 @@ prob_cell = cell(2,1);
 prob_cell{1} = prob;
 prob_cell{2} = prob_prod;
 
-if (op_volume == 0)
+if (op_big_phi == 0)
 
     phi_m = zeros(N,3); % cumulative sum
     
@@ -108,9 +108,47 @@ if (op_volume == 0)
     Big_phi = phi_m(end,3);
 
 
-else
-    if (~all(phi == 0))
+% THIS NEEDS TO GET REDONE
+elseif (op_big_phi == 1)
+    
+    
+    index_vec_IRR = find(phi ~= 0);
+    N_IRR = length(index_vec_IRR);
+    concept_phis = phi(index_vec_IRR);
 
+    if(N_IRR~=0)
+
+        concepts = zeros(2^N,N_IRR);
+        concept_phis = zeros(1,N_IRR);
+        
+        j = 1;
+        for i = 1:2^N-1
+
+            if (phi(i) ~= 0)
+                
+                concepts(:,j) = prob{i}{1};
+                j = j+1;
+
+            end
+
+        end
+
+    %     disp(concepts);
+    %     disp(concept_phis);
+    %     disp(phi);
+
+        Big_phi = big_phi_volume(concepts,concept_phis,grain);
+
+    else
+        Big_phi = 0;
+    end
+else
+%     REP_cell = prob_M{M_i_max,1}; = PROB
+
+    index_vec_IRR = find(phi ~= 0);
+    N_IRR = length(index_vec_IRR);
+
+    if(N_IRR~=0)
         concepts = zeros(2^N,sum(phi ~= 0));
         concept_phis = zeros(1,sum(phi ~= 0));
 
@@ -125,12 +163,16 @@ else
 
         end
 
-    %     disp(concepts);
-    %     disp(concept_phis);
-    %     disp(phi);
+        M_IRR = cell(N_IRR,1);
 
-        Big_phi = big_phi_volume(concepts,concept_phis,grain);
+        for i=1: N_IRR
+            j = index_vec_IRR(i);
+            M_IRR{i} = C_x0{j};
+        end
+    
 
+        Big_phi = big_phi_info(M_IRR,concepts,concept_phis);
+        
     else
         Big_phi = 0;
     end

@@ -8,6 +8,8 @@ function simplex_points = simplex_volume(nElements,steps_per_dimension)
 % steps_per_dimension is how many points are seached in each dimension
 
 % big_phi = BIG PHI!!
+% matlabpool close force local
+% matlabpool
 
 tic
 
@@ -52,7 +54,7 @@ distance = zeros(N,1);
 nSimplex = 0;
 step_size = 2 / (steps_per_dimension - 1);
 
-simplex_points = cell(1,1);
+simplex_points = cell(steps_per_dimension^N,1);
 
 for i = 0:(steps_per_dimension^N-1)
     
@@ -84,5 +86,5 @@ end
 
 
 toc
-
+% matlabpool close
 end

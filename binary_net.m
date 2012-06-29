@@ -20,7 +20,7 @@ op_empty = 1; % 0: excluding empty set in the past and the future 1: including e
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
                      % 1: phi is the minimum of phi_b and phi_f (separate partition)
 op_console = 0; % 0: limited console output, 1: full console output
-op_volume = 1;
+op_big_phi = 2; % 0 = big_phi is sum of small phi, 1 = big phi is volume best on EMD/best-packing, 2 = ave of H-difference b/w par/child in hasse diagram
                      
 %% inactive options, which are not used anymore
 op_fb = 3; % 0: forward repertoire, 1: backward repertoire 2: both separately 3: both simultaneously
@@ -31,20 +31,20 @@ global grain;
 grain = 100;
 
 
-options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_volume];
+options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_big_phi];
 
 save options options
 
 %% define the connectivty of the network
-N = 2; % Number of elements in the network
+N = 3; % Number of elements in the network
 Na = 3; % Number of afferent connections
 
 % current state
 if op_ave == 0
-%     current_state = zeros(N,1); % all OFF
+    current_state = zeros(N,1); % all OFF
     % current_state = ones(N,1); % all ON
 %     current_state = [1 0 0]';
-    current_state = [1 0]';
+%     current_state = [1 0]';
     z_max = 1;
 else
     z_max = 2^N;
@@ -83,10 +83,10 @@ elseif op_network == 4
     % logic type: 1-> AND, 2-> OR, 3-> XOR, 4 -> COPY, 5-> NOT, 6 -> NULL
     logic_type = zeros(N,1);
     % 2 COPY
-    logic_type(1) = 4;
-    logic_type(2) = 4;
-    J(1,2) = 1;
-    J(2,1) = 1;
+%     logic_type(1) = 4;
+%     logic_type(2) = 4;
+%     J(1,2) = 1;
+%     J(2,1) = 1;
 
 % THIS IS MY 5 NODE NETWORK!!!!
 
@@ -106,12 +106,12 @@ elseif op_network == 4
 % THIS IS MY 3 NODE NETOWRK
 
 % 1 XOR, 2 OR
-%     logic_type(1) = 3;
-%     logic_type(2) = 2;
-%     logic_type(3) = 2;
-%     J(1,[2 3]) = 1;
-%     J(2,[1 3]) = 1;
-%     J(3,[1 2]) = 1;
+    logic_type(1) = 3;
+    logic_type(2) = 2;
+    logic_type(3) = 2;
+    J(1,[2 3]) = 1;
+    J(2,[1 3]) = 1;
+    J(3,[1 2]) = 1;
 
 % 1 XOR, 2 NOT
 %     logic_type(1) = 2;

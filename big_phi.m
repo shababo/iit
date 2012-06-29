@@ -20,8 +20,8 @@ op_context = 0; % 0: conservative 1: progressive
 op_empty = 1; % 0: excluding empty set in the past and the future 1: including empty set 
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
                      % 1: phi is the minimum of phi_b and phi_f (separate partition)
-op_console = 0; % 0: limited console output, 1: full console output
-op_volume = 1;
+op_console = 1; % 0: limited console output, 1: full console output
+op_volume = 0;
 
                      
 %% inactive options, which are not used anymore

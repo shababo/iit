@@ -1,4 +1,4 @@
-function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,prob_M, phi_M,op_volume)
+function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,op_big_phi)
 
 %%
 % Find the Big-phi MIP in a subset M
@@ -34,7 +34,9 @@ for i=1: floor(N_M/2)
         M1_i = trans_M(M1,N);
         M2_i = trans_M(M2,N);
         
-        if(op_volume == 1)
+        
+        if(op_big_phi == 1)
+            
             phi = [phi_M{M1_i}; phi_M{M2_i}];
 
             if (~all(phi == 0))
@@ -48,7 +50,7 @@ for i=1: floor(N_M/2)
                         if(k <= sum(phi_M{M1_i} ~= 0))
                             concepts(:,k) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
                         else
-                            concepts(:,k) = expand_prob(prob_M{M1_i,1}{k}{1},M,M2);
+                            concepts(:,k) = expand_prob(prob_M{M2_i,1}{k - 1}{1},M,M2);
                         end
                         concept_phis(i) = phi(i);
 
@@ -65,6 +67,51 @@ for i=1: floor(N_M/2)
             else
                 Big_phi_partition = 0;
             end
+            
+        elseif (op_big_phi == 2)
+            
+            M1_IRR = M_IRR_M{M1_i};
+            M2_IRR = M_IRR_M{M2_i};
+            nIRR = length(M1_IRR) + length(M1_IRR);
+            IRRs = cell(nIRR,1);
+            
+            for x = 1:nIRR
+                if (x <= length(M1_IRR))
+                   IRRs{x} = M1_IRR{x};
+                else
+                   IRRs{x} = M2_IRR{x - length(M1_IRR)};
+                end
+            end
+            
+            phi = [phi_M{M1_i}; phi_M{M2_i}];
+
+            if (~sum(phi == 0))
+
+                concepts = zeros(2^N_M,sum(phi ~= 0));
+                concept_phis = phi(phi == 0);
+
+                j = 1;
+                for k = 1:length(phi)
+
+                    if (phi(k) ~= 0)
+                        
+                        if(k <= sum(phi_M{M1_i} ~= 0))
+                            concepts(:,j) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
+                        else
+                            concepts(:,j) = expand_prob(prob_M{M2_i,1}{k - length(prob_M{M1_i,1})}{1},M,M2);
+                        end
+                        j = j+1;
+
+                    end
+
+                end
+                
+                Big_phi_partition = big_phi_info(IRRs,concepts,concept_phis);
+                
+            else
+                Big_phi_partition = 0;
+            end
+            
         else
             Big_phi_partition = Big_phi_M(M1_i) + Big_phi_M(M2_i);
         end
@@ -89,7 +136,7 @@ for i=1: floor(N_M/2)
     
 end
 
-if (op_volume == 0)
+if (op_big_phi == 0)
     [min_norm_Big_phi i_phi_min] = min(Big_phi_cand(:,1));
 else
     [min_norm_Big_phi i_phi_min] = min(Big_phi_cand(:,2));
