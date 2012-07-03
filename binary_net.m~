@@ -19,10 +19,9 @@ op_context = 0; % 0: conservative 1: progressive
 op_empty = 1; % 0: excluding empty set in the past and the future 1: including empty set 
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
                      % 1: phi is the minimum of phi_b and phi_f (separate partition)
-op_console = 0; % 0: limited console output, 1: full console output
-op_big_phi = 3; % 0 = big_phi is sum of small phi, 1 = big phi is volume best on EMD/best-packing, 2 = ave of H-difference b/w par/child in hasse diagram
-                     % 3 = look for pairwise distances less than 2*radius
-                     % as marker for overlap
+op_console = 1; % 0: limited console output, 1: full console output
+op_big_phi = 2; % 0 = big_phi is sum of small phi, 1 = big phi is volume best on EMD/best-packing, 2 = ave of H-difference b/w par/child in hasse diagram
+                     
 %% inactive options, which are not used anymore
 op_fb = 3; % 0: forward repertoire, 1: backward repertoire 2: both separately 3: both simultaneously
 op_phi = 1; % two versions of small phi 0:Difference of entropy, 1:KL-divergence
@@ -129,7 +128,7 @@ elseif op_network == 4
     logic_type(1) = 4;
     logic_type(2) = 4;
     logic_type(3) = 1;
-    J(1,[1]) = 1;
+    J(1,[1 ]) = 1;
     J(2,[2]) = 1;
     J(3,[1 2]) = 1;
 

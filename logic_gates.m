@@ -7,6 +7,8 @@ function output = logic_gates(input,logic_type)
 % the element of interest, this function will return the probability that
 % the element of interest will be on
 
+% 0 to .5
+NOISE = 0;
 
 % AND
 if logic_type == 1
@@ -37,11 +39,19 @@ elseif logic_type == 5
 elseif logic_type == 6
 
     output = .5;
+    return;
 
 % MAJORITY
 elseif logic_type == 7
     
     N = length(input);
     output = (sum(input)/N >= .5);
+
+% NOISEY COPY
+elseif logic_type == 8
+    
+    output = input(1);
     
 end
+
+output = abs(output - NOISE);

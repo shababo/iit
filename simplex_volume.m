@@ -58,6 +58,13 @@ simplex_points = cell(steps_per_dimension^N,1);
 
 for i = 0:(steps_per_dimension^N-1)
     
+    eval(['simplex_points_' num2str(i) ' = cell(steps_per_dimension^N,1);']);
+    eval(['count_' num2str(i) ' = 0;']);
+    
+end
+
+parfor i = 0:(steps_per_dimension^N-1)
+    
    for j = 1:N
        
        distance(j) = mod(i,steps_per_dimension);
@@ -78,7 +85,9 @@ for i = 0:(steps_per_dimension^N-1)
    if (sum(gamma) == 1 && all(gamma >= 0))
        
        nSimplex = nSimplex + 1;
-       simplex_points{nSimplex} = gamma;
+%        eval(['simplex_points_' num2str(i) '{count_' num2str(i) '} = gamma;']);
+%        eval(['count_' num2str(i) ' = count_' num2str(i) ' + 1;'])
+       
        
    end
        

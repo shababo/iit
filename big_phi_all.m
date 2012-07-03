@@ -50,7 +50,7 @@ end
 for M_i = 1: 2^N-1 % for all proper subsets of the system
     M = M_cell{M_i}; % get the subset
     if op_console
-        fprintf('M=%s\n',mod_mat2str(M));
+        fprintf('System = %s\n',mod_mat2str(M));
     end
     if op_fb == 3 % YES - fb simultaneously
         if op_context == 0 % YES, CONSERVATIVE

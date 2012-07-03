@@ -21,7 +21,7 @@ op_empty = 1; % 0: excluding empty set in the past and the future 1: including e
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
                      % 1: phi is the minimum of phi_b and phi_f (separate partition)
 op_console = 1; % 0: limited console output, 1: full console output
-op_volume = 0;
+op_big_phi = 2; % 0 = big_phi is sum of small phi, 1 = big phi is volume best on EMD/best-packing, 2 = ave of H-difference b/w par/child in hasse diagram
 
                      
 %% inactive options, which are not used anymore
@@ -30,7 +30,7 @@ op_phi = 1; % two versions of small phi 0:Difference of entropy, 1:KL-divergence
 op_whole = 0; % KLD is computed in 0: small system 1: whole system (previous version)
 
 
-options = [op_fb op_phi op_figures 1 1 op_context op_whole op_empty op_min op_console op_volume];
+options = [op_fb op_phi op_figures 1 1 op_context op_whole op_empty op_min op_console op_big_phi];
 save options options
 
 %% check that there are either no arguments or all arguments
@@ -52,12 +52,12 @@ if(nargin == 0)
     logic_type = zeros(N,1);
     
     fprintf(['\nPlease enter logic types for each element.\n'...
-             '1-> AND, 2-> OR, 3-> XOR, 4 -> COPY, 5-> NOT, 6 -> NULL, 7 -> MAJORITY\n']);
+             '1-> AND, 2-> OR, 3-> XOR, 4 -> COPY, 5-> NOT, 6 -> NULL, 7 -> MAJORITY, 8 -> NOISEY COPY\n']);
     for i = 1:N
         valid = 0;
         while(~valid)
             type = input(['Logic type for element ' num2str(i) ':  ']);
-            if (type > 0 && type < 8)
+            if (type > 0 && type < 9)
                 valid = 1;
             else
                 fprintf('Invalid logic type, please enter again...\n');

@@ -16,8 +16,8 @@ N = size(C,1) - 1;
 Nc = size(C,2);
 
 % radius = 2/(N+3); % this is for L2 distance approach
-radius = 1/(2^N); % this is for EMD packing
-% radius = 1/2; % for EMD covering where N=3
+% radius = 1/(2^N); % this is for EMD packing
+radius = 1/2; % for EMD covering where N=3
 D = gen_dist_matrix(N+1); % matrix for EMD weight b/w vertices of simplex
 
 %% Build R
@@ -115,10 +115,10 @@ end
 % big_phi = big_phi_unnormalized * 5^N / (nSimplex * (3^N - N - 1));
 big_phi = big_phi_unnormalized / nPerSphere;
 
-% disp(['nPerSphere: ' num2str(nPerSphere)]);
-% disp(['nSimplex: ' num2str(nSimplex)]);
-% disp(['nVolSpheres: ' num2str(big_phi_unnormalized)]);
-% disp(['nCovered: ' num2str(nCovered)]);
+disp(['nPerSphere: ' num2str(nPerSphere)]);
+disp(['nSimplex: ' num2str(nSimplex)]);
+disp(['nVolSpheres: ' num2str(big_phi_unnormalized)]);
+disp(['nCovered: ' num2str(nCovered)]);
 
 
 

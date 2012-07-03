@@ -185,7 +185,7 @@ elseif (op_big_phi == 3)
     index_vec_IRR = find(phi ~= 0);
     N_IRR = length(index_vec_IRR);
 
-    if(N_IRR > 1)
+    if(N_IRR~=0)
         
         concepts = zeros(2^N,N_IRR);
         concept_phis = zeros(1,N_IRR);
@@ -205,15 +205,11 @@ elseif (op_big_phi == 3)
 
         Big_phi = big_phi_spacing(concepts,concept_phis);
 
-    elseif (N_IRR == 1)
-        Big_phi = 1;
     else
         Big_phi = 0;
     end
 else
-    err = MException('Options:UnSetValue', ...
-        'Optoin for method of computing Big Phi is incorrect');
-    throw(err);
+    
 end
 
 

@@ -42,7 +42,7 @@ for i=1: floor(N_M/2)
 
             if (~all(phi == 0))
 
-                concepts = zeros(2^N_M,sum(phi~=0));
+                concepts = zeros(2^N_M,nIRR);
                 concept_phis = phi(phi ~= 0);
 
                 z = 1;
@@ -80,10 +80,15 @@ for i=1: floor(N_M/2)
             
             M1_IRR = M_IRR_M{M1_i};
             M2_IRR = M_IRR_M{M2_i};
-
+%             
+%             for zz = 1:length(M1_IRR)
+%                 disp(M1_IRR{zz});
+%             end
+%             for zz = 1:length(M2_IRR)
+%                 disp(M2_IRR{zz});
+%             end
             nIRR = length(M1_IRR) + length(M2_IRR);
             IRRs = cell(nIRR,1);
-            phi = [phi_M{M1_i}' phi_M{M2_i}'];
             
             for x = 1:nIRR
                 if (x <= length(M1_IRR))
@@ -93,6 +98,50 @@ for i=1: floor(N_M/2)
                 end
             end
             
+            phi = [phi_M{M1_i}' phi_M{M2_i}'];
+
+            if (~all(phi == 0))
+
+                concepts = zeros(2^N_M,nIRR);
+                concept_phis = phi(phi ~= 0);
+
+                z = 1;
+                for k = 1:length(phi)
+
+                    if (phi(k) ~= 0)
+                        
+                        if(z <= length(M1_IRR))
+                            concepts(:,z) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
+                        else
+                            concepts(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1},M,M2);
+                        end
+                        z = z + 1;
+
+                    end
+
+                end
+%                 
+%                 disp('!!!!!!!!!!!!!');
+%                 disp('!!!!!!!!!!!!!');
+%                 disp('!!!!!!!!!!!!!');
+%                 disp(IRRs);
+%                 disp(concepts);
+%                 disp(concept_phis);
+%                 disp('!!!!!!!!!!!!!');
+%                 disp('!!!!!!!!!!!!!');
+%                 disp('!!!!!!!!!!!!!');
+
+                
+                Big_phi_partition = big_phi_info(IRRs,concepts,concept_phis);
+                
+            else
+
+                Big_phi_partition = 0;
+            end
+        
+        elseif(op_big_phi == 3)
+            
+            phi = [phi_M{M1_i}' phi_M{M2_i}'];
 
             if (~all(phi == 0))
 
@@ -115,56 +164,8 @@ for i=1: floor(N_M/2)
 
                 end
 
-                
-                Big_phi_partition = big_phi_info(IRRs,concepts,concept_phis);
-                
-            else
-
-                Big_phi_partition = 0;
-            end
-        
-        elseif(op_big_phi == 3)
-            
-            
-            
-            phi = [phi_M{M1_i}' phi_M{M2_i}'];
-            nIRR = sum(phi ~= 0);
-            
-%             disp('***************')
-%             disp(M1_IRR);
-%             disp(length(M1_IRR));
-%             disp(M2_IRR);
-%             disp(length(M2_IRR));
-%             disp(nIRR)
-%             disp(phi)
-%             disp(phi ~= 0);
-%             disp(sum(phi ~= 0));
-            
-            if (nIRR > 1)
-
-                concepts = zeros(2^N_M,nIRR);
-                concept_phis = phi(phi ~= 0);
-
-                z = 1;
-                for k = 1:length(phi)
-
-                    if (phi(k) ~= 0)
-                        
-                        if(z <= sum(phi_M{M1_i} ~= 0))
-                            concepts(:,z) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
-                        else
-                            concepts(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1},M,M2);
-                        end
-                        z = z + 1;
-
-                    end
-
-                end
-
                 Big_phi_partition = big_phi_spacing(concepts,concept_phis);
 
-            elseif (sum(phi ~= 0) == 1)
-                Big_phi_partition = 1;
             else
                 Big_phi_partition = 0;
             end
