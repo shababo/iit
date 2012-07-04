@@ -14,15 +14,16 @@ op_parallel = 0; % 1: parallel computing, 0: not
 op_network = 4; % 1: random with self-connectivity, 2: random without self-connectivity, 3: modular, 4: logic gates, 0: some given connectivity matrix
 op_TPM = 0; % 1: load TPM
 op_ave = 0; % 0: use a specific current state 1: average over all possible current states
-op_disp = 2; % 0: No figures, 1: only complex, 2: complex and whole system, 3: all figures
+op_disp = 0; % 0: No figures, 1: only complex, 2: complex and whole system, 3: all figures
 op_context = 0; % 0: conservative 1: progressive
 op_empty = 1; % 0: excluding empty set in the past and the future 1: including empty set 
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
                      % 1: phi is the minimum of phi_b and phi_f (separate partition)
 op_console = 0; % 0: limited console output, 1: full console output
-op_big_phi = 3; % 0 = big_phi is sum of small phi, 1 = big phi is volume best on EMD/best-packing, 2 = ave of H-difference b/w par/child in hasse diagram
+op_big_phi = 3; % 0 = big_phi is sum of small phi, 1 = big phi is volume best on EMD/best-packing, 2 = ave of H-difference b/w parent/child in hasse diagram
                      % 3 = look for pairwise distances less than 2*radius
                      % as marker for overlap
+op_sum = 0; % 0 = compute big_phi_mip based on expanding parts into the space of the whole, 1 = just take whole minus sum of parts
 %% inactive options, which are not used anymore
 op_fb = 3; % 0: forward repertoire, 1: backward repertoire 2: both separately 3: both simultaneously
 op_phi = 1; % two versions of small phi 0:Difference of entropy, 1:KL-divergence
@@ -32,19 +33,19 @@ global grain;
 grain = 100;
 
 
-options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_big_phi];
+options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_big_phi op_sum];
 
 save options options
 
 %% define the connectivty of the network
-N = 3; % Number of elements in the network
+N = 5; % Number of elements in the network %!!!!!!!!!!!! DEFINE
 Na = 3; % Number of afferent connections
 
 % current state
 if op_ave == 0
     current_state = zeros(N,1); % all OFF
 %     current_state = ones(N,1); % all ON
-%     current_state = [1 0 0 0]';
+%     current_state = [1 1 0 0 0 0 0 0]';
 %     current_state = [1 0]';
     z_max = 1;
 else
@@ -126,12 +127,54 @@ elseif op_network == 4
 %     J(4,[4]) = 1;
     
 % SYMMETRIC NOISY AND
-    logic_type(1) = 4;
-    logic_type(2) = 4;
-    logic_type(3) = 1;
-    J(1,[1]) = 1;
-    J(2,[2]) = 1;
-    J(3,[1 2]) = 1;
+%     logic_type(1) = 4;
+%     logic_type(2) = 4;
+%     logic_type(3) = 1;
+%     J(1,[1]) = 1;
+%     J(2,[2]) = 1;
+%     J(3,[1 2]) = 1;
+
+% MAJORITY
+%     logic_type(1) = 7;
+%     logic_type(2) = 7;
+%     logic_type(3) = 7;
+%     logic_type(4) = 7;
+%     logic_type(5) = 7;
+%     J(1,[1 2 3 4 5]) = 1;
+%     J(2,[1 2 3 4 5]) = 1;
+%     J(3,[1 2 3 4 5]) = 1;
+%     J(4,[1 2 3 4 5]) = 1;
+%     J(5,[1 2 3 4 5]) = 1;
+    
+% MAJORITY - NOT REDUNDANT
+    logic_type(1) = 7;
+    logic_type(2) = 7;
+    logic_type(3) = 7;
+    logic_type(4) = 7;
+    logic_type(5) = 7;
+    J(1,[1 2 3]) = 1;
+    J(2,[2 4 5]) = 1;
+    J(3,[1 2 5]) = 1;
+    J(4,[1 4 5]) = 1;
+    J(5,[2 3 4]) = 1;
+    
+% OPTIMIZED AND GATES (BALDUZZI TONONI 08)
+%     logic_type(1) = 1;
+%     logic_type(2) = 1;
+%     logic_type(3) = 1;
+%     logic_type(4) = 1;
+%     logic_type(5) = 1;
+%     logic_type(6) = 1;
+%     logic_type(7) = 1;
+%     logic_type(8) = 1;
+%     J(1,[2 8]) = 1;
+%     J(2,[3 5]) = 1;
+%     J(3,[]) = 1;
+%     J(4,[6 8]) = 1;
+%     J(5,[4 8]) = 1;
+%     J(6,[5 7]) = 1;
+%     J(7,[1 3]) = 1;
+%     J(8,[]) = 1;
 
 % 1 XOR, 2 NOT
 %     logic_type(1) = 2;

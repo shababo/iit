@@ -202,11 +202,16 @@ elseif (op_big_phi == 3)
             end
 
         end
-
-        Big_phi = big_phi_spacing(concepts,concept_phis);
+        if (N == size(p,2))
+            display = 1;
+        else
+            display = 0;
+        end
+        
+        Big_phi = big_phi_spacing(concepts,concept_phis,0);
 
     elseif (N_IRR == 1)
-        Big_phi = 1;
+        Big_phi = phi(1);
     else
         Big_phi = 0;
     end

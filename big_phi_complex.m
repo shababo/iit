@@ -27,6 +27,7 @@ op_phi = options(2); % two versions of small phi 0:Difference of entropy, 1:KL-d
 op_figures = options(3);  % 0: No figures, 1: only complex 2: complex and whole system, 3: all figures
 op_console = options(10);
 op_big_phi = options(11);
+op_sum = options(12);
 
 op_context = options(6);
 op_min = options(9);
@@ -69,9 +70,10 @@ elseif op_fb == 0 || op_fb == 1 || op_fb == 3
     % backward computation
     [Big_phi_M phi_M prob_M M_cell MIP_M M_IRR_M] = big_phi_all(x0,p,b_table,options);
     % complex search
-    [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell, M_IRR_M, N,prob_M,phi_M,op_big_phi);
+    [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell, M_IRR_M, N,prob_M,phi_M,op_big_phi,op_sum);
     % irreducible points
     [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M,phi_M,MIP_M,Complex, M_i_max,op_fb);
+    fprintf('Sum of small_phis = %f',sum(IRR_phi));
 end
 
 %% plot irreducible points in the complex
@@ -96,6 +98,8 @@ if op_figures ~= 0
         fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
 %         fprintf('Purview || MIP || Small phi\n');
         plot_REP(Big_phi_M(M_i_max), IRR_REP,IRR_phi,IRR_MIP, 1, Complex, op_context, op_min)
+        
+        
     end
 end
 

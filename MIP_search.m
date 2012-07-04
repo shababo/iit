@@ -1,4 +1,4 @@
-function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,op_big_phi)
+function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,op_big_phi, op_sum)
 
 %%
 % Find the Big-phi MIP in a subset M
@@ -35,8 +35,11 @@ for i=1: floor(N_M/2)
         M1_i = trans_M(M1,N);
         M2_i = trans_M(M2,N);
         
-        
-        if(op_big_phi == 1)
+        if(op_sum == 1 || op_big_phi == 0)
+            
+            Big_phi_partition = Big_phi_M(M1_i) + Big_phi_M(M2_i);
+                      
+        elseif(op_big_phi == 1)
             
             phi = [phi_M{M1_i}' phi_M{M2_i}'];
 
@@ -160,21 +163,20 @@ for i=1: floor(N_M/2)
                     end
 
                 end
-
-                Big_phi_partition = big_phi_spacing(concepts,concept_phis);
+                display = 0;
+                Big_phi_partition = big_phi_spacing(concepts,concept_phis,display);
 
             elseif (sum(phi ~= 0) == 1)
-                Big_phi_partition = 1;
+                Big_phi_partition = phi((phi ~= 0));
             else
                 Big_phi_partition = 0;
             end
-        else
-            Big_phi_partition = Big_phi_M(M1_i) + Big_phi_M(M2_i);
+
         end
         
-
-%         
         d_Big_phi = Big_phi_w - Big_phi_partition;
+        
+            
 %         
         Norm = min(length(M1),length(M2)) + min(length(M1),length(M2));
         % Norm = 1; % No normalization

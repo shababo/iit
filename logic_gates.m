@@ -8,7 +8,7 @@ function output = logic_gates(input,logic_type)
 % the element of interest will be on
 
 % 0 to .5
-NOISE = 0;
+NOISE = .0;
 
 % AND
 if logic_type == 1
