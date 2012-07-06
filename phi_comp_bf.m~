@@ -1,4 +1,4 @@
-function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table)
+function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table,BRs,FRs)
 % compute small phi of a given purview...?
 % 
 % options = the options
@@ -23,27 +23,23 @@ op_whole = options(7);
 op_min = options(9);
 op_normalize = options(14);
 
-global BRs, global FRs
-
 Np = length(xp);
 N0 = length(x0);
 Nf = length(xf);
 
 %% unpartitioned transition repertoire
 if op_context == 0 % conservative
-    
     current = convi(x0); past = convi(xp); future = convi(xf);
-    
     if isempty(BRs{current,past})
-        BRs{current,past} = comp_pers_single(current,past,x0_s,p,b_table,1);    
+        prob_bw = comp_pers_single(current,past,x0_s,p,b_table,1);
+    else
+        prob_bw = BRs{convi(x0),convi(xp)};
     end
-    prob_bw = BRs{current,past};
-
-    if isempty(FRs{current,future})
-        FRs{current,future} = comp_pers_single(current,future,x0_s,p,b_table,2);
+    if isempty(FRs{future,past})
+        prob_fw = comp_pers_single(current,future,x0_s,p,b_table,2);
+    else
+        prob_fw = FRs{current,future};
     end
-    prob_fw = FRs{current,future};
-    
 
     prob = cell(2,1);
     prob{1} = prob_bw;
@@ -148,39 +144,21 @@ else % OP_MIN = 1, PHI IS MINIMUM OF BACKWARDS AND FORWARDS COMPUTATIONS
             current_1 = convi(x0_1);
             current_2 = convi(x0_2);
             other_1 = convi(xp_1);
-            other_2 = convi(xp_2);
+            other_1 = convi(xp_2);
             
             for bf=1: 2 % past or future
                 
                 if Norm ~= 0
-                    
                     if bf == 1
-                        if isempty(BRs{current_1,other_1})
-                            BRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,b_table,bf);
-                        end
-                        prob_p1 = BRs{current_1,other_1};
-                        
-                        if isempty(BRs{current_2,other_2})
-                            BRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,b_table,bf);
-                        end
-                        prob_p2 = BRs{current_2,other_2};
-                        
+                        if isempty(BRs(current_1,other_1)
+                            
+                        prob_p1 = BRs{convi(x0_1),convi(xp_1)};
+                        prob_p2 = BRs{convi(x0_2),convi(xp_2)};
                     else
-                        
-                        if isempty(FRs{current_1,other_1})
-                            FRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,b_table,bf);
-                        end
-                        prob_p1 = FRs{current_1,other_1};
-                        
-                        if isempty(FRs{current_2,other_2})
-                            FRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,b_table,bf);
-                        end
-                        prob_p2 = FRs{current_2,other_2};
-
+                        prob_p1 = FRs{convi(x0_1),convi(xp_1)};
+                        prob_p2 = FRs{convi(x0_2),convi(xp_2)};
                     end
-                    
                     prob_p = prob_prod_comp(prob_p1,prob_p2,xp,xp_1,0);
-                    
                     phi = KLD(prob{bf},prob_p);
                     prob_prod_vec{i,j,bf} = prob_p;
                 else

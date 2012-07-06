@@ -1,15 +1,16 @@
-function [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,M_IRR_M,N,prob_M, phi_M,op_big_phi, op_sum)
+function [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,M_IRR_M,N,prob_M, phi_M,options)
 %% Find complex
+
 Big_phi_MIP_M = zeros(2^N-1,1);
 MIP_M = cell(2^N-1,1);
 
 fprintf('\n')
-fprintf('\nBig_phi_MIP in subset M:\n')
+fprintf('\nBig_phi_MIP in subset M:\n\n')
 for M_i = 1: 2^N-1
     M = M_cell{M_i};
     if length(M) > 1
         
-        [Big_phi_MIP_M(M_i) MIP_M{M_i}] = MIP_search(M,N,Big_phi_M, M_IRR_M, prob_M, phi_M,op_big_phi,op_sum);
+        [Big_phi_MIP_M(M_i) MIP_M{M_i}] = MIP_search(M,N,Big_phi_M, M_IRR_M, prob_M, phi_M,options);
         
     end
 end

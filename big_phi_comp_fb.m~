@@ -1,4 +1,4 @@
-function [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,b_table,options)
+function [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,b_table,options,BRs,FRs)
 
 %%  compute big phi for a subset, M
 % M: a subset of the whole system (can be the whole system itself)
@@ -10,7 +10,6 @@ function [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,b_table,op
 
 global grain
 global J
-% global BRs, global FRs
     
 N = length(M);
 
@@ -80,7 +79,7 @@ parfor ci=1: 2^N-1  % loop over purview numerators
 %         end
         if op_context == 0
             [phi(ci) prob{ci} prob_prod{ci} MIP{ci}] ...
-            =  phi_comp_ex(options,M,x0,x0_s,p,b_table, M_p,J);
+            =  phi_comp_ex(options,M,x0,x0_s,p,b_table, M_p, BRs, FRs, J);
         else
             [phi(ci) prob{ci} prob_prod{ci} MIP{ci}] ...
                 =  phi_comp_ex(options,M,x0,x0_s,p,b_table, M_p);
@@ -256,8 +255,8 @@ for i_C=1: 2^N-1
         else
             if i > 1 || op_single == 1        
                 [string_p string] = make_title_fb(MIP{i_C},op_context,op_min);
-                fprintf('C = %s: Core Concept: %s\n',mod_mat2str(C),string{3});
-                fprintf('MIP = %s\n', string_p{3});
+                fprintf('C=%s: Core Concept: %s\n',mod_mat2str(C),string{3});
+                fprintf('MIP = 
                 fprintf('\tPast: phi_b = %f\n',KLD(prob{i_C}{1},prob_prod{i_C}{1}));
 %                 fprintf('Partition: %s\n',string_p{3});
 %                 fprintf('Distribution (full):\n');

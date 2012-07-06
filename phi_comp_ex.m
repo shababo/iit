@@ -1,10 +1,11 @@
-function [phi prob prob_prod_MIP MIP] = phi_comp_ex(options,M,x0,x0_s,p,b_table,M_p,BRs,FRs)
+function [phi prob prob_prod_MIP MIP] = phi_comp_ex(options,M,x0,x0_s,p,b_table,M_p,J)
 
 
 % M_p: power set of M
 % op_disp = 1;
 % op_single = 1;
 
+global BRs, global FRs
 
 op_context = options(6);
 op_empty = options(8);
@@ -36,7 +37,7 @@ if op_min == 0 % take sum of forward and backward
             if N_p ~= 0 || N_f ~= 0
                 if op_context == 0 % conservative
                     [phi_MIP(i,j) prob_cand{i,j} prob_prod_MIP_cand{i,j} MIP_cand{i,j}] ...
-                        = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table,BRs,FRs);
+                        = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table);
                 else % progressive
                     [phi_MIP(i,j) prob_cand{i,j} prob_prod_MIP_cand{i,j} MIP_cand{i,j}] ...
                         = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table);
@@ -62,12 +63,27 @@ else % take minimum of forward and backward
     prob_prod_MIP_cand = cell(2^N-1,1);
     MIP_cand = cell(2^N-1,1);
     
-    % for all purview demoniators (we use same set for forward and
-    % backward) - can we pick these better, Larissa says yes!
     for i=1: 2^N-1
+        %Larissa smart purviews: Only test those connections that actually exist
         x = M_p{i};
-        [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-            = phi_comp_bf(options,M,x0,x,x,x0_s,p,b_table,BRs,FRs);
+        if nnz(sum(J(x0,x),1) == 0) > 0 % some x is not input of x0 (numerator) --> no phiBR
+            if nnz(sum(J(x,x0),2) == 0) == 0 % but x is output
+                [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
+                    = phi_comp_bORf(options,x0,x,p,2,b_table,x0_s); 
+            else
+                prob_cand{i} = cell(2,1);
+                prob_prod_MIP_cand{i} = cell(2,1);
+                MIP_cand{i} = cell(2,2,2);
+            end
+        else
+            if nnz(sum(J(x,x0),2) == 0) > 0 % x is not output, but x is input
+                [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
+                    = phi_comp_bORf(options,x0,x,p,1,b_table,x0_s); 
+            else % x is both
+                [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
+                    = phi_comp_bf(options,M,x0,x,x,x0_s,p,b_table); 
+            end 
+        end    
     end
     
     % exlusion principle
@@ -86,7 +102,7 @@ else % take minimum of forward and backward
             xf = M_p{j_max};
         end
     end
-    if (op_big_phi == 0)
+    if (op_big_phi == 0 || op_big_phi == 3)
         phi = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
     else
         phi = max_phi_MIP_bf(1);
@@ -108,10 +124,10 @@ if op_context == 0
     end
 end
 
-if op_console
-    fprintf('Core concept: x0=%s xp=%s  xf=%s\n',mod_mat2str(x0),mod_mat2str(xp),mod_mat2str(xf));
-    fprintf('phi=%f\n',phi);
-end
+% if op_console
+%     fprintf('Core concept: x0=%s xp=%s  xf=%s\n',mod_mat2str(x0),mod_mat2str(xp),mod_mat2str(xf));
+%     fprintf('phi=%f\n',phi);
+% end
 % figure(1)
 % subplot(1,2,1),imagesc(prob)
 % subplot(1,2,2),imagesc(prob_prod_MIP)

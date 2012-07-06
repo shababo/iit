@@ -17,9 +17,6 @@ op_fb = options(1);
 op_context = options(6);
 op_console = options(10);
 
-
-global BRs, global FRs
-
 N = log2(size(p,1)); % number of elements in the whole system
 
 %% subset - build a cell array that contains all of the subsets
@@ -48,8 +45,10 @@ M_IRR_M = cell(2^N-1,1);
 %    [BRs FRs] = comp_pers(x0_s,p,b_table,options);
 % end
 
+global BRs, global FRs
 
-
+BRs = cell(2^N,2^N); % backward repertoire
+FRs = cell(2^N,2^N); % forward repertoire
 
 %%
 
@@ -86,7 +85,6 @@ fprintf('\n')
 fprintf('--------------------------------------------------------------\n\n')
 fprintf('Big phi values in subset M:\n\n')
 for M_i = 1: 2^N-1
-    if (Big_phi_M(M_i) ~= 0)
-        fprintf('M=%s: Big_phi=%f\n',mod_mat2str(M_cell{M_i}),Big_phi_M(M_i));
-    end
+    if 
+    fprintf('M=%s: Big_phi=%f\n',mod_mat2str(M_cell{M_i}),Big_phi_M(M_i));
 end

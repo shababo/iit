@@ -24,33 +24,47 @@ op_big_phi = 3; % 0 = big_phi is sum of small phi, 1 = big phi is volume best on
                      % 3 = look for pairwise distances less than 2*radius
                      % as marker for overlap
 op_sum = 0; % 0 = compute big_phi_mip based on expanding parts into the space of the whole, 1 = just take whole minus sum of parts
+op_normalize_big_phi = 1; % 0 = don't normalize big_phi, 1 = normalize big_phi but choose non-norm value, 2 = normalize but choose norm value
+op_normalize_small_phi = 1; % 0 = don't normalize small_phi, 1 = normalize small_phi but choose non-norm value, 2 = normalize but choose norm value
+
+
+
 %% inactive options, which are not used anymore
 op_fb = 3; % 0: forward repertoire, 1: backward repertoire 2: both separately 3: both simultaneously
 op_phi = 1; % two versions of small phi 0:Difference of entropy, 1:KL-divergence
 op_whole = 0; % KLD is computed in 0: small system 1: whole system (previous version)
 
-global grain;
+global grain, global noise;
 grain = 100;
+noise = 0.0; % 0 <= noise <= .5, this noise is applied to all nodes on their output essentially adding uncertaintity
+global BRs, global FRs
 
 
-options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_big_phi op_sum];
+fprintf('Noise Level = %f\n',noise);
+
+options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_big_phi op_sum op_normalize_big_phi op_normalize_small_phi op_complex];
 
 save options options
 
 %% define the connectivty of the network
-N = 5; % Number of elements in the network %!!!!!!!!!!!! DEFINE
+N = 7; % Number of elements in the network %!!!!!!!!!!!! CAN WE MAKE THIS DEPENDENT?
 Na = 3; % Number of afferent connections
+
+BRs = cell(2^N,2^N); % backward repertoire
+FRs = cell(2^N,2^N); % forward repertoire
 
 % current state
 if op_ave == 0
-    current_state = zeros(N,1); % all OFF
-%     current_state = ones(N,1); % all ON
+%     current_state = zeros(N,1); % all OFF
+    current_state = ones(N,1); % all ON
 %     current_state = [1 1 0 0 0 0 0 0]';
 %     current_state = [1 0]';
     z_max = 1;
 else
     z_max = 2^N;
 end
+
+global J
 
 J = zeros(N,N); % connectivity matrix
 if op_network == 1     % random network with self-connectivity
@@ -83,7 +97,7 @@ elseif op_network == 3
 elseif op_network == 4
     %% logic gates
     % logic type: 1-> AND, 2-> OR, 3-> XOR, 4 -> COPY, 5-> NOT, 6 -> NULL,
-    % 7 -> MAJORITY, 8 - > NOISEY COPY
+    % 7 -> MAJORITY, 8-> MINORITY, 9 -> PARITY
     logic_type = zeros(N,1);
     % 2 COPY
 %     logic_type(1) = 4;
@@ -105,34 +119,107 @@ elseif op_network == 4
 %     J(4,[2 3]) = 1;
 %     J(5,[2 4]) = 1;
 
+% ---------------------------------------------------------------
+% NORMALIZATION EXPERIMENTS
 
-% THIS IS MY 3 NODE NETOWRK
-
-% 1 XOR, 2 OR
-%     logic_type(1) = 3;
-%     logic_type(2) = 2;
-%     logic_type(3) = 2;
+% 1) PARITY, MAJORITY, OR
+%     logic_type(1) = 2;
+%     logic_type(2) = 7;
+%     logic_type(3) = 9;
 %     J(1,[2 3]) = 1;
-%     J(2,[1 3]) = 1;
-%     J(3,[1 2]) = 1;
+%     J(2,[1 2 3]) = 1;
+%     J(3,[1 2 3]) = 1;
+    
+% 2) HOMOGENOUS MAJORITIES
+%     logic_type(1) = 7;
+%     logic_type(2) = 7;
+%     logic_type(3) = 7;
+%     logic_type(4) = 7;
+%     logic_type(5) = 7;
+%     J(1,[1 2 3 4 5]) = 1;
+%     J(2,[1 2 3 4 5]) = 1;
+%     J(3,[1 2 3 4 5]) = 1;
+%     J(4,[1 2 3 4 5]) = 1;
+%     J(5,[1 2 3 4 5]) = 1;  
+    
+% 3) COMPLEX NETWORK BASED ON PARITY/MAJORITY READING FOUR NODES BUT ADDED
+% BACK CONNECTIONS SO WE GET ACTUAL VALUES FOR PHI/BIG_PHI/COMPLEX
+%     logic_type(1) = 4;
+%     logic_type(2) = 2;
+%     logic_type(3) = 1;
+%     logic_type(4) = 4;
+%     logic_type(5) = 9;
+%     logic_type(6) = 8;
+%     J(1,5) = 1;
+%     J(2,[5 6]) = 1;
+%     J(3,[5 6]) = 1;
+%     J(4,6) = 1;
+%     J(5,[1 2 3 4]) = 1;
+%     J(6,[1 2 3 4]) = 1;
 
-% INDEPENDENT NOISY COPY
+% 4) MAJORITY - NON-HOMOGENOUS (EACH NODE HAS 3 AFFERENTS/EFFERENTS
+%     logic_type(1) = 7;
+%     logic_type(2) = 7;
+%     logic_type(3) = 7;
+%     logic_type(4) = 7;
+%     logic_type(5) = 7;
+%     J(1,[1 2 3]) = 1;
+%     J(2,[3 4 5]) = 1;
+%     J(3,[1 2 5]) = 1;
+%     J(4,[1 4 5]) = 1;
+%     J(5,[2 3 4]) = 1;
+
+% 5) MODULAR COPIES (CLASSIC EXAMPLE OF FULL SET NOT BEING THE COMPLEX)
 %     logic_type(1) = 4;
 %     logic_type(2) = 4;
 %     logic_type(3) = 4;
 %     logic_type(4) = 4;
-%     J(1,[1]) = 1;
-%     J(2,[2]) = 1;
-%     J(3,[3]) = 1;
-%     J(4,[4]) = 1;
+%     J(1,2) = 1;
+%     J(2,1) = 1;
+%     J(3,4) = 1;
+%     J(4,3) = 1;
+
+% 6) INDEPENDENT SELF-COPY
+%     logic_type(1) = 4;
+%     logic_type(2) = 4;
+%     logic_type(3) = 4;
+%     logic_type(4) = 4;
+%     J(1,1) = 1;
+%     J(2,2) = 1;
+%     J(3,3) = 1;
+%     J(4,4) = 1;
+
     
-% SYMMETRIC NOISY AND
+% ---------------------------------------------------------------
+
+% INDEPENDENT SELF-COPY
+%     logic_type(1) = 4;
+%     logic_type(2) = 4;
+%     logic_type(3) = 4;
+%     logic_type(4) = 4;
+%     J(1,1) = 1;
+%     J(2,2) = 1;
+%     J(3,3) = 1;
+%     J(4,4) = 1;
+    
+% IND-NOISY-CPY(2) JOINED BY NOISY AND
 %     logic_type(1) = 4;
 %     logic_type(2) = 4;
 %     logic_type(3) = 1;
-%     J(1,[1]) = 1;
-%     J(2,[2]) = 1;
+%     J(1,1) = 1;
+%     J(2,2) = 1;
 %     J(3,[1 2]) = 1;
+
+% PARITY AND MINORITY FROM 4 OUTPUT NODES
+%     logic_type(1) = 6;
+%     logic_type(2) = 6;
+%     logic_type(3) = 6;
+%     logic_type(4) = 6;
+%     logic_type(5) = 9;
+%     logic_type(6) = 8;
+% 
+%     J(5,[1 2 3 4]) = 1;
+%     J(6,[1 2 3 4]) = 1;
 
 % MAJORITY
 %     logic_type(1) = 7;
@@ -147,16 +234,47 @@ elseif op_network == 4
 %     J(5,[1 2 3 4 5]) = 1;
     
 % MAJORITY - NOT REDUNDANT
-    logic_type(1) = 7;
-    logic_type(2) = 7;
-    logic_type(3) = 7;
-    logic_type(4) = 7;
-    logic_type(5) = 7;
-    J(1,[1 2 3]) = 1;
-    J(2,[2 4 5]) = 1;
-    J(3,[1 2 5]) = 1;
-    J(4,[1 4 5]) = 1;
-    J(5,[2 3 4]) = 1;
+%     logic_type(1) = 7;
+%     logic_type(2) = 7;
+%     logic_type(3) = 7;
+%     logic_type(4) = 7;
+%     logic_type(5) = 7;
+%     J(1,[1 2 3]) = 1;
+%     J(2,[1 2 5]) = 1;
+%     J(3,[3 4 5]) = 1;
+%     J(4,[1 2 4]) = 1;
+%     J(5,[2 3 4]) = 1;
+
+% EI VS. MIP TEST
+    logic_type(1) = 4;
+    logic_type(2) = 4;
+    logic_type(3) = 1;
+    logic_type(4) = 4;
+    logic_type(5) = 4;
+    logic_type(6) = 6;
+    logic_type(7) = 6;
+%     logic_type(8) = 6;
+%     logic_type(9) = 6;
+%     logic_type(10) = 4;
+%     logic_type(11) = 4;
+%     logic_type(12) = 4;
+%     logic_type(13) = 4;
+%     logic_type(14) = 4;
+    J(1,[6]) = 1;
+    J(2,[7]) = 1;
+    J(3,[1 2]) = 1;
+%     J(4,[1]) = 1;
+    J(4,[1]) = 1;
+    J(5,[2]) = 1;
+%     J(7,[2]) = 1;
+    J(6,[]) = 1;
+    J(7,[]) = 1;
+    J(10,[4]) = 1;
+    J(11,[5]) = 1;
+    J(12,[3]) = 1;
+    J(13,[6]) = 1;
+    J(14,[7]) = 1;
+
     
 % OPTIMIZED AND GATES (BALDUZZI TONONI 08)
 %     logic_type(1) = 1;
@@ -246,20 +364,21 @@ end
 % This section computes the forward probability of each state given the
 % current state
 
-p1 = ones(2^N,2^N); % p(x0,x1) = p(x1|x0)
-
-for i=1: 2^N
-    for j=1: 2^N
-        x1 = trans2(j-1,N);
-        for k=1: N
-            if x1(k) == 1
-                p1(i,j) = p1(i,j)*p_x0(i,k);
-            else
-                p1(i,j) = p1(i,j)*(1-p_x0(i,k));
-            end
-        end
-    end
-end
+% THIS IS NEVER USED SO IT IS NOW COMMENTED OUT SINCE IT'S A HUGE LOOP
+% p1 = ones(2^N,2^N); % p(x0,x1) = p(x1|x0)
+% 
+% for i=1: 2^N
+%     for j=1: 2^N
+%         x1 = trans2(j-1,N);
+%         for k=1: N
+%             if x1(k) == 1
+%                 p1(i,j) = p1(i,j)*p_x0(i,k);
+%             else
+%                 p1(i,j) = p1(i,j)*(1-p_x0(i,k));
+%             end
+%         end
+%     end
+% end
 
 % p = p1; % practical version
 if op_TPM == 0
@@ -277,29 +396,31 @@ end
 % end
 % pause;
 
-f = zeros(N,1); % averaged firing rates
-for i=1: N
-    f(i) = sum(p_x0(:,i))/2^N;
-end
+% f = zeros(N,1); % averaged firing rates
+% for i=1: N
+%     f(i) = sum(p_x0(:,i))/2^N;
+% end
 % avef = sum(f)/N;
 % fprintf('avef=%f\n',avef);
 
-p_x1 = zeros(2^N,1);
-for i=1: 2^N
-    x1 = trans2(i-1,N);
-    for j=1: 2^N
-        p_temp = 1;
-        for k=1: N
-            if x1(k) == 1
-                p_temp = p_temp*p_x0(j,k);
-            else
-                p_temp = p_temp*(1-p_x0(j,k));
+if (op_ave == 1)
+    p_x1 = zeros(2^N,1);
+    for i=1: 2^N
+        x1 = trans2(i-1,N);
+        for j=1: 2^N
+            p_temp = 1;
+            for k=1: N
+                if x1(k) == 1
+                    p_temp = p_temp*p_x0(j,k);
+                else
+                    p_temp = p_temp*(1-p_x0(j,k));
+                end
             end
+            p_x1(i) = p_x1(i) + p_temp;
         end
-        p_x1(i) = p_x1(i) + p_temp;
     end
+    p_x1 = p_x1/2^N;
 end
-p_x1 = p_x1/2^N;
 
 %% binary table
 b_table = cell(2^N,N);
@@ -355,9 +476,17 @@ for z=1: z_max
                 Big_phi = Big_phi_f + Big_phi_b;
             elseif op_fb == 3 % THIS IS THE ONLY ONE WE DO NOW? BOTH FORWARD AND BACKWARD SIMULTANEOUSLY
                 M = 1:N;
-                if op_context == 0 % THIS IS REDUNDANT - WE COULDN'T BE HERE IF THIS WEREN'T TRUE!!
-                    [BRs FRs] = comp_pers(x1,p,b_table,options);
-                    [Big_phi phi prob_cell MIP prob_cell2] = big_phi_comp_fb(M,x1,p,b_table,options,BRs,FRs);
+                if op_context == 0
+%                     [BRs FRs] = comp_pers(x1,p,b_table,options);
+                    [Big_phi phi prob_cell MIPs M_IRR] = big_phi_comp_fb(M,x1,p,b_table,options);
+                    % irreducible points
+                    [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_cell,phi,MIPs,M, 0,op_fb);
+                    fprintf('\n')
+                    fprintf('---------------------------------------------------------------------\n\n')
+                    fprintf('Big_phi = %f\n', Big_phi);
+                    fprintf('Sum of small_phis = %f\n',sum(phi));
+                    fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
+                    plot_REP(Big_phi, IRR_REP,IRR_phi,IRR_MIP, 1, M, options)
                 else
                     [Big_phi phi prob_cell MIP prob_cell2] = big_phi_comp_fb(M,x1,p,b_table,options);
                 end

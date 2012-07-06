@@ -8,7 +8,7 @@ function output = logic_gates(input,logic_type)
 % the element of interest will be on
 
 % 0 to .5
-NOISE = .0;
+global noise
 
 % AND
 if logic_type == 1
@@ -47,11 +47,17 @@ elseif logic_type == 7
     N = length(input);
     output = (sum(input)/N >= .5);
 
-% NOISEY COPY
+% MINORITY
 elseif logic_type == 8
     
-    output = input(1);
+    N = length(input);
+    output = (sum(input)/N < .5);
+    
+%PARITY
+elseif logic_type == 9
+    
+    output = mod(sum(input),2) == 1;
     
 end
 
-output = abs(output - NOISE);
+output = abs(output - noise);

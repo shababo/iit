@@ -9,12 +9,12 @@ tic;
 %put options in array... TODO: this should be a struct and maybe also
 %global
 
-op_complex = 0;  % 0: only consider the whole system %1: find the complex
+op_complex = 1;  % 0: only consider the whole system %1: find the complex
 op_parallel = 0; % 1: parallel computing, 0: not
 op_network = 4; % 1: random with self-connectivity, 2: random without self-connectivity, 3: modular, 4: logic gates, 0: some given connectivity matrix
 op_TPM = 0; % 1: load TPM
 op_ave = 0; % 0: use a specific current state 1: average over all possible current states
-op_disp = 0; % 0: No figures, 1: only complex, 2: complex and whole system, 3: all figures
+op_disp = 2; % 0: No figures, 1: only complex, 2: complex and whole system, 3: all figures
 op_context = 0; % 0: conservative 1: progressive
 op_empty = 1; % 0: excluding empty set in the past and the future 1: including empty set 
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
@@ -37,26 +37,21 @@ op_whole = 0; % KLD is computed in 0: small system 1: whole system (previous ver
 global grain, global noise;
 grain = 100;
 noise = 0.0; % 0 <= noise <= .5, this noise is applied to all nodes on their output essentially adding uncertaintity
-global BRs, global FRs
-
 
 fprintf('Noise Level = %f\n',noise);
 
-options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_big_phi op_sum op_normalize_big_phi op_normalize_small_phi op_complex];
+options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_big_phi op_sum op_normalize_big_phi op_normalize_small_phi];
 
 save options options
 
 %% define the connectivty of the network
-N = 7; % Number of elements in the network %!!!!!!!!!!!! CAN WE MAKE THIS DEPENDENT?
+N = 5; % Number of elements in the network %!!!!!!!!!!!! CAN WE MAKE THIS DEPENDENT?
 Na = 3; % Number of afferent connections
-
-BRs = cell(2^N,2^N); % backward repertoire
-FRs = cell(2^N,2^N); % forward repertoire
 
 % current state
 if op_ave == 0
-%     current_state = zeros(N,1); % all OFF
-    current_state = ones(N,1); % all ON
+    current_state = zeros(N,1); % all OFF
+%     current_state = ones(N,1); % all ON
 %     current_state = [1 1 0 0 0 0 0 0]';
 %     current_state = [1 0]';
     z_max = 1;
@@ -222,16 +217,16 @@ elseif op_network == 4
 %     J(6,[1 2 3 4]) = 1;
 
 % MAJORITY
-%     logic_type(1) = 7;
-%     logic_type(2) = 7;
-%     logic_type(3) = 7;
-%     logic_type(4) = 7;
-%     logic_type(5) = 7;
-%     J(1,[1 2 3 4 5]) = 1;
-%     J(2,[1 2 3 4 5]) = 1;
-%     J(3,[1 2 3 4 5]) = 1;
-%     J(4,[1 2 3 4 5]) = 1;
-%     J(5,[1 2 3 4 5]) = 1;
+    logic_type(1) = 7;
+    logic_type(2) = 7;
+    logic_type(3) = 7;
+    logic_type(4) = 7;
+    logic_type(5) = 7;
+    J(1,[1 2 3 4 5]) = 1;
+    J(2,[1 2 3 4 5]) = 1;
+    J(3,[1 2 3 4 5]) = 1;
+    J(4,[1 2 3 4 5]) = 1;
+    J(5,[1 2 3 4 5]) = 1;
     
 % MAJORITY - NOT REDUNDANT
 %     logic_type(1) = 7;
@@ -246,34 +241,34 @@ elseif op_network == 4
 %     J(5,[2 3 4]) = 1;
 
 % EI VS. MIP TEST
-    logic_type(1) = 4;
-    logic_type(2) = 4;
-    logic_type(3) = 1;
-    logic_type(4) = 4;
-    logic_type(5) = 4;
-    logic_type(6) = 6;
-    logic_type(7) = 6;
-%     logic_type(8) = 6;
-%     logic_type(9) = 6;
-%     logic_type(10) = 4;
-%     logic_type(11) = 4;
-%     logic_type(12) = 4;
-%     logic_type(13) = 4;
-%     logic_type(14) = 4;
-    J(1,[6]) = 1;
-    J(2,[7]) = 1;
-    J(3,[1 2]) = 1;
+%     logic_type(1) = 4;
+%     logic_type(2) = 4;
+%     logic_type(3) = 1;
+%     logic_type(4) = 4;
+%     logic_type(5) = 4;
+%     logic_type(6) = 6;
+%     logic_type(7) = 6;
+% %     logic_type(8) = 6;
+% %     logic_type(9) = 6;
+% %     logic_type(10) = 4;
+% %     logic_type(11) = 4;
+% %     logic_type(12) = 4;
+% %     logic_type(13) = 4;
+% %     logic_type(14) = 4;
+%     J(1,[6]) = 1;
+%     J(2,[7]) = 1;
+%     J(3,[1 2]) = 1;
+% %     J(4,[1]) = 1;
 %     J(4,[1]) = 1;
-    J(4,[1]) = 1;
-    J(5,[2]) = 1;
-%     J(7,[2]) = 1;
-    J(6,[]) = 1;
-    J(7,[]) = 1;
-    J(10,[4]) = 1;
-    J(11,[5]) = 1;
-    J(12,[3]) = 1;
-    J(13,[6]) = 1;
-    J(14,[7]) = 1;
+%     J(5,[2]) = 1;
+% %     J(7,[2]) = 1;
+%     J(6,[]) = 1;
+%     J(7,[]) = 1;
+%     J(10,[4]) = 1;
+%     J(11,[5]) = 1;
+%     J(12,[3]) = 1;
+%     J(13,[6]) = 1;
+%     J(14,[7]) = 1;
 
     
 % OPTIMIZED AND GATES (BALDUZZI TONONI 08)
@@ -477,16 +472,8 @@ for z=1: z_max
             elseif op_fb == 3 % THIS IS THE ONLY ONE WE DO NOW? BOTH FORWARD AND BACKWARD SIMULTANEOUSLY
                 M = 1:N;
                 if op_context == 0
-%                     [BRs FRs] = comp_pers(x1,p,b_table,options);
-                    [Big_phi phi prob_cell MIPs M_IRR] = big_phi_comp_fb(M,x1,p,b_table,options);
-                    % irreducible points
-                    [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_cell,phi,MIPs,M, M_i_max,op_fb);
-                    fprintf('\n')
-                    fprintf('---------------------------------------------------------------------\n\n')
-                    fprintf('Big_phi = %f\n', Big_phi);
-                    fprintf('Sum of small_phis = %f\n',sum(phi));
-                    fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
-                    plot_REP(Big_phi, prob_cell,phi,M_IRR, 1, M, options)
+                    [BRs FRs] = comp_pers(x1,p,b_table,options);
+                    [Big_phi phi prob_cell MIP prob_cell2] = big_phi_comp_fb(M,x1,p,b_table,options,BRs,FRs);
                 else
                     [Big_phi phi prob_cell MIP prob_cell2] = big_phi_comp_fb(M,x1,p,b_table,options);
                 end

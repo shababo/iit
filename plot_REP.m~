@@ -14,55 +14,53 @@ end
 
 N = length(phi_vec);
 
-if op_figures
-    figure(20+fig_st);
-    plot_phi(phi_vec,MIP_cell, M)
-    title('\phi  For Each Purview','FontSize',20);
-    xlabel('Purview','FontSize',16)
-    ylabel('\phi','FontSize',20)
-end
+if (op_figures
+figure(20+fig_st);
+plot_phi(phi_vec,MIP_cell, M)
+title('\phi  For Each Purview','FontSize',20);
+xlabel('Purview','FontSize',16)
+ylabel('\phi','FontSize',20)
 
 if op_context == 0
-    
-    if op_figures
-        
-        if N > 8
-            r = 16;
-            c = 2;
-            fig_max = 16;
-        else
-            r = N;
-            c = 2;
-            fig_max = 8;
-        end
-
-        pw = 300; % panel width including margin in pixels
-        ph = 50; % panel height including margin in pixels
-        mb = 20; % bottom margin
-        mt = 20; % top margin
-        mh = 25; % margin height
-        mw = 10; % margin width
-        % panel_size = [0, 0, pw, ph]'; % panel size including margin
-        panel_size_w = [50, 0, pw-mw*2, ph-mh]'; % panel size without margin
-        fig_size = [0, 0,  pw*c + 100, ph*r + mb+mt + 50]'; % size of figure window
-        pos_fig = [100,100,0,0]' + fig_size; % position of figure
-
-        pos_vec = zeros(4,r,c);
-        for i=1: r
-            for j=1: c
-                pos_vec(:,i,j) = [(j-1)*pw + 2*(j-1)+mw, (r-i)*ph + 10, 0, 0]' + panel_size_w + [0 mb 0 0]'; % pixels
-                pos_vec([1 3],i,j) = pos_vec([1 3],i,j)/pos_fig(3); % normalization
-                pos_vec([2 4],i,j) = pos_vec([2 4],i,j)/pos_fig(4); % normalization
-            end
-        end
-
-    %     Big_phi = sum(phi_vec);
-        sy = ['Phi=',num2str(Big_phi)];
+    if N > 8
+        r = 16;
+        c = 2;
+        fig_max = 16;
+    else
+        r = N;
+        c = 2;
+        fig_max = 8;
     end
     
+    pw = 300; % panel width including margin in pixels
+    ph = 50; % panel height including margin in pixels
+    mb = 20; % bottom margin
+    mt = 20; % top margin
+    mh = 25; % margin height
+    mw = 10; % margin width
+    % panel_size = [0, 0, pw, ph]'; % panel size including margin
+    panel_size_w = [50, 0, pw-mw*2, ph-mh]'; % panel size without margin
+    fig_size = [0, 0,  pw*c + 100, ph*r + mb+mt + 50]'; % size of figure window
+    pos_fig = [100,100,0,0]' + fig_size; % position of figure
+    
+    pos_vec = zeros(4,r,c);
+    for i=1: r
+        for j=1: c
+            pos_vec(:,i,j) = [(j-1)*pw + 2*(j-1)+mw, (r-i)*ph + 10, 0, 0]' + panel_size_w + [0 mb 0 0]'; % pixels
+            pos_vec([1 3],i,j) = pos_vec([1 3],i,j)/pos_fig(3); % normalization
+            pos_vec([2 4],i,j) = pos_vec([2 4],i,j)/pos_fig(4); % normalization
+        end
+    end
+    
+%     Big_phi = sum(phi_vec);
+    sy = ['Phi=',num2str(Big_phi)];
+    
     for i=1 : N
-        
-
+        i_rev = N-i+1;
+        fig_pi = floor((i_rev-1)/fig_max);
+        fig_i = i_rev - fig_pi*fig_max;
+        pos_BR = pos_vec(:,fig_i,1);
+        pos_FR = pos_vec(:,fig_i,2);
         
         prob = REP_cell{i,1};
         prob_prod = REP_cell{i,2};
@@ -85,124 +83,114 @@ if op_context == 0
         s_title{1}= {['FULL:    ', string{1}, ',  \phi_b=',num2str(phi_b)],['PARTITIONED:    ', string_p{1}]};
         s_title{2}= {['FULL:    ', string{2}, ',  \phi_f=',num2str(phi_f)],['PARTITIONED:    ', string_p{2}]};
         
-        s = [string{3}, ', ', string_p{3},', phi = ',num2str(phi_vec(i))];
-        fprintf('%s\n',s);
+        figure(fig_st+fig_pi)
+        set(gcf,'Position',pos_fig)
+        if mod(fig_i,min(r,N)) == 0
+            labelON = 1;
+        else
+            labelON = 0;
+        end
+        BR = ones(length(BR_w),2);
+        BR(:,1) = BR_w; BR(:,2) = BR_p;
+        FR = ones(length(FR_w),2);
+        FR(:,1) = FR_w; FR(:,2) = FR_p;
+        plot_BRFR(BR,FR,pos_BR',pos_FR',s_title,labelON)
+%         plot_BRFR(BR_w,FR_w,pos_BR',pos_FR',s_title,labelON)
         
-        if op_figures
-            i_rev = N-i+1;
-            fig_pi = floor((i_rev-1)/fig_max);
-            fig_i = i_rev - fig_pi*fig_max;
-            pos_BR = pos_vec(:,fig_i,1);
-            pos_FR = pos_vec(:,fig_i,2);
-
-            figure(fig_st+fig_pi)
-            set(gcf,'Position',pos_fig)
-            if mod(fig_i,min(r,N)) == 0
-                labelON = 1;
-            else
-                labelON = 0;
-            end
-            BR = ones(length(BR_w),2);
-            BR(:,1) = BR_w; BR(:,2) = BR_p;
-            FR = ones(length(FR_w),2);
-            FR(:,1) = FR_w; FR(:,2) = FR_p;
-            plot_BRFR(BR,FR,pos_BR',pos_FR',s_title,labelON)
-    %         plot_BRFR(BR_w,FR_w,pos_BR',pos_FR',s_title,labelON)
-
-            if i == N
-
-                uicontrol('Style', 'text',...
-                'String', {'Core Concept Distributions For Complex',sy},... %replace something with the text you want
-                'Units','normalized',...
-                'FontSize',16,...
-                'BackgroundColor','w',...
-                'Position', [0.33 0.9 0.33 0.08]);
-
-    %             uicontrol('Style', 'text',...
-    %             'String', 'PAST <-- CURRENT',... %replace something with the text you want
-    %             'Units','normalized',...
-    %             'FontSize',13,...
-    %             'BackgroundColor','w',...
-    %             'Position', [0.15 0.79 0.28 0.05]);
-
-    %             uicontrol('Style', 'text',...
-    %             'String', 'CURRENT --> FUTURE',... %replace something with the text you want
-    %             'Units','normalized',...
-    %             'FontSize',13,...
-    %             'BackgroundColor','w',...
-    %             'Position', [0.59 0.79 0.28 0.05]);
-
-                my_legend = legend('Full System','Partitioned System');
-                set(my_legend, 'Position',[.75 .85 .1 .18]);
-
-            end
-
-            x0 = combine(MIP_cell{i}{1,2},MIP_cell{i}{2,2});
-            subtit_pos = pos_BR' - [.08 0 .35 0];
-
+        if i == N
+            
             uicontrol('Style', 'text',...
-            'String', {mod_mat2str(x0),['phi = ', num2str(min(phi_f,phi_b))]},... %replace something with the text you want
+            'String', {'Core Concept Distributions For Complex',sy},... %replace something with the text you want
             'Units','normalized',...
-            'FontSize',13,...
+            'FontSize',16,...
             'BackgroundColor','w',...
-            'Position', subtit_pos);
-
-    %         subtit_pos = subtit_pos + [.920 0 0 0];
-    %         
-    %         uicontrol('Style', 'text',...
-    %         'String', ['phi = ', num2str(min(phi_f,phi_b))],... %replace something with the text you want
-    %         'Units','normalized',...
-    %         'FontSize',10,...
-    %         'Position', subtit_pos);
-
-            set(gcf,'OuterPosition',[200 100 1000 700]);
-
-    %         figure(fig_st+fig_pi+10)
-    %         set(gcf,'Position',pos_fig)
-    %         plot_BRFR(BR_p,FR_p,pos_BR',pos_FR',s_title_p,labelON)
-    %         if i == 1
-    %             xlabel(sy);
-    %             
-    %         elseif i == N
-    %             
-    %             uicontrol('Style', 'text',...
-    %             'String', 'MIP of Core Concepts For Complex',... %replace something with the text you want
-    %             'Units','normalized',...
-    %             'FontSize',16,...
-    %             'Position', [0.33 0.9 0.43 0.08]);
-    %         
-    %             uicontrol('Style', 'text',...
-    %             'String', 'PAST <-- CURRENT',... %replace something with the text you want
-    %             'Units','normalized',...
-    %             'FontSize',13,...
-    %             'Position', [0.15 0.82 0.28 0.05]);
-    %         
-    %             uicontrol('Style', 'text',...
-    %             'String', 'CURRENT --> FUTURE',... %replace something with the text you want
-    %             'Units','normalized',...
-    %             'FontSize',13,...
-    %             'Position', [0.59 0.82 0.28 0.05]);
-    %         end
-    %         
-    %         x0 = combine(MIP_cell{i}{1,2},MIP_cell{i}{2,2});
-    %         subtit_pos = pos_BR' - [.08 0 .33 0];
-    %         
-    %         uicontrol('Style', 'text',...
-    %         'String', mod_mat2str(x0),... %replace something with the text you want
-    %         'Units','normalized',...
-    %         'FontSize',13,...
-    %         'Position', subtit_pos);
-    %     
-    %         subtit_pos = subtit_pos + [.920 0 0 0];
-    %         
-    %         uicontrol('Style', 'text',...
-    %         'String', ['phi = ', num2str(min(phi_f,phi_b))],... %replace something with the text you want
-    %         'Units','normalized',...
-    %         'FontSize',10,...
-    %         'Position', subtit_pos);
+            'Position', [0.33 0.9 0.33 0.08]);
         
+%             uicontrol('Style', 'text',...
+%             'String', 'PAST <-- CURRENT',... %replace something with the text you want
+%             'Units','normalized',...
+%             'FontSize',13,...
+%             'BackgroundColor','w',...
+%             'Position', [0.15 0.79 0.28 0.05]);
+        
+%             uicontrol('Style', 'text',...
+%             'String', 'CURRENT --> FUTURE',... %replace something with the text you want
+%             'Units','normalized',...
+%             'FontSize',13,...
+%             'BackgroundColor','w',...
+%             'Position', [0.59 0.79 0.28 0.05]);
+        
+            my_legend = legend('Full System','Partitioned System');
+            set(my_legend, 'Position',[.75 .85 .1 .18]);
+
         end
 
+        x0 = combine(MIP_cell{i}{1,2},MIP_cell{i}{2,2});
+        subtit_pos = pos_BR' - [.08 0 .35 0];
+        
+        uicontrol('Style', 'text',...
+        'String', {mod_mat2str(x0),['phi = ', num2str(min(phi_f,phi_b))]},... %replace something with the text you want
+        'Units','normalized',...
+        'FontSize',13,...
+        'BackgroundColor','w',...
+        'Position', subtit_pos);
+    
+%         subtit_pos = subtit_pos + [.920 0 0 0];
+%         
+%         uicontrol('Style', 'text',...
+%         'String', ['phi = ', num2str(min(phi_f,phi_b))],... %replace something with the text you want
+%         'Units','normalized',...
+%         'FontSize',10,...
+%         'Position', subtit_pos);
+    
+        set(gcf,'OuterPosition',[200 100 1000 700]);
+        
+%         figure(fig_st+fig_pi+10)
+%         set(gcf,'Position',pos_fig)
+%         plot_BRFR(BR_p,FR_p,pos_BR',pos_FR',s_title_p,labelON)
+%         if i == 1
+%             xlabel(sy);
+%             
+%         elseif i == N
+%             
+%             uicontrol('Style', 'text',...
+%             'String', 'MIP of Core Concepts For Complex',... %replace something with the text you want
+%             'Units','normalized',...
+%             'FontSize',16,...
+%             'Position', [0.33 0.9 0.43 0.08]);
+%         
+%             uicontrol('Style', 'text',...
+%             'String', 'PAST <-- CURRENT',... %replace something with the text you want
+%             'Units','normalized',...
+%             'FontSize',13,...
+%             'Position', [0.15 0.82 0.28 0.05]);
+%         
+%             uicontrol('Style', 'text',...
+%             'String', 'CURRENT --> FUTURE',... %replace something with the text you want
+%             'Units','normalized',...
+%             'FontSize',13,...
+%             'Position', [0.59 0.82 0.28 0.05]);
+%         end
+%         
+%         x0 = combine(MIP_cell{i}{1,2},MIP_cell{i}{2,2});
+%         subtit_pos = pos_BR' - [.08 0 .33 0];
+%         
+%         uicontrol('Style', 'text',...
+%         'String', mod_mat2str(x0),... %replace something with the text you want
+%         'Units','normalized',...
+%         'FontSize',13,...
+%         'Position', subtit_pos);
+%     
+%         subtit_pos = subtit_pos + [.920 0 0 0];
+%         
+%         uicontrol('Style', 'text',...
+%         'String', ['phi = ', num2str(min(phi_f,phi_b))],... %replace something with the text you want
+%         'Units','normalized',...
+%         'FontSize',10,...
+%         'Position', subtit_pos);
+        
+        s = [string{3}, ', ', string_p{3},', phi = ',num2str(phi_vec(i))];
+        fprintf('%s\n',s);
     end
     
     

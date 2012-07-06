@@ -15,6 +15,7 @@ global grain;
 op_big_phi = options(11);
 op_sum = options(12);
 op_normalize = options(13);
+op_context
 
 N_M = length(M);
 
