@@ -117,126 +117,130 @@ for i=1: N
 end
 
 
-    
-if (op_big_phi == 0)
-    
-    Big_phi = phi_m(end,3);
+    if (op_big_phi == 0)
+
+        Big_phi = phi_m(end,3);
 
 
-elseif (op_big_phi == 1)
-    
-    
-    index_vec_IRR = find(phi ~= 0);
-    N_IRR = length(index_vec_IRR);
+    elseif (op_big_phi == 1)
 
-    if(N_IRR~=0)
-        
-        concepts = zeros(2^N,N_IRR);
-        concept_phis = zeros(1,N_IRR);
-        
-        
-        j = 1;
-        for i = 1:2^N-1
 
-            if (phi(i) ~= 0)
+        index_vec_IRR = find(phi ~= 0);
+        N_IRR = length(index_vec_IRR);
 
-                concepts(:,j) = prob{i}{1};
-                concept_phis(j) = phi(i);
-                j = j + 1;
+        if(N_IRR~=0)
+
+            concepts = zeros(2^N,N_IRR);
+            concept_phis = zeros(1,N_IRR);
+
+
+            j = 1;
+            for i = 1:2^N-1
+
+                if (phi(i) ~= 0)
+
+                    concepts(:,j) = prob{i}{1};
+                    concept_phis(j) = phi(i);
+                    j = j + 1;
+                end
+
             end
 
-        end
+            Big_phi = big_phi_volume(concepts,concept_phis,grain);
 
-        Big_phi = big_phi_volume(concepts,concept_phis,grain);
-
-    else
-        Big_phi = 0;
-    end
-elseif (op_big_phi == 2)
-
-    index_vec_IRR = find(phi ~= 0);
-    N_IRR = length(index_vec_IRR);
-
-    if(N_IRR~=0)
-        
-        concepts = zeros(2^N,N_IRR);
-        concept_phis = zeros(1,N_IRR);
-        
-        
-        j = 1;
-        for i = 1:2^N-1
-
-            if (phi(i) ~= 0)
-
-                concepts(:,j) = prob{i}{1};
-                concept_phis(j) = phi(i);
-                j = j + 1;
-            end
-
-        end
-
-        M_IRR = cell(N_IRR,1);
-
-        for i=1: N_IRR
-            j = index_vec_IRR(i);
-            M_IRR{i} = C_x0{j};
-        end
-        
-        Big_phi = big_phi_info(M_IRR,concepts,concept_phis);
-        
-    else
-        Big_phi = 0;
-    end
-elseif (op_big_phi == 3)
-    
-    
-    
-    index_vec_IRR = find(phi ~= 0);
-    N_IRR = length(index_vec_IRR);
-
-    if(N_IRR > 1)
-        
-        concepts_past = zeros(2^N,N_IRR);
-        concepts_future = zeros(2^N,N_IRR);
-        concept_phis = zeros(1,N_IRR);
-        
-        
-        j = 1;
-        for i = 1:2^N-1
-
-            if (phi(i) ~= 0)
-
-                concepts_past(:,j) = prob{i}{1};
-                concepts_future(:,j) = prob{i}{2};
-                concept_phis(j) = phi(i);
-                j = j + 1;
-                
-            end
-
-        end
-        
-        if (N == size(p,2))
-            display = 1;
         else
-            display = 0;
+            Big_phi = 0;
         end
-        
-%         disp(big_phi_spacing(concepts_past,concept_phis,0));
-%         disp(big_phi_spacing(concepts_future,concept_phis,0));
-       
-        
-        Big_phi = big_phi_spacing(concepts_past,concept_phis,0) + big_phi_spacing(concepts_future,concept_phis,0);
+    elseif (op_big_phi == 2 || op_big_phi == 4)
 
-    elseif (N_IRR == 1)
-        Big_phi = phi(1);
+        index_vec_IRR = find(phi ~= 0);
+        N_IRR = length(index_vec_IRR);
+
+        if(N_IRR~=0)
+
+            concepts = zeros(2^N,N_IRR);
+            concept_phis = zeros(1,N_IRR);
+
+
+            j = 1;
+            for i = 1:2^N-1
+
+                if (phi(i) ~= 0)
+
+                    concepts(:,j) = prob{i}{1};
+                    concept_phis(j) = phi(i);
+                    j = j + 1;
+                end
+
+            end
+
+            M_IRR = cell(N_IRR,1);
+
+            for i=1: N_IRR
+                j = index_vec_IRR(i);
+                M_IRR{i} = C_x0{j};
+            end
+
+            if (op_big_phi == 2)
+                Big_phi = big_phi_info(M_IRR,concepts,concept_phis);
+            else
+               Big_phi = 0;
+            end
+
+        else
+            Big_phi = 0;
+        end
+    elseif (op_big_phi == 3)
+
+
+
+        index_vec_IRR = find(phi ~= 0);
+        N_IRR = length(index_vec_IRR);
+
+        if(N_IRR > 1)
+
+            concepts_past = zeros(2^N,N_IRR);
+            concepts_future = zeros(2^N,N_IRR);
+            concept_phis = zeros(1,N_IRR);
+
+
+            j = 1;
+            for i = 1:2^N-1
+
+                if (phi(i) ~= 0)
+
+                    concepts_past(:,j) = prob{i}{1};
+                    concepts_future(:,j) = prob{i}{2};
+                    concept_phis(j) = phi(i);
+                    j = j + 1;
+
+                end
+
+            end
+
+            if (N == size(p,2))
+                display = 1;
+            else
+                display = 0;
+            end
+
+    %         disp(big_phi_spacing(concepts_past,concept_phis,0));
+    %         disp(big_phi_spacing(concepts_future,concept_phis,0));
+
+
+            Big_phi = big_phi_spacing(concepts_past,concept_phis,0) + big_phi_spacing(concepts_future,concept_phis,0);
+
+        elseif (N_IRR == 1)
+            Big_phi = phi(1);
+        else
+            Big_phi = 0;
+        end
     else
-        Big_phi = 0;
+        err = MException('Options:UnSetValue', ...
+            'Option for method of computing Big Phi is incorrect');
+        throw(err);
     end
-else
-    err = MException('Options:UnSetValue', ...
-        'Option for method of computing Big Phi is incorrect');
-    throw(err);
-end
+
 
 
 %% display

@@ -20,13 +20,19 @@ op_empty = 1; % 0: excluding empty set in the past and the future 1: including e
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
                      % 1: phi is the minimum of phi_b and phi_f (separate partition)
 op_console = 0; % 0: limited console output, 1: full console output
-op_big_phi = 3; % 0 = big_phi is sum of small phi, 1 = big phi is volume best on EMD/best-packing, 2 = ave of H-difference b/w parent/child in hasse diagram
-                     % 3 = look for pairwise distances less than 2*radius
-                     % as marker for overlap
+op_big_phi = 4; % 0 = big_phi is sum of small phi, 1 = big phi is volume best on EMD/best-packing, 2 = ave of H-difference b/w parent/child in hasse diagram
+                     % 3 = look for pairwise distances less than 2*radiusas marker for overlap % 4 = take distance b/w whole and partitioned concepts and add to sum of change in
+                     % small phi for each concept - FOR THIS OPTION PLEASE
+                     % SET OP_BIG_PHI_DIST
+op_big_phi_dist = 1; % 0 = KLD, 1 = EMD;
+op_small_phi = 0; % 0 = use KLD between distributions, 1 = use EMD between distributions
 op_sum = 0; % 0 = compute big_phi_mip based on expanding parts into the space of the whole, 1 = just take whole minus sum of parts
 op_normalize_big_phi = 1; % 0 = don't normalize big_phi, 1 = normalize big_phi but choose non-norm value, 2 = normalize but choose norm value
 op_normalize_small_phi = 1; % 0 = don't normalize small_phi, 1 = normalize small_phi but choose non-norm value, 2 = normalize but choose norm value
 
+if (op_big_phi == 4)
+    op_complex = 1;
+end
 
 
 %% inactive options, which are not used anymore
@@ -42,12 +48,13 @@ global BRs, global FRs
 
 fprintf('Noise Level = %f\n',noise);
 
-options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_big_phi op_sum op_normalize_big_phi op_normalize_small_phi op_complex];
+options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_console op_big_phi op_sum...
+           op_normalize_big_phi op_normalize_small_phi op_complex op_small_phi op_big_phi_dist];
 
 save options options
 
 %% define the connectivty of the network
-N = 7; % Number of elements in the network %!!!!!!!!!!!! CAN WE MAKE THIS DEPENDENT?
+N = 5; % Number of elements in the network %!!!!!!!!!!!! CAN WE MAKE THIS DEPENDENT?
 Na = 3; % Number of afferent connections
 
 BRs = cell(2^N,2^N); % backward repertoire
@@ -55,8 +62,8 @@ FRs = cell(2^N,2^N); % forward repertoire
 
 % current state
 if op_ave == 0
-%     current_state = zeros(N,1); % all OFF
-    current_state = ones(N,1); % all ON
+    current_state = zeros(N,1); % all OFF
+%     current_state = ones(N,1); % all ON
 %     current_state = [1 1 0 0 0 0 0 0]';
 %     current_state = [1 0]';
     z_max = 1;
@@ -131,16 +138,16 @@ elseif op_network == 4
 %     J(3,[1 2 3]) = 1;
     
 % 2) HOMOGENOUS MAJORITIES
-%     logic_type(1) = 7;
-%     logic_type(2) = 7;
-%     logic_type(3) = 7;
-%     logic_type(4) = 7;
-%     logic_type(5) = 7;
-%     J(1,[1 2 3 4 5]) = 1;
-%     J(2,[1 2 3 4 5]) = 1;
-%     J(3,[1 2 3 4 5]) = 1;
-%     J(4,[1 2 3 4 5]) = 1;
-%     J(5,[1 2 3 4 5]) = 1;  
+    logic_type(1) = 1;
+    logic_type(2) = 1;
+    logic_type(3) = 1;
+    logic_type(4) = 1;
+    logic_type(5) = 1;
+    J(1,[1 2 3 4 5]) = 1;
+    J(2,[1 2 3 4 5]) = 1;
+    J(3,[1 2 3 4 5]) = 1;
+    J(4,[1 2 3 4 5]) = 1;
+    J(5,[1 2 3 4 5]) = 1;  
     
 % 3) COMPLEX NETWORK BASED ON PARITY/MAJORITY READING FOUR NODES BUT ADDED
 % BACK CONNECTIONS SO WE GET ACTUAL VALUES FOR PHI/BIG_PHI/COMPLEX
@@ -246,34 +253,34 @@ elseif op_network == 4
 %     J(5,[2 3 4]) = 1;
 
 % EI VS. MIP TEST
-    logic_type(1) = 4;
-    logic_type(2) = 4;
-    logic_type(3) = 1;
-    logic_type(4) = 4;
-    logic_type(5) = 4;
-    logic_type(6) = 6;
-    logic_type(7) = 6;
-%     logic_type(8) = 6;
-%     logic_type(9) = 6;
-%     logic_type(10) = 4;
-%     logic_type(11) = 4;
-%     logic_type(12) = 4;
-%     logic_type(13) = 4;
-%     logic_type(14) = 4;
-    J(1,[6]) = 1;
-    J(2,[7]) = 1;
-    J(3,[1 2]) = 1;
+%     logic_type(1) = 4;
+%     logic_type(2) = 4;
+%     logic_type(3) = 1;
+%     logic_type(4) = 4;
+%     logic_type(5) = 4;
+%     logic_type(6) = 6;
+%     logic_type(7) = 6;
+% %     logic_type(8) = 6;
+% %     logic_type(9) = 6;
+% %     logic_type(10) = 4;
+% %     logic_type(11) = 4;
+% %     logic_type(12) = 4;
+% %     logic_type(13) = 4;
+% %     logic_type(14) = 4;
+%     J(1,[6]) = 1;
+%     J(2,[7]) = 1;
+%     J(3,[1 2]) = 1;
+% %     J(4,[1]) = 1;
 %     J(4,[1]) = 1;
-    J(4,[1]) = 1;
-    J(5,[2]) = 1;
-%     J(7,[2]) = 1;
-    J(6,[]) = 1;
-    J(7,[]) = 1;
-    J(10,[4]) = 1;
-    J(11,[5]) = 1;
-    J(12,[3]) = 1;
-    J(13,[6]) = 1;
-    J(14,[7]) = 1;
+%     J(5,[2]) = 1;
+% %     J(7,[2]) = 1;
+%     J(6,[]) = 1;
+%     J(7,[]) = 1;
+%     J(10,[4]) = 1;
+%     J(11,[5]) = 1;
+%     J(12,[3]) = 1;
+%     J(13,[6]) = 1;
+%     J(14,[7]) = 1;
 
     
 % OPTIMIZED AND GATES (BALDUZZI TONONI 08)

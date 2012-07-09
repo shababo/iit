@@ -22,6 +22,7 @@ op_context = options(6);
 op_whole = options(7);
 op_min = options(9);
 op_normalize = options(14);
+op_small_phi = options(16);
 
 global BRs, global FRs
 
@@ -90,10 +91,11 @@ if op_min == 0 % PHI IS SUM OF BACKWARD AND FORWARD
                         prob_bp = prob_prod_comp(prob_bp1,prob_bp2,xp,xp_1,0);
                         prob_fp = prob_prod_comp(prob_fp1,prob_fp2,xf,xf_1,0);
                         
-                        if op_min == 0
+                        if op_small_phi == 0
                             phi = KLD(prob_bw,prob_bp) + KLD(prob_fw,prob_fp);
                         else
-                            phi = min(KLD(prob_bw,prob_bp),KLD(prob_fw,prob_fp));
+                            phi = emd_hat_gd_metric_mex(prob_bw,prob_bp,gen_dist_matrix(length(prob_bw))) +...
+                                emd_hat_gd_metric_mex(prob_fw,prob_fp,gen_dist_matrix(length(prob_fp)));
                         end
                         
                         prob_prod = cell(2,1);
@@ -102,7 +104,13 @@ if op_min == 0 % PHI IS SUM OF BACKWARD AND FORWARD
                         prob_prod_vec{i,j,k} = prob_prod;
                     else
                         prob_prod = partial_prob_comp_bfp(M,xp_1,xp_2,x0_1,x0_2,xf_1,xf_2,x0_s,p,b_table,op_whole,op_context);
-                        phi = KLD(prob(:),prob_prod(:));
+                        
+                        if(op_small_phi == 0)
+                            phi = KLD(prob(:),prob_prod(:));
+                        elseif (op_small_phi == 1)
+                            phi = emd_hat_gd_metric_mex(prob(:),prob_prod(:),gen_dist_matrix(length(prob(:))));
+                        end
+                        
                         prob_prod_vec{i,j,k} = prob_prod;
                     end
                 else
@@ -181,7 +189,11 @@ else % OP_MIN = 1, PHI IS MINIMUM OF BACKWARDS AND FORWARDS COMPUTATIONS
                     
                     prob_p = prob_prod_comp(prob_p1,prob_p2,xp,xp_1,0);
                     
-                    phi = KLD(prob{bf},prob_p);
+                    if (op_small_phi == 0)
+                        phi = KLD(prob{bf},prob_p);
+                    elseif (op_small_phi == 1)
+                        phi = emd_hat_gd_metric_mex(prob{bf},prob_p,gen_dist_matrix(length(prob_p)));
+                    end
                     prob_prod_vec{i,j,bf} = prob_p;
                 else
                     prob_prod_vec{i,j,bf} = [];

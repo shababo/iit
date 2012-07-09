@@ -102,10 +102,11 @@ else % take minimum of forward and backward
             xf = M_p{j_max};
         end
     end
-    if (op_big_phi == 0 || op_big_phi == 3)
-        phi = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
+    if (op_big_phi == 1 || op_big_phi == 2)
+       phi = max_phi_MIP_bf(1);
+
     else
-        phi = max_phi_MIP_bf(1);
+       phi = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
     end
 end
 

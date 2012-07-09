@@ -10,6 +10,7 @@ op_context = options(6);
 op_whole = options(7);
 op_min = options(9);
 op_normalize = options(14);
+op_small_phi = options(16);
 
 global BRs, global FRs
 
@@ -92,7 +93,11 @@ for i=1: N_b % past or future
             end
             
             prob_p = prob_prod_comp(prob_p1,prob_p2,x,x_1,0);
-            phi = KLD(prob{bf},prob_p);
+            if (op_small_phi == 0)
+                phi = KLD(prob{bf},prob_p);
+            elseif (op_small_phi == 1)
+                phi = emd_hat_gd_metric_mex(prob{bf}',prob_p',gen_dist_matrix(length(prob_p)));
+            end
             prob_prod_vec{i,j,bf} = prob_p;
             
         else

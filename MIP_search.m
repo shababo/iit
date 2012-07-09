@@ -11,10 +11,14 @@ function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,opti
 %%
 
 global grain;
+%debug remove me
+fprintf('----------------------------------------------\n');
+fprintf('M = %s',mat2str(M));
 
 op_big_phi = options(11);
 op_sum = options(12);
 op_normalize = options(13);
+op_big_phi_dist = options(17);
 
 N_M = length(M);
 
@@ -26,7 +30,35 @@ end
 Big_phi_cand = zeros(N_Bp,2);
 MIP_cand = cell(N_Bp,1);
 
-Big_phi_w = Big_phi_M(trans_M(M,N));
+whole_i = trans_M(M,N);
+Big_phi_w = Big_phi_M(whole_i);
+
+if (op_big_phi == 4)
+    
+    phi_whole = phi_M{whole_i}';
+    phi_w_trunc = phi_whole(phi_whole ~= 0);
+    IRR_whole = M_IRR_M{whole_i};
+    concepts_whole_p = zeros(2^N_M,length(phi_w_trunc));
+    concepts_whole_f = zeros(2^N_M,length(phi_w_trunc));
+    
+    z = 1;
+    for i = 1:length(phi_whole)
+        if (phi_whole(i) ~= 0)
+            
+            if ~isempty(prob_M{whole_i,1}{i}{1})
+                concepts_whole_p(:,z) = prob_M{whole_i,1}{i}{1};
+            end
+            if ~isempty(prob_M{whole_i,1}{i}{2})
+                concepts_whole_f(:,z) = prob_M{whole_i,1}{i}{2};
+            end
+            z = z + 1;
+        end
+    end  
+    
+    phi_whole = phi_w_trunc;
+    
+end
+    
 
 l = 1;
 for i=1: floor(N_M/2)
@@ -38,6 +70,9 @@ for i=1: floor(N_M/2)
         
         M1_i = trans_M(M1,N);
         M2_i = trans_M(M2,N);
+        
+        %debug remove me
+        fprintf('Partition: %s x %s\n',mod_mat2str(M1),mod_mat2str(M2)); 
         
         if(op_sum == 1 || op_big_phi == 0)
             
@@ -178,11 +213,88 @@ for i=1: floor(N_M/2)
             else
                 Big_phi_partition = 0;
             end
+            
+        elseif (op_big_phi == 4)
+            
+            M1_IRR = M_IRR_M{M1_i};
+            M2_IRR = M_IRR_M{M2_i};
+
+            nIRR = length(M1_IRR) + length(M2_IRR);
+            IRR_parts = cell(nIRR,1);
+            phi = [phi_M{M1_i}' phi_M{M2_i}'];
+            
+            for x = 1:nIRR
+                if (x <= length(M1_IRR))
+                   IRR_parts{x} = M1_IRR{x};
+                else
+                   IRR_parts{x} = M2_IRR{x - length(M1_IRR)};
+                end
+            end
+            
+
+                
+            concepts_past = zeros(2^N_M,nIRR);
+            concepts_future = zeros(2^N_M,nIRR);
+            phi_parts = phi(phi ~= 0);
+
+            z = 1;
+            for k = 1:length(phi)
+
+                if (phi(k) ~= 0)
+
+                    if(z <= sum(phi_M{M1_i} ~= 0))
+                        if ~isempty(prob_M{M1_i,1}{k}{1})
+                            concepts_past(:,z) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
+                        end
+                        if ~isempty(prob_M{M1_i,1}{k}{2})
+                            concepts_future(:,z) = expand_prob(prob_M{M1_i,1}{k}{2},M,M1);
+                        end
+                    else
+                        if ~isempty(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1})
+                            concepts_past(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1},M,M2);
+                        end
+                        if ~isempty(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{2})
+                            concepts_future(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{2},M,M2);
+                        end
+                    end
+                    z = z + 1;
+
+                end
+
+            end
+
+%                 concepts_parts = zeros(2^N_M,nIRR);
+%                 phi_parts = phi(phi ~= 0);
+% 
+%                 z = 1;
+%                 for k = 1:length(phi)
+% 
+%                     if (phi(k) ~= 0)
+%                         
+%                         if(z <= length(M1_IRR))
+%                             concepts_parts(:,z) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
+%                         else
+%                             concepts_parts(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1},M,M2);
+%                         end
+%                         z = z + 1;
+% 
+%                     end
+% 
+%                 end
+
+                
+            
+            d_Big_phi = big_phi_shift(IRR_whole,concepts_whole_p,concepts_whole_f,phi_whole,...
+                              IRR_parts,concepts_past,concepts_future,phi_parts,op_big_phi_dist);
 
         end
         
-        % 07-06-12 CHANGED TO ABS VALUE
-        d_Big_phi = abs(Big_phi_w - Big_phi_partition);
+        if (op_big_phi ~= 4)
+            
+            % 07-06-12 CHANGED TO ABS VALUE
+            d_Big_phi = abs(Big_phi_w - Big_phi_partition);
+            
+        end
         
             
 %         
