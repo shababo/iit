@@ -1,3 +1,4 @@
 # matlab data files
 
 *.mat
+*.m~
