@@ -22,7 +22,7 @@ function varargout = iit(varargin)
 
 % Edit the above text to modify the response to help iit
 
-% Last Modified by GUIDE v2.5 09-Jul-2012 21:45:33
+% Last Modified by GUIDE v2.5 10-Jul-2012 11:23:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -86,8 +86,8 @@ function num_nodes_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of num_nodes as text
 %        str2double(get(hObject,'String')) returns contents of num_nodes as a double
 
-if ~isposintscalar(str2num(get(hObject,'String')))
-    
+if isnan(str2double(get(hObject,'String'))) || ~isposintscalar(str2double(get(hObject,'String')))
+
     set(handles.warning,'String','Number of nodes must be a positive integer.');
     set(hObject,'String',num2str(size(get(handles.TPM,'Data'),1)));
     
@@ -388,6 +388,21 @@ function noise_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of noise as text
 %        str2double(get(hObject,'String')) returns contents of noise as a double
 
+if isnan(str2double(get(hObject,'String')))
+    set(handles.warning,'String','Noise must be a real number in [0,.5].');
+    set(hObject,'String','0');
+else
+    noise = str2double(get(hObject,'String'));
+    if noise < 0
+        set(handles.warning,'String','Noise must be in [0,.5].');
+        set(hObject,'String','0');
+    elseif noise > .5
+        set(handles.warning,'String','Noise must be in [0,.5].');
+        set(hObject,'String','.5');
+    else
+        set(handles.warning,'String','');
+    end
+end
 
 % --- Executes during object creation, after setting all properties.
 function noise_CreateFcn(hObject, eventdata, handles)
@@ -436,10 +451,16 @@ function TPM_CellEditCallback(hObject, eventdata, handles)
 %	Error: error string when failed to convert EditData to appropriate value for Data
 % handles    structure with handles and user data (see GUIDATA)
 
-% can i know which one they changed?
-if any(get(hObject,'Data') < 0 || get(hObject,'Data') > 1)
+tpm = get(hObject,'Data');
+if any(isnan(eventdata.NewData) || any(eventdata.NewData < 0) || any(eventdata.NewData > 1))
     
-    set(handles.warning,'String','Entries in the TPM must be in [0,1].');  
+    set(handles.warning,'String','Entries in the TPM must be in [0,1].');
+    tpm(eventdata.Indices) = eventdata.PreviousData;
+    set(hObject,'Data',tpm);
+    
+elseif any(sum(tpm,2) ~= 1)
+    
+    set(handles.warning,'String','Rows in the TPM must sum to 1');
     
 else
     
