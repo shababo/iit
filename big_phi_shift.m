@@ -15,7 +15,7 @@ for i = 1:nWholeConcepts
     
     IRR_w = IRR_whole{i};
     % For debuggin take out
-    fprintf('Concept From Whole: %s\n',mod_mat2str(IRR_w));
+%     fprintf('Concept From Whole: %s\n',mod_mat2str(IRR_w));
 %     concept_w = concepts_whole(:,i);
 %     phi_w = phi_whole(i);
     
@@ -51,10 +51,10 @@ for i = 1:nWholeConcepts
                 
                 end
                 
-                %for deubbing, take out
-                fprintf('\tDistance to past distribution: %f\n',past_dist);
-                fprintf('\tDistance to future distribution: %f\n',future_dist);
-                fprintf('\tSmall Phi Diff: %f(abs) %f(whole - part)\n',abs(phi_whole(i) - phi_parts(j)),phi_whole(i) - phi_parts(j));
+%                 %for deubbing, take out
+%                 fprintf('\tDistance to past distribution: %f\n',past_dist);
+%                 fprintf('\tDistance to future distribution: %f\n',future_dist);
+%                 fprintf('\tSmall Phi Diff: %f(abs) %f(whole - part)\n',abs(phi_whole(i) - phi_parts(j)),phi_whole(i) - phi_parts(j));
                 %add in phi difference
                 phi_sum = phi_sum + abs(phi_whole(i) - phi_parts(j));
                 
@@ -65,8 +65,8 @@ for i = 1:nWholeConcepts
     
     % if we didn't find a partner, just add in the phi value
     if ~partner_found
-        fprintf('\tConcept does not exist in partitioned system\n');
-        fprintf('\tSmall Phi Contribution: %f\n',phi_whole(i));
+%         fprintf('\tConcept does not exist in partitioned system\n');
+%         fprintf('\tSmall Phi Contribution: %f\n',phi_whole(i));
         phi_sum = phi_sum + phi_whole(i);
 
     end

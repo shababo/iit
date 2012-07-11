@@ -18,7 +18,7 @@ op_context = options(6);
 op_console = options(10);
 
 
-global BRs, global FRs
+% global BRs, global FRs
 
 N = log2(size(p,1)); % number of elements in the whole system
 

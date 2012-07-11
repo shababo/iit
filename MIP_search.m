@@ -12,8 +12,8 @@ function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,opti
 
 global grain;
 %debug remove me
-fprintf('----------------------------------------------\n');
-fprintf('M = %s',mat2str(M));
+% fprintf('----------------------------------------------\n');
+% fprintf('M = %\ns',mat2str(M));
 
 op_big_phi = options(11);
 op_sum = options(12);
@@ -72,7 +72,7 @@ for i=1: floor(N_M/2)
         M2_i = trans_M(M2,N);
         
         %debug remove me
-        fprintf('Partition: %s x %s\n',mod_mat2str(M1),mod_mat2str(M2)); 
+%         fprintf('Partition: %s x %s\n',mod_mat2str(M1),mod_mat2str(M2)); 
         
         if(op_sum == 1 || op_big_phi == 0)
             
@@ -330,5 +330,5 @@ MIP = MIP_cand{i_phi_min};
 M2 = pick_rest(M,MIP);
 
 if (Big_phi_MIP ~= 0)
-    fprintf('M = %s, MIP = %s-%s, Big_phi_MIP = %f\n',mat2str(M),mod_mat2str(MIP),mod_mat2str(M2),Big_phi_MIP);
+    fprintf('M = %s\nMIP = %s-%s, Big_phi_MIP = %f\n',mat2str(M),mod_mat2str(MIP),mod_mat2str(M2),Big_phi_MIP);
 end

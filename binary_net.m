@@ -60,6 +60,7 @@ Na = 3; % Number of afferent connections
 BRs = cell(2^N,2^N); % backward repertoire
 FRs = cell(2^N,2^N); % forward repertoire
 
+
 % current state
 if op_ave == 0
     current_state = zeros(N,1); % all OFF
@@ -394,6 +395,9 @@ else
     load TPM;
     N = size(p,2);
 end
+
+tpm = p;
+save('tpm.mat','tpm')
 
 % if op_disp > 1
 %     figure(100)

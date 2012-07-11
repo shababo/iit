@@ -21,6 +21,9 @@ function [small_phi concept_points concept_MIP MIP] = small_phi(tpm, present_set
 % Output:
 % small_phi             the small_phi value of the purview
 
+global BRs, global FRs
+
+
 % Fill in unset optional values.
 switch nargin
     case 6
@@ -54,6 +57,9 @@ end
 
 N = size(tpm,2);
 system_set = 1:N;
+
+BRs = cell(2^N,2^N); % backward repertoire
+FRs = cell(2^N,2^N); % forward repertoire
 
 % binary table
 b_table = cell(2^N,N);
