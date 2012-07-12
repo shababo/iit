@@ -86,7 +86,7 @@ fprintf('\n')
 fprintf('--------------------------------------------------------------\n\n')
 fprintf('Big phi values in subset M:\n\n')
 for M_i = 1: 2^N-1
-    if (Big_phi_M(M_i) ~= 0)
+    if (Big_phi_M(M_i) ~= 0 && ~isnan(Big_phi_M(M_i)))
         fprintf('M=%s: Big_phi=%f\n',mod_mat2str(M_cell{M_i}),Big_phi_M(M_i));
     end
 end

@@ -70,7 +70,8 @@ else % take minimum of forward and backward
                 [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
                     = phi_comp_bORf(options,x0,x,p,2,b_table,x0_s); 
             else
-                prob_cand{i} = cell(2,1);
+                uniform_dist = ones(1,2^N)/2^N;
+                prob_cand{i} = {uniform_dist; uniform_dist};
                 prob_prod_MIP_cand{i} = cell(2,1);
                 MIP_cand{i} = cell(2,2,2);
             end

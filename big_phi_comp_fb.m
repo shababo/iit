@@ -184,7 +184,7 @@ end
             if (op_big_phi == 2)
                 Big_phi = big_phi_info(M_IRR,concepts,concept_phis);
             else
-               Big_phi = 0;
+               Big_phi = NaN;
             end
 
         else

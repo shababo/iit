@@ -288,8 +288,8 @@ for i=1: floor(N_M/2)
 % 
 %                 end
 
-                
-            
+            fprintf('-------------------------------------------------------\n');
+            fprintf('M = %s with partition %s - %s\n',mod_mat2str(M),mod_mat2str(M1),mod_mat2str(M2));
             d_Big_phi = big_phi_shift(M1_IRR, M2_IRR, N, M, IRR_whole,concepts_whole_p,concepts_whole_f,phi_w_concepts, M1, M2,...
                               IRR_parts,concepts_past,concepts_future, prob_M, phi_M{M1_i}', phi_M{M2_i}', phi_parts,op_big_phi_dist);
                           

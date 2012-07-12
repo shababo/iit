@@ -44,6 +44,12 @@ N0 = length(x0);
     
 prob = cell(2,1);
 prob{bf} = prob_w;
+uniform_dist = ones(1,length(prob_w))/length(prob_w);
+if bf == 1
+    prob{2} = uniform_dist;
+elseif bf == 2
+    prob{1} = uniform_dist;
+end
 
 %% more than one
 if N ~= 0

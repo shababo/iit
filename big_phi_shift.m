@@ -10,8 +10,8 @@ dist_matrix = gen_dist_matrix(size(concepts_whole_p,1));
 distance_sum = 0;
 phi_sum = 0;
 
-part1_index = trans_M(part1,N)
-part2_index = trans_M(part2,N)
+part1_index = trans_M(part1,N);
+part2_index = trans_M(part2,N);
 
 N1 = length(part1);
 subsets_part1 = cell(2^N1-1,1);
@@ -46,7 +46,9 @@ end
 for i = 1:nWholeConcepts
     
     
-    IRR_w = IRR_whole{i}
+    IRR_w = IRR_whole{i};
+    
+    fprintf('Checking Concept: %s\n',mod_mat2str(IRR_w));
     
     % contained in part1
     if all(ismember(IRR_w,part1))
@@ -61,6 +63,7 @@ for i = 1:nWholeConcepts
                 break
             end
         end
+        
         
         concept_past = expand_prob(all_distributions{part1_index,1}{concept_index}{1},M,part1);
         concept_future = expand_prob(all_distributions{part1_index,1}{concept_index}{2},M,part1);
@@ -79,13 +82,13 @@ for i = 1:nWholeConcepts
                 break
             end
         end
-        
-        disp(M)
-        disp(part2)
-        disp(part2_set)
-        concept_past = expand_prob(all_distributions{part2_index,1}{concept_index}{1},M,part2)
+%         
+%         disp(M)
+%         disp(part2)
+%         disp(part2_set)
+        concept_past = expand_prob(all_distributions{part2_index,1}{concept_index}{1},M,part2);
         concept_future = expand_prob(all_distributions{part2_index,1}{concept_index}{2},M,part2);
-        part_phi = phi_part2(concept_index)
+        part_phi = phi_part2(concept_index);
     
 	% this purview was split by partition
     else
@@ -95,7 +98,7 @@ for i = 1:nWholeConcepts
             
             part1_set = subsets_part1{j};
             
-            if (part1_count == length(part1_set) && all(ismember(IRR_w,part1_set)))
+            if (part1_count == length(part1_set) && all(ismember(part1_set,IRR_w)))
                 
                 part1_concept_index = j;
                 break
@@ -107,7 +110,7 @@ for i = 1:nWholeConcepts
             
             part2_set = subsets_part2{j};
             
-            if (part2_count == length(part2_set) && all(ismember(IRR_w,part2_set)))
+            if (part2_count == length(part2_set) && all(ismember(part2_set,IRR_w)))
                 
                 part2_concept_index = j;
                 break
@@ -139,8 +142,8 @@ for i = 1:nWholeConcepts
 
     elseif op_big_phi_dist == 1
         
-        disp(concepts_whole_p(:,i))
-        disp(concept_past)
+%         disp(concepts_whole_p(:,i))
+%         disp(concept_past)
         %add in distances b/w past concepts for this purview
         past_dist = emd_hat_gd_metric_mex(concepts_whole_p(:,i), concept_past, dist_matrix);
         distance_sum = distance_sum + past_dist;
@@ -152,9 +155,10 @@ for i = 1:nWholeConcepts
     phi_sum = phi_sum + abs(phi_whole(i) - part_phi);
     
     %for deubbing, take out
-    fprintf('\tDistance to past distribution: %f\n',past_dist);
-    fprintf('\tDistance to future distribution: %f\n',future_dist);
-    fprintf('\tSmall Phi Diff: %f(abs) %f(whole - part)\n',abs(phi_whole(i) - concept_phi_parts(j)),phi_whole(i) - concept_phi_parts(j));
+    fprintf('\tDistance to partitioned past distribution: %f\n',past_dist);
+    fprintf('\tDistance to partitioned future distribution: %f\n',future_dist);
+    fprintf('\tWhole Small Phi: %f | Partitioned Small Phi: %f\n',phi_whole(i),part_phi);
+    fprintf('\tSmall Phi Diff: %f(abs) %f(whole - part)\n',abs(phi_whole(i) - part_phi),phi_whole(i) - part_phi);
     
 end
         
@@ -234,7 +238,7 @@ end
 %     end
 % end
 
-big_phi_mip = distance_sum + phi_sum
+big_phi_mip = distance_sum + phi_sum;
                 
                 
 
