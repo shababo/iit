@@ -22,7 +22,7 @@ function varargout = iit(varargin)
 
 % Edit the above text to modify the response to help iit
 
-% Last Modified by GUIDE v2.5 10-Jul-2012 14:42:18
+% Last Modified by GUIDE v2.5 11-Jul-2012 15:54:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -713,3 +713,35 @@ function tpm_type_menu_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes during object creation, after setting all properties.
+function NetworkDefinition_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to NetworkDefinition (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on selection change in listbox4.
+function listbox4_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox4 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox4
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox4_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+set(hObject,'Max',2)

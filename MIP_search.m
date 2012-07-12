@@ -10,10 +10,12 @@ function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,opti
 
 %%
 
+save('prob_M.mat','prob_M')
+
 global grain;
 %debug remove me
-% fprintf('----------------------------------------------\n');
-% fprintf('M = %\ns',mat2str(M));
+fprintf('----------------------------------------------\n');
+fprintf('M = %s\n',mat2str(M));
 
 op_big_phi = options(11);
 op_sum = options(12);
@@ -36,10 +38,10 @@ Big_phi_w = Big_phi_M(whole_i);
 if (op_big_phi == 4)
     
     phi_whole = phi_M{whole_i}';
-    phi_w_trunc = phi_whole(phi_whole ~= 0);
+    phi_w_concepts = phi_whole(phi_whole ~= 0);
     IRR_whole = M_IRR_M{whole_i};
-    concepts_whole_p = zeros(2^N_M,length(phi_w_trunc));
-    concepts_whole_f = zeros(2^N_M,length(phi_w_trunc));
+    concepts_whole_p = zeros(2^N_M,length(phi_w_concepts));
+    concepts_whole_f = zeros(2^N_M,length(phi_w_concepts));
     
     z = 1;
     for i = 1:length(phi_whole)
@@ -54,12 +56,14 @@ if (op_big_phi == 4)
             z = z + 1;
         end
     end  
-    
-    phi_whole = phi_w_trunc;
+%     
+%     phi_whole = phi_w_concepts;
     
 end
     
 
+% are we doing both sides of the partition!?!? <-- YES WHEN IT IS HALF AND
+% HALF
 l = 1;
 for i=1: floor(N_M/2)
     C = nchoosek(M,i);
@@ -221,7 +225,7 @@ for i=1: floor(N_M/2)
 
             nIRR = length(M1_IRR) + length(M2_IRR);
             IRR_parts = cell(nIRR,1);
-            phi = [phi_M{M1_i}' phi_M{M2_i}'];
+            phi_parts_all = [phi_M{M1_i}' phi_M{M2_i}'];
             
             for x = 1:nIRR
                 if (x <= length(M1_IRR))
@@ -235,12 +239,13 @@ for i=1: floor(N_M/2)
                 
             concepts_past = zeros(2^N_M,nIRR);
             concepts_future = zeros(2^N_M,nIRR);
-            phi_parts = phi(phi ~= 0);
+            phi_parts = phi_parts_all(phi_parts_all ~= 0);
 
             z = 1;
-            for k = 1:length(phi)
+            
+            for k = 1:length(phi_parts_all)
 
-                if (phi(k) ~= 0)
+                if (phi_parts_all(k) ~= 0)
 
                     if(z <= sum(phi_M{M1_i} ~= 0))
                         if ~isempty(prob_M{M1_i,1}{k}{1})
@@ -257,6 +262,7 @@ for i=1: floor(N_M/2)
                             concepts_future(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{2},M,M2);
                         end
                     end
+                    
                     z = z + 1;
 
                 end
@@ -284,8 +290,9 @@ for i=1: floor(N_M/2)
 
                 
             
-            d_Big_phi = big_phi_shift(IRR_whole,concepts_whole_p,concepts_whole_f,phi_whole,...
-                              IRR_parts,concepts_past,concepts_future,phi_parts,op_big_phi_dist);
+            d_Big_phi = big_phi_shift(M1_IRR, M2_IRR, N, M, IRR_whole,concepts_whole_p,concepts_whole_f,phi_w_concepts, M1, M2,...
+                              IRR_parts,concepts_past,concepts_future, prob_M, phi_M{M1_i}', phi_M{M2_i}', phi_parts,op_big_phi_dist);
+                          
 
         end
         

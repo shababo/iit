@@ -14,7 +14,7 @@ op_parallel = 0; % 1: parallel computing, 0: not
 op_network = 4; % 1: random with self-connectivity, 2: random without self-connectivity, 3: modular, 4: logic gates, 0: some given connectivity matrix
 op_TPM = 0; % 1: load TPM
 op_ave = 0; % 0: use a specific current state 1: average over all possible current states
-op_disp = 0; % 0: No figures, 1: only complex, 2: complex and whole system, 3: all figures
+op_disp = 2; % 0: No figures, 1: only complex, 2: complex and whole system, 3: all figures
 op_context = 0; % 0: conservative 1: progressive
 op_empty = 1; % 0: excluding empty set in the past and the future 1: including empty set 
 op_min = 1; % conservative only 0: phi is the sum of phi backward and phi forward (simulataneous partition)
@@ -115,7 +115,7 @@ elseif op_network == 4
 
 % THIS IS MY 5 NODE NETWORK!!!!
 
-    % 1 XOR, 1 AND, 2 ORs
+    % 1 XOR, 2 AND, 2 ORs
 %     logic_type(1) = 3;
 %     logic_type(2) = 1;
 %     logic_type(3) = 2;
@@ -139,16 +139,16 @@ elseif op_network == 4
 %     J(3,[1 2 3]) = 1;
     
 % 2) HOMOGENOUS MAJORITIES
-    logic_type(1) = 1;
-    logic_type(2) = 1;
-    logic_type(3) = 1;
-    logic_type(4) = 1;
-    logic_type(5) = 1;
-    J(1,[1 2 3 4 5]) = 1;
-    J(2,[1 2 3 4 5]) = 1;
-    J(3,[1 2 3 4 5]) = 1;
-    J(4,[1 2 3 4 5]) = 1;
-    J(5,[1 2 3 4 5]) = 1;  
+%     logic_type(1) = 1;
+%     logic_type(2) = 1;
+%     logic_type(3) = 1;
+%     logic_type(4) = 1;
+%     logic_type(5) = 1;
+%     J(1,[1 2 3 4 5]) = 1;
+%     J(2,[1 2 3 4 5]) = 1;
+%     J(3,[1 2 3 4 5]) = 1;
+%     J(4,[1 2 3 4 5]) = 1;
+%     J(5,[1 2 3 4 5]) = 1;  
     
 % 3) COMPLEX NETWORK BASED ON PARITY/MAJORITY READING FOUR NODES BUT ADDED
 % BACK CONNECTIONS SO WE GET ACTUAL VALUES FOR PHI/BIG_PHI/COMPLEX
@@ -166,16 +166,16 @@ elseif op_network == 4
 %     J(6,[1 2 3 4]) = 1;
 
 % 4) MAJORITY - NON-HOMOGENOUS (EACH NODE HAS 3 AFFERENTS/EFFERENTS
-%     logic_type(1) = 7;
-%     logic_type(2) = 7;
-%     logic_type(3) = 7;
-%     logic_type(4) = 7;
-%     logic_type(5) = 7;
-%     J(1,[1 2 3]) = 1;
-%     J(2,[3 4 5]) = 1;
-%     J(3,[1 2 5]) = 1;
-%     J(4,[1 4 5]) = 1;
-%     J(5,[2 3 4]) = 1;
+    logic_type(1) = 7;
+    logic_type(2) = 7;
+    logic_type(3) = 7;
+    logic_type(4) = 7;
+    logic_type(5) = 7;
+    J(1,[1 2 3]) = 1;
+    J(2,[3 4 5]) = 1;
+    J(3,[1 2 5]) = 1;
+    J(4,[1 4 5]) = 1;
+    J(5,[2 3 4]) = 1;
 
 % 5) MODULAR COPIES (CLASSIC EXAMPLE OF FULL SET NOT BEING THE COMPLEX)
 %     logic_type(1) = 4;
