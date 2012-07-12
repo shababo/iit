@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 12-Jul-2012 16:16:35
+% Last Modified by GUIDE v2.5 12-Jul-2012 16:59:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -96,19 +96,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in listbox1.
-function listbox1_Callback(hObject, eventdata, handles)
-% hObject    handle to listbox1 (see GCBO)
+% --- Executes on selection change in nodes_list.
+function nodes_list_Callback(hObject, eventdata, handles)
+% hObject    handle to nodes_list (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns listbox1 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from listbox1
+% Hints: contents = cellstr(get(hObject,'String')) returns nodes_list contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from nodes_list
 
 
 % --- Executes during object creation, after setting all properties.
-function listbox1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to listbox1 (see GCBO)
+function nodes_list_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to nodes_list (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -124,3 +124,7 @@ function complex_button_Callback(hObject, eventdata, handles)
 % hObject    handle to complex_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+load fisheriris
+plotmatrix(handles.overview_axes,meas)
+linkdata on
+brush on
