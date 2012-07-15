@@ -124,7 +124,7 @@ function complex_button_Callback(hObject, eventdata, handles)
 % hObject    handle to complex_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-load fisheriris
-plotmatrix(handles.overview_axes,meas)
+load('sample_partition.mat')
+conceptscatter(x,nWholeConcepts)
 linkdata on
 brush on
