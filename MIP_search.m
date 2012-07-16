@@ -323,9 +323,11 @@ end
 
 if length(M) == N
     
-    all_concepts = cat(1,concepts_whole_p',concepts_past')
-    figure(1)
-    conceptscatter(all_concepts,size(concepts_whole_p,2))
+    x = cat(1,concepts_whole_p',concepts_past');
+    nWholeConcepts = size(concepts_whole_p,2);
+    save('sample_partition_4n_sys.mat','x','nWholeConcepts')
+%     figure(1)
+%     conceptscatter(all_concepts,size(concepts_whole_p,2))
     
 end
     

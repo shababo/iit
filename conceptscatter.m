@@ -1,4 +1,4 @@
-function [h,ax,BigAx] = conceptscatter(x,nWholeConcepts)
+function [ax, height, extra_plots] = conceptscatter(x,nWholeConcepts, BigAx, parent_panel)
 %GPLOTMATRIX  Scatter plot matrix with grouping variable.
 %   GPLOTMATRIX(X,Y,G) creates a matrix of scatter plots of the columns of
 %   X against the columns of Y, grouped by G.  If X is P-by-M and Y is
@@ -59,11 +59,14 @@ function [h,ax,BigAx] = conceptscatter(x,nWholeConcepts)
 
 whole = rand(size(x(1:nWholeConcepts,:)));
 part = rand(size(x(nWholeConcepts+1:end,:)));
+dims = size(x,2);
 
 assignin('base','whole',whole)
 assignin('base','part',part)
 
-rows = size(x,2); cols = rows;
+% rows = size(x,2); cols = rows;
+rows = 8; cols = rows;
+extra_plots = rows - dims;
 XvsX = true;
 
 
@@ -74,21 +77,21 @@ XvsX = true;
 
 % Create/find BigAx and make it invisible
 % clf; % will this clear the whole gui? YES!
-BigAx = newplot;
+% BigAx = handles.overview_axes;
 hold_state = ishold;
-set(BigAx,'Visible','off','color','none')
+set(BigAx,'Visible','off','color','none','Parent',parent_panel)
 
 clr = 'bgrcmyk';
 sym = '.';
-siz = [];
+
 
 siz = repmat(get(0,'defaultlinemarkersize'), size(sym));
 if any(sym=='.'),
   units = get(BigAx,'units');
-  set(BigAx,'units','pixels');
+%   set(BigAx,'units','pixels');
   pos = get(BigAx,'Position');
-  set(BigAx,'units',units);
-  siz(sym=='.') = max(1,min(15, ...
+%   set(BigAx,'units',units);
+  siz(sym == '.') = max(1,min(15, ...
                    round(15*min(pos(3:4))/size(x,1)/max(rows,cols))));
 end
 
@@ -119,21 +122,26 @@ setappdata(BigAx,'XvsX',XvsX);
 ax2filled = false(rows,1);
 pos = get(BigAx,'Position');
 width = pos(3)/cols;
-height = pos(4)/rows;
-space = .02; % 2 percent space between axes
+% height = pos(4)/rows;
+height = width;
+space = .04; % 2 percent space between axes
 pos(1:2) = pos(1:2) + space*[width height]; % shift starting point by spacing
 [m,n,k] = size(x); %#ok<ASGLU>
 xlim = repmat(cat(3,zeros(rows,1),ones(rows,1)),[rows 1 1]);
 ylim = repmat(cat(3,zeros(rows,1)',ones(rows,1)'),[1 cols 1]);
 
 
+x_bound = [0 1];
+y_bound = [1 0];
 % these are the loops that need to be changed to enable data linking
 
-for i=rows:-1:1, % count down from rows to 1
+ax = cell(nchoosek(size(x,2),2)+1,1); % all pairs of dims plus the 3D plot
+ax_index = 1;
+for i=size(x,2):-1:1, % count down from rows to 1
    for j=i-1:-1:1, % count down from cols to 1
         axPos = [pos(1)+(j-1)*width pos(2)+(rows-i)*height ...
             width*(1-space) height*(1-space)];
-        ax(i,j) = axes('Position',axPos, 'visible', 'on', 'Box','on');
+        ax{ax_index} = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'Clipping','On');
 %         findax = findaxpos(paxes, axPos);
 %         if isempty(findax),
 %             ax(i,j) = axes('Position',axPos,'HandleVisibility',BigAxHV,'parent',BigAxParent);
@@ -142,37 +150,60 @@ for i=rows:-1:1, % count down from rows to 1
 %             ax(i,j) = findax(1);
 %         end
         plot(whole(:,j),...
-           whole(:,i),'.g','parent',ax(i,j))';
+           whole(:,i),'.g','parent',ax{ax_index});
 %        linkdata on
         hold on;
         plot(part(:,j), ...
-            part(:,i),'.b','parent',ax(i,j))';
+            part(:,i),'.b','parent',ax{ax_index});
+        hold on;
+
+        plot(x_bound,y_bound,'parent',ax{ax_index});
+        
 %         linkdata on
 %         set(hh(i,j,:),'markersize',markersize);
-        set(ax(i,j),'xlimmode','manual','ylimmode','manual','xgrid','off','ygrid','off',...
+        set(ax{ax_index},'xlimmode','manual','ylimmode','manual','xgrid','off','ygrid','off',...
             'xlim',[-.25 1.25],'ylim',[-.25 1.25],'xticklabel','','yticklabel','')
-        xlim(i,j,:) = get(ax(i,j),'xlim');
-        ylim(i,j,:) = get(ax(i,j),'ylim');
+        xlim(i,j,:) = get(ax{ax_index},'xlim');
+        ylim(i,j,:) = get(ax{ax_index},'ylim');
+        
+        ax_index = ax_index + 1;
 
    end
 end
 
-j = size(x,1)/2;
-axPos = [pos(1)+(j-1)*width pos(2)+(rows-j)*height ...
-            width*(1-space)*j height*(1-space)*j];
-axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on'); 
+j = rows/2;
+axPos = [pos(1)+(j-1)*width pos(2)+(rows - j - .5)*height ...
+            width*(1-space)*(j+2) height*(1-space)*(j+2)];
+axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'Clipping','on'); 
 scatter3(whole(:,4),whole(:,5),whole(:,6),'MarkerFaceColor','g','Parent',axes3D)
 hold on
 scatter3(part(:,4),part(:,5),part(:,6),'MarkerFaceColor','b','Parent',axes3D)
 set(axes3D,'xlimmode','manual','ylimmode','manual','xgrid','off','ygrid','off',...
-            'xlim',[-.25 1.25],'ylim',[-.25 1.25],'zlim',[-.25 1.25],'xticklabel','','yticklabel','','zticklabel','')
+            'xlim',[-.25 1.25],'ylim',[-.25 1.25],'zlim',[-.25 1.25],...
+            'xticklabel','','yticklabel','','zticklabel','','CameraViewAngleMode','manual')
+
+        
+ax{ax_index} = axes3D;
+
+x_bound = [0 0 1 0];
+y_bound = [0 1 0 0];
+z_bound = [0 0 0 1];
+choices = nchoosek([1 2 3 4],2);
+
+for i = 1:size(choices,1)
+    
+    hold on
+    plot3(x_bound(choices(i,:)),y_bound(choices(i,:)),z_bound(choices(i,:)),'Parent',axes3D);
+    
+end
+
 
 linkdata on
 whole = x(1:nWholeConcepts,:);
 part = x(nWholeConcepts+1:end,:);
 assignin('base','whole',whole)
 assignin('base','part',part)
-brush on
+
 
 % x(:) = in_data(:);
 % assignin('base','x',x);
@@ -238,6 +269,9 @@ set(gcf,'CurrentAx',BigAx)
 if ~hold_state,
    set(gcf,'NextPlot','replace')
 end
+
+
+
 
 % Also set Title and X/YLabel visibility to on and strings to empty
 % set([get(BigAx,'Title'); get(BigAx,'XLabel'); get(BigAx,'YLabel')], ...

@@ -54,7 +54,7 @@ options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_conso
 save options options
 
 %% define the connectivty of the network
-N = 3; % Number of elements in the network %!!!!!!!!!!!! CAN WE MAKE THIS DEPENDENT?
+N = 4; % Number of elements in the network %!!!!!!!!!!!! CAN WE MAKE THIS DEPENDENT?
 Na = 3; % Number of afferent connections
 
 BRs = cell(2^N,2^N); % backward repertoire
@@ -131,12 +131,12 @@ elseif op_network == 4
 % NORMALIZATION EXPERIMENTS
 
 % 1) PARITY, MAJORITY, OR
-    logic_type(1) = 2;
-    logic_type(2) = 7;
-    logic_type(3) = 9;
-    J(1,[2 3]) = 1;
-    J(2,[1 2 3]) = 1;
-    J(3,[1 2 3]) = 1;
+%     logic_type(1) = 2;
+%     logic_type(2) = 7;
+%     logic_type(3) = 9;
+%     J(1,[2 3]) = 1;
+%     J(2,[1 2 3]) = 1;
+%     J(3,[1 2 3]) = 1;
     
 % 2) HOMOGENOUS AND
 %     logic_type(1) = 1;
@@ -185,14 +185,14 @@ elseif op_network == 4
 %     J(5,[2 3 4]) = 1;
 
 % 5) MODULAR COPIES (CLASSIC EXAMPLE OF FULL SET NOT BEING THE COMPLEX)
-%     logic_type(1) = 4;
-%     logic_type(2) = 4;
-%     logic_type(3) = 4;
-%     logic_type(4) = 4;
-%     J(1,2) = 1;
-%     J(2,1) = 1;
-%     J(3,4) = 1;
-%     J(4,3) = 1;
+    logic_type(1) = 4;
+    logic_type(2) = 4;
+    logic_type(3) = 4;
+    logic_type(4) = 4;
+    J(1,2) = 1;
+    J(2,1) = 1;
+    J(3,4) = 1;
+    J(4,3) = 1;
 
 % 6) INDEPENDENT SELF-COPY
 %     logic_type(1) = 4;
