@@ -1,58 +1,5 @@
 function [ax, height, extra_plots] = conceptscatter(x,nWholeConcepts, BigAx, parent_panel)
-%GPLOTMATRIX  Scatter plot matrix with grouping variable.
-%   GPLOTMATRIX(X,Y,G) creates a matrix of scatter plots of the columns of
-%   X against the columns of Y, grouped by G.  If X is P-by-M and Y is
-%   P-by-N, GPLOTMATRIX will produce a N-by-M matrix of axes.  If you omit
-%   Y or specify it as [], the function graphs X vs. X.  G is a grouping
-%   variable that determines the marker and color assigned to each point in
-%   each matrix, and it can be a categorical variable, vector, string
-%   matrix, or cell array of strings.  Alternatively G can be a cell array
-%   of grouping variables (such as {G1 G2 G3}) to group the values in X by
-%   each unique combination of grouping variable values.
-%
-%   Use the data cursor to read precise values from the plot, as well as
-%   the observation number and the values of related variables.
-%
-%   GPLOTMATRIX(X,Y,G,CLR,SYM,SIZ) specifies the colors, markers, and size
-%   to use.  CLR is a string of color specifications, and SYM is a string
-%   of marker specifications.  Type "help plot" for more information.  For
-%   example, if SYM='o+x', the first group will be plotted with a circle,
-%   the second with plus, and the third with x. SIZ is a marker size to use
-%   for all plots.  By default, the colors are 'bgrcmyk', the marker is
-%   '.', and the marker size depends on the number of plots and the size of
-%   the figure window.
-%
-%   GPLOTMATRIX(X,Y,G,CLR,SYM,SIZ,DOLEG) lets you control whether legends
-%   are created.  Set DOLEG to 'on' (default) or 'off'.
-%
-%   GPLOTMATRIX(X,Y,G,CLR,SYM,SIZ,DOLEG,DISPOPT) lets you control how to
-%   fill the diagonals in a plot of X vs. X.  Set DISPOPT to 'none' to
-%   leave them blank, 'hist' (default) to plot histograms, or 'variable' to
-%   write the variable names.
-%
-%   GPLOTMATRIX(X,Y,G,CLR,SYM,SIZ,DOLEG,DISPOPT,XNAM,YNAM) specifies XNAM
-%   and YNAM as the names of the X and Y variables.  Each must be a
-%   character array or cell array of strings of the appropriate dimension.
-%
-%   [H,AX,BigAx] = GPLOTMATRIX(...) returns an array of handles H to the
-%   plotted points; a matrix AX of handles to the individual subaxes; and a
-%   handle BIGAX to big (invisible) axes framing the subaxes.  The third
-%   dimension of H corresponds to groups in G.  If DISPOPT is 'hist', AX
-%   contains one extra row of handles to invisible axes in which the
-%   histograms are plotted. BigAx is left as the CurrentAxes so that a
-%   subsequent TITLE, XLABEL, or YLABEL will be centered with respect to
-%   the matrix of axes.
-%
-%   Example:
-%      load carsmall;
-%      X = [MPG,Acceleration,Displacement,Weight,Horsepower];
-%      varNames = {'MPG' 'Acceleration' 'Displacement' 'Weight' 'Horsepower'};
-%      gplotmatrix(X,[],Cylinders,'bgrcm',[],[],'on','hist',varNames);
-%
-%   See also GRPSTATS, GSCATTER, PLOTMATRIX.
-
-%   Copyright 1993-2010 The MathWorks, Inc.
-%   $Revision: 1.1.8.4 $  $Date: 2010/10/08 17:24:10 $
+% BASED ON GPLOTMATRIX
 
 % x = rand(size(in_data))
 % assignin('base','x',x);
@@ -131,8 +78,8 @@ xlim = repmat(cat(3,zeros(rows,1),ones(rows,1)),[rows 1 1]);
 ylim = repmat(cat(3,zeros(rows,1)',ones(rows,1)'),[1 cols 1]);
 
 
-x_bound = [0 1];
-y_bound = [1 0];
+x_bound = [0 1 0];
+y_bound = [1 0 0];
 % these are the loops that need to be changed to enable data linking
 
 ax = cell(nchoosek(size(x,2),2)+1,1); % all pairs of dims plus the 3D plot
@@ -157,7 +104,14 @@ for i=size(x,2):-1:1, % count down from rows to 1
             part(:,i),'.b','parent',ax{ax_index});
         hold on;
 
-        plot(x_bound,y_bound,'parent',ax{ax_index});
+        choices = nchoosek([1 2 3],2);
+
+        for k = 1:size(choices,1)
+
+            hold on
+            plot(x_bound(choices(k,:)),y_bound(choices(k,:)),'k','Parent',ax{ax_index});
+
+        end
         
 %         linkdata on
 %         set(hh(i,j,:),'markersize',markersize);
@@ -193,7 +147,7 @@ choices = nchoosek([1 2 3 4],2);
 for i = 1:size(choices,1)
     
     hold on
-    plot3(x_bound(choices(i,:)),y_bound(choices(i,:)),z_bound(choices(i,:)),'Parent',axes3D);
+    plot3(x_bound(choices(i,:)),y_bound(choices(i,:)),z_bound(choices(i,:)),'k','Parent',axes3D);
     
 end
 

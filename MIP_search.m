@@ -321,15 +321,15 @@ for i=1: floor(N_M/2)
     
 end
 
-if length(M) == N
-    
-    x = cat(1,concepts_whole_p',concepts_past');
-    nWholeConcepts = size(concepts_whole_p,2);
-    save('sample_partition_4n_sys.mat','x','nWholeConcepts')
-%     figure(1)
-%     conceptscatter(all_concepts,size(concepts_whole_p,2))
-    
-end
+% if length(M) == N
+%     
+%     x = cat(1,concepts_whole_p',concepts_past');
+%     nWholeConcepts = size(concepts_whole_p,2);
+%     save('sample_partition_4n_sys.mat','x','nWholeConcepts')
+% %     figure(1)
+% %     conceptscatter(all_concepts,size(concepts_whole_p,2))
+%     
+% end
     
 
 if (op_normalize == 1 || op_normalize == 2) % Option to normalize or not for new methods of computing big phi

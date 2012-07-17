@@ -4,7 +4,7 @@ N = size(tpm,2);
 
 global grain, global noise, global BRs, global FRs, global J
 
-grain = 100;
+grain = 50;
 noise = in_noise;
 BRs = cell(2^N,2^N); % backward repertoire
 FRs = cell(2^N,2^N); % forward repertoire
@@ -52,11 +52,13 @@ Big_phi_st = zeros(2^N,1);
 Big_phi_MIP_st = zeros(2^N,1);
 
 for z=1: z_max
+    
     if op_ave == 0
         x1 = current_state;
     else
-        x1 = trans2(z-1,N);
+        x1 = trans2(z-1,N); % trans2 is binary counting but reads R to L (100, 010, 110, ...)
     end
+    
 %     fprintf('x1=%s\n',mat2str(x1));
     
     % partial_prob_comp(partition, partition, state, prob_matrix, binary
@@ -64,9 +66,9 @@ for z=1: z_max
     check_prob = partial_prob_comp(1:N,1:N,x1,tpm,b_table,1); % last argument is op_fb = 1;
     state_check = sum(check_prob);
     if state_check == 0
-        fprintf('This state cannot be realized!\n')
-        Big_phi_st(z) = 0;
-        Big_phi_MIP_st(z) = 0;
+%         fprintf('This state cannot be realized!\n')
+        Big_phi_st(z) = NaN;
+        Big_phi_MIP_st(z) = NaN;
     else
         if op_complex == 0 % only consider whole system
             if op_fb == 2

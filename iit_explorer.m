@@ -142,7 +142,7 @@ function complex_button_Callback(hObject, eventdata, handles)
 % hObject    handle to complex_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-load('sample_partition_4n_sys.mat')
+load('sample_partition.mat')
 % conceptscatter(x,nWholeConcepts,handles.overview_axes,handles.mip_plot_panel);
 [handles.mip_axes height extra_plots] = conceptscatter(x,nWholeConcepts,handles.overview_axes,handles.mip_plot_panel);
 % setappdata(handles.mip_plot_panel,'PlotHeight',height,'ExtraPlots',extra_plots);
