@@ -1,4 +1,4 @@
-function [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,b_table,options)
+function [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,options)
 
 %%  compute big phi for a subset, M
 % M: a subset of the whole system (can be the whole system itself)
@@ -10,6 +10,7 @@ function [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,b_table,op
 
 global grain
 global J
+global b_table
 % global BRs, global FRs
     
 N = length(M);
@@ -56,8 +57,8 @@ for i = 1:N % can this be done in one for-loop over k = 1:2^N-1 ?
 end
 M_p = C_x0; % power set of M
 
-MIP = cell(2^N-1,1); % MIP in the past, the present, and the future
-phi = zeros(2^N-1,1); % small phis
+MIP = cell(2^N-1,1); % MIP in the past, the present, and the future <--?
+phi_all_values = zeros(2^N-1,3); % small phis, for each purview, overall, backward, and forward
 
 prob = cell(2^N-1,1); % transition repertoire
 prob_prod = cell(2^N-1,1); % partitioned transition repertoire
@@ -79,15 +80,15 @@ parfor ci=1: 2^N-1  % loop over purview numerators
 %             fprintf('C=%s\n',mod_mat2str(x0));
 %         end
         if op_context == 0
-            [phi(ci) prob{ci} prob_prod{ci} MIP{ci}] ...
-            =  phi_comp_ex(options,M,x0,x0_s,p,b_table, M_p,J);
+            [phi_all_values(ci,:) prob{ci} prob_prod{ci} MIP{ci}] ...
+            =  phi_comp_ex(options,M,x0,x0_s,p,M_p,J);
         else
-            [phi(ci) prob{ci} prob_prod{ci} MIP{ci}] ...
-                =  phi_comp_ex(options,M,x0,x0_s,p,b_table, M_p);
+            [phi_all_values(ci,:) prob{ci} prob_prod{ci} MIP{ci}] ...
+                =  phi_comp_ex(options,M,x0,x0_s,p,M_p);
         end
     else
-        phi(ci) = 0;
-        prob{ci} = []; prob_prod{ci} = []; MIP{ci} = []; 
+        phi_all_values(ci,:) = [0 0 0];
+        prob{ci} = []; prob_prod{ci} = []; MIP{ci} = []; % should we change these to uniform, full sys... etc
     end    
 end
 
@@ -96,7 +97,7 @@ prob_cell{1} = prob;
 prob_cell{2} = prob_prod;
 
 
-
+phi = phi_all_values(:,1);
 phi_m = zeros(N,3); % cumulative sum
 
 % PRETTY SURE THIS CAN JUST BE DONE WITH A SUM() CALL
@@ -117,129 +118,129 @@ for i=1: N
 end
 
 
-    if (op_big_phi == 0)
+if (op_big_phi == 0)
 
-        Big_phi = phi_m(end,3);
-
-
-    elseif (op_big_phi == 1)
+    Big_phi = phi_m(end,3);
 
 
-        index_vec_IRR = find(phi ~= 0);
-        N_IRR = length(index_vec_IRR);
-
-        if(N_IRR~=0)
-
-            concepts = zeros(2^N,N_IRR);
-            concept_phis = zeros(1,N_IRR);
+elseif (op_big_phi == 1)
 
 
-            j = 1;
-            for i = 1:2^N-1
+    index_vec_IRR = find(phi ~= 0);
+    N_IRR = length(index_vec_IRR);
 
-                if (phi(i) ~= 0)
+    if(N_IRR~=0)
 
-                    concepts(:,j) = prob{i}{1};
-                    concept_phis(j) = phi(i);
-                    j = j + 1;
-                end
+        concepts = zeros(2^N,N_IRR);
+        concept_phis = zeros(1,N_IRR);
 
+
+        j = 1;
+        for i = 1:2^N-1
+
+            if (phi(i) ~= 0)
+
+                concepts(:,j) = prob{i}{1};
+                concept_phis(j) = phi(i);
+                j = j + 1;
             end
 
-            Big_phi = big_phi_volume(concepts,concept_phis,grain);
-
-        else
-            Big_phi = 0;
         end
-    elseif (op_big_phi == 2 || op_big_phi == 4)
 
-        index_vec_IRR = find(phi ~= 0);
-        N_IRR = length(index_vec_IRR);
+        Big_phi = big_phi_volume(concepts,concept_phis,grain);
 
-        if(N_IRR~=0)
-
-            concepts = zeros(2^N,N_IRR);
-            concept_phis = zeros(1,N_IRR);
-
-
-            j = 1;
-            for i = 1:2^N-1
-
-                if (phi(i) ~= 0)
-
-                    concepts(:,j) = prob{i}{1};
-                    concept_phis(j) = phi(i);
-                    j = j + 1;
-                end
-
-            end
-
-            M_IRR = cell(N_IRR,1);
-
-            for i=1: N_IRR
-                j = index_vec_IRR(i);
-                M_IRR{i} = C_x0{j};
-            end
-
-            if (op_big_phi == 2)
-                Big_phi = big_phi_info(M_IRR,concepts,concept_phis);
-            else
-               Big_phi = NaN;
-            end
-
-        else
-            Big_phi = 0;
-        end
-    elseif (op_big_phi == 3)
-
-
-
-        index_vec_IRR = find(phi ~= 0);
-        N_IRR = length(index_vec_IRR);
-
-        if(N_IRR > 1)
-
-            concepts_past = zeros(2^N,N_IRR);
-            concepts_future = zeros(2^N,N_IRR);
-            concept_phis = zeros(1,N_IRR);
-
-
-            j = 1;
-            for i = 1:2^N-1
-
-                if (phi(i) ~= 0)
-
-                    concepts_past(:,j) = prob{i}{1};
-                    concepts_future(:,j) = prob{i}{2};
-                    concept_phis(j) = phi(i);
-                    j = j + 1;
-
-                end
-
-            end
-
-            if (N == size(p,2))
-                display = 1;
-            else
-                display = 0;
-            end
-
-    %         disp(big_phi_spacing(concepts_past,concept_phis,0));
-    %         disp(big_phi_spacing(concepts_future,concept_phis,0));
-
-
-            Big_phi = big_phi_spacing(concepts_past,concept_phis,0) + big_phi_spacing(concepts_future,concept_phis,0);
-
-        elseif (N_IRR == 1)
-            Big_phi = phi(1);
-        else
-            Big_phi = 0;
-        end
     else
-        err = MException('Options:UnSetValue', ...
-            'Option for method of computing Big Phi is incorrect');
-        throw(err);
+        Big_phi = 0;
     end
+elseif (op_big_phi == 2 || op_big_phi == 4)
+
+    index_vec_IRR = find(phi ~= 0);
+    N_IRR = length(index_vec_IRR);
+
+    if(N_IRR~=0)
+
+        concepts = zeros(2^N,N_IRR);
+        concept_phis = zeros(1,N_IRR);
+
+
+        j = 1;
+        for i = 1:2^N-1
+
+            if (phi(i) ~= 0)
+
+                concepts(:,j) = prob{i}{1};
+                concept_phis(j) = phi(i);
+                j = j + 1;
+            end
+
+        end
+
+        M_IRR = cell(N_IRR,1);
+
+        for i=1: N_IRR
+            j = index_vec_IRR(i);
+            M_IRR{i} = C_x0{j};
+        end
+
+        if (op_big_phi == 2)
+            Big_phi = big_phi_info(M_IRR,concepts,concept_phis);
+        else
+           Big_phi = NaN;
+        end
+
+    else
+        Big_phi = 0;
+    end
+elseif (op_big_phi == 3)
+
+
+
+    index_vec_IRR = find(phi ~= 0);
+    N_IRR = length(index_vec_IRR);
+
+    if(N_IRR > 1)
+
+        concepts_past = zeros(2^N,N_IRR);
+        concepts_future = zeros(2^N,N_IRR);
+        concept_phis = zeros(1,N_IRR);
+
+
+        j = 1;
+        for i = 1:2^N-1
+
+            if (phi(i) ~= 0)
+
+                concepts_past(:,j) = prob{i}{1};
+                concepts_future(:,j) = prob{i}{2};
+                concept_phis(j) = phi(i);
+                j = j + 1;
+
+            end
+
+        end
+
+        if (N == size(p,2))
+            display = 1;
+        else
+            display = 0;
+        end
+
+%         disp(big_phi_spacing(concepts_past,concept_phis,0));
+%         disp(big_phi_spacing(concepts_future,concept_phis,0));
+
+
+        Big_phi = big_phi_spacing(concepts_past,concept_phis,0) + big_phi_spacing(concepts_future,concept_phis,0);
+
+    elseif (N_IRR == 1)
+        Big_phi = phi(1);
+    else
+        Big_phi = 0;
+    end
+else
+    err = MException('Options:UnSetValue', ...
+        'Option for method of computing Big Phi is incorrect');
+    throw(err);
+end
 
 
 

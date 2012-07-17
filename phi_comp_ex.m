@@ -1,10 +1,11 @@
-function [phi prob prob_prod_MIP MIP] = phi_comp_ex(options,M,x0,x0_s,p,b_table,M_p,J)
+function [phi prob prob_prod_MIP MIP] = phi_comp_ex(options,M,x0,x0_s,p,M_p,J)
 
 
 % M_p: power set of M
 % op_disp = 1;
 % op_single = 1;
 
+global b_table
 
 op_context = options(6);
 op_empty = options(8);
@@ -15,6 +16,7 @@ op_big_phi = options(11);
 N = length(M);
 M_p{2^N} = []; % add empty set
 
+% THIS OPTION IS NOT MAINTAINED IN GUI VERSION
 if op_min == 0 % take sum of forward and backward
     phi_MIP = zeros(2^N-1,2^N-1);
     prob_cand = cell(2^N-1,2^N-1);
@@ -36,10 +38,10 @@ if op_min == 0 % take sum of forward and backward
             if N_p ~= 0 || N_f ~= 0
                 if op_context == 0 % conservative
                     [phi_MIP(i,j) prob_cand{i,j} prob_prod_MIP_cand{i,j} MIP_cand{i,j}] ...
-                        = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table);
+                        = phi_comp_bf(options,M,x0,xp,xf,x0_s,p);
                 else % progressive
                     [phi_MIP(i,j) prob_cand{i,j} prob_prod_MIP_cand{i,j} MIP_cand{i,j}] ...
-                        = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table);
+                        = phi_comp_bf(options,M,x0,xp,xf,x0_s,p);
                 end
             end
         end
@@ -68,7 +70,7 @@ else % take minimum of forward and backward
         if nnz(sum(J(x0,x),1) == 0) > 0 % some x is not input of x0 (numerator) --> no phiBR
             if nnz(sum(J(x,x0),2) == 0) == 0 % but x is output
                 [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-                    = phi_comp_bORf(options,x0,x,p,2,b_table,x0_s); 
+                    = phi_comp_bORf(options,x0,x,p,2,x0_s); 
             else
                 uniform_dist = ones(1,2^N)/2^N;
                 prob_cand{i} = {uniform_dist; uniform_dist};
@@ -78,10 +80,10 @@ else % take minimum of forward and backward
         else
             if nnz(sum(J(x,x0),2) == 0) > 0 % x is not output, but x is input
                 [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-                    = phi_comp_bORf(options,x0,x,p,1,b_table,x0_s); 
+                    = phi_comp_bORf(options,x0,x,p,1,x0_s); 
             else % x is both
                 [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-                    = phi_comp_bf(options,M,x0,x,x,x0_s,p,b_table); 
+                    = phi_comp_bf(options,M,x0,x,x,x0_s,p); 
             end 
         end    
     end
@@ -102,11 +104,13 @@ else % take minimum of forward and backward
             xf = M_p{j_max};
         end
     end
+    phi = [0 max_phi_MIP_bf']; % phi = [overall backwards forwards]
+    
     if (op_big_phi == 1 || op_big_phi == 2)
-       phi = max_phi_MIP_bf(1);
+       phi(1) = max_phi_MIP_bf(1);
 
     else
-       phi = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
+       phi(1) = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
     end
 end
 

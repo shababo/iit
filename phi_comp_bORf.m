@@ -1,4 +1,4 @@
-function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bORf(options,x0,x,p,bf,b_table,x0_s)
+function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bORf(options,x0,x,p,bf,x0_s)
 % Larissa: for smart purviews, op_context is assumed 0, op_min is assumed
 % bf is back/forward flag (back = 1, forward = 2)
 op_fb = options(1);
@@ -12,7 +12,7 @@ op_min = options(9);
 op_normalize = options(14);
 op_small_phi = options(16);
 
-global BRs, global FRs
+global BRs, global FRs, global b_table
 
 
 N = length(x);
@@ -24,12 +24,12 @@ N0 = length(x0);
     
     if (bf == 1)
         if isempty(BRs{current,other})
-            BRs{current,other} = comp_pers_single(current,other,x0_s,p,b_table,bf);
+            BRs{current,other} = comp_pers_single(current,other,x0_s,p,bf);
         end
         prob_w = BRs{current,other};
     elseif (bf == 2)
         if isempty(FRs{current,other})
-            FRs{current,other} = comp_pers_single(current,other,x0_s,p,b_table,bf);
+            FRs{current,other} = comp_pers_single(current,other,x0_s,p,bf);
         end
         prob_w = FRs{current,other};
     end

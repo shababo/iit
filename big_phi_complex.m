@@ -1,4 +1,4 @@
-function [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] = big_phi_complex(x0,p,b_table,options)
+function [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] = big_phi_complex(x0,p,options)
 
 % [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] = big_phi_complex(x0,p,b_table,options)
 % 
@@ -20,6 +20,7 @@ function [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M M
 % phi_M
 % MIP_M
 
+global b_table
 
 %% options
 op_fb = options(1); % 0: forward repertoire, 1: backward repertoire, 2: both, 3: simultaneous
@@ -68,127 +69,127 @@ if op_fb == 2
 elseif op_fb == 0 || op_fb == 1 || op_fb == 3
     % 0: forward or 1: backward computation or 3: simultaneous forward and
     % backward computation
-    [Big_phi_M phi_M prob_M M_cell MIP_M M_IRR_M] = big_phi_all(x0,p,b_table,options);
+    [Big_phi_M phi_M prob_M M_cell MIP_M M_IRR_M] = big_phi_all(x0,p,options);
     % complex search
     [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell, M_IRR_M, N,prob_M,phi_M,options);
     % irreducible points
     [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M,phi_M,MIP_M,Complex, M_i_max,op_fb);
     fprintf('Sum of small_phis = %f\n',sum(IRR_phi));
     fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
-    plot_REP(Big_phi_M(M_i_max), IRR_REP,IRR_phi,IRR_MIP, 1, Complex, options)
+%     plot_REP(Big_phi_M(M_i_max), IRR_REP,IRR_phi,IRR_MIP, 1, Complex, options)
 end
 
 %% plot irreducible points in the complex
-% op_figures = 1;
-if op_figures ~= 0
-    if op_fb == 2
-        if length(IRR_phi{1}) > 8 || length(IRR_phi{2}) > 8
-            fig_co = 2;
-        else
-            fig_co = 1;
-        end
-    else
-        fig_co = 1;
-    end
-    if op_fb == 2
-        for i=1: 2
-            plot_IRR(IRR_REP{i},IRR_phi{i},M_IRR{i}, op_fb+i-1, fig_max*fig_co,fig_co)
-        end
-    elseif op_fb == 0 || op_fb == 1
-        plot_IRR(IRR_REP,IRR_phi,M_IRR, op_fb, fig_max*fig_co,fig_co,IRR_MIP)
-%     elseif op_fb == 3
-%         fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
-% %         fprintf('Purview || MIP || Small phi\n');
-%         plot_REP(Big_phi_M(M_i_max), IRR_REP,IRR_phi,IRR_MIP, 1, Complex, op_context, op_min)
-        
-        
-    end
-end
-
-
-
-
-%% Plot irreducible points
-function [] = plot_IRR(IRR_REP,IRR_phi,M_IRR, op, fig_max, fig_co,IRR_MIP)
-N_IRR = length(IRR_phi);
-y_max = 0;
-
-if op ~= 4
-    for i_C=1: N_IRR
-        y_max = max(y_max,max(IRR_REP(:,i_C)));
-    end
-    y_max = y_max + 0.02;
-end
-
-reverse_vec = N_IRR: -1: 1;
-for i = 1: N_IRR
-    j = reverse_vec(i);
-    
-    fig_pi = floor((i-1)/fig_max);
-    fig_i = i - fig_pi*fig_max;
-    figure(1+fig_pi);
-    if op == 0 ||op == 1 || op == 4
-        if fig_co == 1
-            convert_vec = 1: fig_max;
-        else
-            convert_vec = [2*(1: fig_max/2)-1 2*(1: fig_max/2)];
-        end
-        if op== 4
-            sq = sqrt(fig_max);
-            prob = IRR_REP{j,1};
-            prob_prod = IRR_REP{j,2};
-            subplot(sq,sq,convert_vec(fig_i)),imagesc(prob);
-            colormap('gray')
-            caxis([0 1])
-            figure(11+fig_pi);
-            subplot(sq,sq,convert_vec(fig_i)),imagesc(prob_prod);
-            colormap('gray')
-            caxis([0 1])
-        else
-            subplot(fig_max/fig_co,fig_co,convert_vec(fig_i)),bar(IRR_REP(:,j))
-        end
-    elseif op == 2
-        if fig_co == 1
-            convert_vec = 2*(1: fig_max);
-        else
-            convert_vec = [4*(1: fig_max/2)-1 4*(1: fig_max/2)];
-        end
-        subplot(fig_max/fig_co,2*fig_co,convert_vec(fig_i)),bar(IRR_REP(:,j))
-    elseif op == 3
-        if fig_co == 1
-            convert_vec = 2*(1: fig_max) - 1;
-        else
-            convert_vec = [4*(1: fig_max/2)-3 4*(1: fig_max/2)-2];
-        end
-        subplot(fig_max/fig_co,2*fig_co,convert_vec(fig_i)),bar(IRR_REP(:,j))
-    end
-    if op~= 4
-        axis([-Inf Inf 0 y_max]);
-    end
-    
-    C = M_IRR{j};
-    if op == 4
-        [string_p string] = make_title_fb(IRR_MIP{j});
-        sC = string;
-        figure(11+fig_pi);
-        title(string_p)
-    else
-        op_s = mod(op,2);
-        sC = make_title(C,op_s);
-    end
-    
-    figure(1+fig_pi);
-    sPhi = [sC,': \phi=',num2str(IRR_phi(j),3)];
-    title(sPhi)
-    if i== 1
-        fprintf('Irreducible points\n');
-    end
-    fprintf('%s\n',sPhi);
-    
-    if j == 1
-        Big_phi_comp = sum(IRR_phi);
-        sy = ['\Phi=',num2str(Big_phi_comp,3)];
-        xlabel(sy)
-    end
-    
-end
+% % op_figures = 1;
+% if op_figures ~= 0
+%     if op_fb == 2
+%         if length(IRR_phi{1}) > 8 || length(IRR_phi{2}) > 8
+%             fig_co = 2;
+%         else
+%             fig_co = 1;
+%         end
+%     else
+%         fig_co = 1;
+%     end
+%     if op_fb == 2
+%         for i=1: 2
+%             plot_IRR(IRR_REP{i},IRR_phi{i},M_IRR{i}, op_fb+i-1, fig_max*fig_co,fig_co)
+%         end
+%     elseif op_fb == 0 || op_fb == 1
+%         plot_IRR(IRR_REP,IRR_phi,M_IRR, op_fb, fig_max*fig_co,fig_co,IRR_MIP)
+% %     elseif op_fb == 3
+% %         fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
+% % %         fprintf('Purview || MIP || Small phi\n');
+% %         plot_REP(Big_phi_M(M_i_max), IRR_REP,IRR_phi,IRR_MIP, 1, Complex, op_context, op_min)
+%         
+%         
+%     end
+% end
+% 
+% 
+% 
+% 
+% %% Plot irreducible points
+% function [] = plot_IRR(IRR_REP,IRR_phi,M_IRR, op, fig_max, fig_co,IRR_MIP)
+% N_IRR = length(IRR_phi);
+% y_max = 0;
+% 
+% if op ~= 4
+%     for i_C=1: N_IRR
+%         y_max = max(y_max,max(IRR_REP(:,i_C)));
+%     end
+%     y_max = y_max + 0.02;
+% end
+% 
+% reverse_vec = N_IRR: -1: 1;
+% for i = 1: N_IRR
+%     j = reverse_vec(i);
+%     
+%     fig_pi = floor((i-1)/fig_max);
+%     fig_i = i - fig_pi*fig_max;
+%     figure(1+fig_pi);
+%     if op == 0 ||op == 1 || op == 4
+%         if fig_co == 1
+%             convert_vec = 1: fig_max;
+%         else
+%             convert_vec = [2*(1: fig_max/2)-1 2*(1: fig_max/2)];
+%         end
+%         if op== 4
+%             sq = sqrt(fig_max);
+%             prob = IRR_REP{j,1};
+%             prob_prod = IRR_REP{j,2};
+%             subplot(sq,sq,convert_vec(fig_i)),imagesc(prob);
+%             colormap('gray')
+%             caxis([0 1])
+%             figure(11+fig_pi);
+%             subplot(sq,sq,convert_vec(fig_i)),imagesc(prob_prod);
+%             colormap('gray')
+%             caxis([0 1])
+%         else
+%             subplot(fig_max/fig_co,fig_co,convert_vec(fig_i)),bar(IRR_REP(:,j))
+%         end
+%     elseif op == 2
+%         if fig_co == 1
+%             convert_vec = 2*(1: fig_max);
+%         else
+%             convert_vec = [4*(1: fig_max/2)-1 4*(1: fig_max/2)];
+%         end
+%         subplot(fig_max/fig_co,2*fig_co,convert_vec(fig_i)),bar(IRR_REP(:,j))
+%     elseif op == 3
+%         if fig_co == 1
+%             convert_vec = 2*(1: fig_max) - 1;
+%         else
+%             convert_vec = [4*(1: fig_max/2)-3 4*(1: fig_max/2)-2];
+%         end
+%         subplot(fig_max/fig_co,2*fig_co,convert_vec(fig_i)),bar(IRR_REP(:,j))
+%     end
+%     if op~= 4
+%         axis([-Inf Inf 0 y_max]);
+%     end
+%     
+%     C = M_IRR{j};
+%     if op == 4
+%         [string_p string] = make_title_fb(IRR_MIP{j});
+%         sC = string;
+%         figure(11+fig_pi);
+%         title(string_p)
+%     else
+%         op_s = mod(op,2);
+%         sC = make_title(C,op_s);
+%     end
+%     
+%     figure(1+fig_pi);
+%     sPhi = [sC,': \phi=',num2str(IRR_phi(j),3)];
+%     title(sPhi)
+%     if i== 1
+%         fprintf('Irreducible points\n');
+%     end
+%     fprintf('%s\n',sPhi);
+%     
+%     if j == 1
+%         Big_phi_comp = sum(IRR_phi);
+%         sy = ['\Phi=',num2str(Big_phi_comp,3)];
+%         xlabel(sy)
+%     end
+%     
+% end

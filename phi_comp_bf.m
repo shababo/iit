@@ -1,4 +1,4 @@
-function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bf(options,M,x0,xp,xf,x0_s,p,b_table)
+function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bf(options,M,x0,xp,xf,x0_s,p)
 % compute small phi of a given purview...?
 % 
 % options = the options
@@ -24,7 +24,7 @@ op_min = options(9);
 op_normalize = options(14);
 op_small_phi = options(16);
 
-global BRs, global FRs
+global BRs, global FRs, global b_table
 
 Np = length(xp);
 N0 = length(x0);
@@ -36,12 +36,12 @@ if op_context == 0 % conservative
     current = convi(x0); past = convi(xp); future = convi(xf);
     
     if isempty(BRs{current,past})
-        BRs{current,past} = comp_pers_single(current,past,x0_s,p,b_table,1);    
+        BRs{current,past} = comp_pers_single(current,past,x0_s,p,1);    
     end
     prob_bw = BRs{current,past};
 
     if isempty(FRs{current,future})
-        FRs{current,future} = comp_pers_single(current,future,x0_s,p,b_table,2);
+        FRs{current,future} = comp_pers_single(current,future,x0_s,p,2);
     end
     prob_fw = FRs{current,future};
     
@@ -66,6 +66,7 @@ else
 end
 [x0_b1 x0_b2 N0_b] = bipartition(x0,N0,1); % partition of x0
 
+% THIS OPTION IS NOT SETUP FOR THE GUI
 if op_min == 0 % PHI IS SUM OF BACKWARD AND FORWARD
     
     phi_cand = zeros(Np_b,N0_b,Nf_b,2); % THE LAST DIMENSION IS PHI, PHI_NORM
@@ -164,24 +165,24 @@ else % OP_MIN = 1, PHI IS MINIMUM OF BACKWARDS AND FORWARDS COMPUTATIONS
                     
                     if bf == 1
                         if isempty(BRs{current_1,other_1})
-                            BRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,b_table,bf);
+                            BRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,bf);
                         end
                         prob_p1 = BRs{current_1,other_1};
                         
                         if isempty(BRs{current_2,other_2})
-                            BRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,b_table,bf);
+                            BRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,bf);
                         end
                         prob_p2 = BRs{current_2,other_2};
                         
                     else
                         
                         if isempty(FRs{current_1,other_1})
-                            FRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,b_table,bf);
+                            FRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,bf);
                         end
                         prob_p1 = FRs{current_1,other_1};
                         
                         if isempty(FRs{current_2,other_2})
-                            FRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,b_table,bf);
+                            FRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,bf);
                         end
                         prob_p2 = FRs{current_2,other_2};
 

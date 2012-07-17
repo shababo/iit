@@ -22,7 +22,7 @@ function varargout = iit(varargin)
 
 % Edit the above text to modify the response to help iit
 
-% Last Modified by GUIDE v2.5 11-Jul-2012 15:54:03
+% Last Modified by GUIDE v2.5 17-Jul-2012 13:12:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -60,6 +60,8 @@ guidata(hObject, handles);
 
 % Set initial View
 set(handles.Options,'Visible','Off')
+set(handles.connectivity_mat,'Visible','Off')
+set(handles.connect_mat_title,'Visible','Off')
 
 
 % UIWAIT makes iit wait for user response (see UIRESUME)
@@ -97,6 +99,7 @@ else
     tpm_choice = tpm_choices{get(handles.tpm_type_menu,'Value')};
     updateTPMview(handles, tpm_choice)
     updateCurrentStateView(handles)
+    updateConnectivityView(handles)
 end
 
 
@@ -408,7 +411,9 @@ end
 current_state = get(handles.cur_state,'Data')';
 noise = str2double(get(handles.noise,'String'));
 
-iit_run(tpm,current_state,noise,options);
+connectivity_matrix = get(handles.connectivity_mat,'Data');
+
+iit_run(tpm,connectivity_matrix,current_state,noise,options);
 
 
 
@@ -619,7 +624,7 @@ if (filename ~= 0)
 
             set(handles.num_nodes,'String',num2str(num_nodes))
             set(handles.tpm_type_menu,'Value',1); % state x state
-set(handles.TPM,'Data',tpm);
+            set(handles.TPM,'Data',tpm);
             updateTPMview(handles,'State X State');
             
 
@@ -655,6 +660,25 @@ function tpm_type_menu_Callback(hObject, eventdata, handles)
 
 tpm_choices = cellstr(get(hObject,'String'));
 tpm_choice = tpm_choices{get(hObject,'Value')};
+
+if strcmp(tpm_choice,'State X State') || strcmp(tpm_choice,'State X Node')
+    
+    set(handles.tpm_text,'Visible','on')
+    set(handles.TPM,'Visible','on')
+    set(handles.connect_mat_title,'Visible','off')
+    set(handles.connectivity_mat,'Visible','off')
+    
+else
+    
+    set(handles.tpm_text,'Visible','off')
+    set(handles.TPM,'Visible','off')
+    set(handles.connect_mat_title,'Visible','on')
+    set(handles.connectivity_mat,'Visible','on')
+    
+end
+    
+    
+
 tpm = get(handles.TPM,'Data');
 num_nodes = str2double(get(handles.num_nodes,'String'));
 num_states = 2^num_nodes;
@@ -745,3 +769,103 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 set(hObject,'Max',2)
+
+
+% --- Executes when entered data in editable cell(s) in connectivity_mat.
+function connectivity_mat_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to connectivity_mat (see GCBO)
+% eventdata  structure with the following fields (see UITABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+
+connectivity_mat = get(hObject,'Data');
+if (eventdata.NewData ~= 0 && eventdata.NewData ~= 1)
+    
+    set(handles.warning,'String','Entries in connectivity matrix can only be 0 or 1')
+    connectivity_mat(eventdata.Indices(1),eventdata.Indices(2)) = eventdata.PreviousData;
+    set(hObject,'Data',connectivity_mat)
+else
+    
+    set(handles.warning,'String','');
+    
+end
+
+
+% --- Executes on button press in upload_connectivity.
+function upload_connectivity_Callback(hObject, eventdata, handles)
+% hObject    handle to upload_connectivity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+filename = uigetfile('*.mat');
+
+if size(get(handles.TPM,'Data'),2) == str2num(get(handles.num_nodes,'String'))
+    
+    tpm_choice = 'State X Node'
+    
+else
+    
+    tpm_choice = 'State X State'
+end
+
+
+if (filename ~= 0)
+    
+    load(filename)
+
+    if exist('J')
+        
+        if size(J,1) == size(J,2)
+
+            num_nodes = size(J,1);
+            set(handles.num_nodes,'String',num2str(num_nodes))
+            set(handles.connectivity_mat,'Data',J)
+            
+            updateCurrentStateView(handles)
+            if  == num_nodes
+                updateTPMview(handles,tpm_choice)
+            
+            updateConnectivityView(handles);
+        
+            set(handles.warning,'String','');
+        
+        else
+            
+            set(handles.warning,'Connectivity Matrix is not square')
+        
+        end
+    
+    else
+        set(handles.warning,'String','No variable named ''tpm'' in that data file.')
+    end
+    
+end
+
+function updateConnectivityView(handles)
+
+nNodes = str2double(get(handles.num_nodes,'String'));
+
+connect_mat_old = get(handles.connectivity_mat,'Data');
+connect_mat_size_old = size(connect_mat_old,1);
+
+% increase size
+if nNodes > connect_mat_size_old
+
+    connect_mat_new = ones(nNodes);
+    connect_mat_new(1:size(connect_mat_old,1),1:size(connect_mat_old,2)) = connect_mat_old;
+
+% decrease size
+else
+
+    % resize
+    connect_mat_new = connect_mat_old(1:nNodes,1:nNodes);
+
+end
+
+set(handles.connectivity_mat,'Data',connect_mat_new);
+
+set(handles.TPM,'ColumnEditable',true(1,nNodes));

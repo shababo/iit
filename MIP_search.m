@@ -37,7 +37,7 @@ Big_phi_w = Big_phi_M(whole_i);
 
 if (op_big_phi == 4)
     
-    phi_whole = phi_M{whole_i}';
+    phi_whole = phi_M{whole_i}(:,1)';
     phi_w_concepts = phi_whole(phi_whole ~= 0);
     IRR_whole = M_IRR_M{whole_i};
     concepts_whole_p = zeros(2^N_M,length(phi_w_concepts));
@@ -84,7 +84,7 @@ for i=1: floor(N_M/2)
                       
         elseif(op_big_phi == 1)
             
-            phi = [phi_M{M1_i}' phi_M{M2_i}'];
+            phi = [phi_M{M1_i}(:,1)' phi_M{M2_i}(:,1)'];
 
             if (~all(phi == 0))
 
@@ -99,7 +99,7 @@ for i=1: floor(N_M/2)
                         if(z <= length(M1_IRR))
                             concepts(:,z) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
                         else
-                            concepts(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1},M,M2);
+                            concepts(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i}(:,1))}{1},M,M2);
                         end
                         z = z + 1;
 
@@ -129,7 +129,7 @@ for i=1: floor(N_M/2)
 
             nIRR = length(M1_IRR) + length(M2_IRR);
             IRRs = cell(nIRR,1);
-            phi = [phi_M{M1_i}' phi_M{M2_i}'];
+            phi = [phi_M{M1_i}(:,1)' phi_M{M2_i}(:,1)'];
             
             for x = 1:nIRR
                 if (x <= length(M1_IRR))
@@ -153,7 +153,7 @@ for i=1: floor(N_M/2)
                         if(z <= length(M1_IRR))
                             concepts(:,z) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
                         else
-                            concepts(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1},M,M2);
+                            concepts(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i}(:,1))}{1},M,M2);
                         end
                         z = z + 1;
 
@@ -173,7 +173,7 @@ for i=1: floor(N_M/2)
             
             
             
-            phi = [phi_M{M1_i}' phi_M{M2_i}'];
+            phi = [phi_M{M1_i}(:,1)' phi_M{M2_i}(:,1)'];
             nIRR = sum(phi ~= 0);
             
 %             disp('***************')
@@ -197,12 +197,12 @@ for i=1: floor(N_M/2)
 
                     if (phi(k) ~= 0)
                         
-                        if(z <= sum(phi_M{M1_i} ~= 0))
+                        if(z <= sum(phi_M{M1_i}(:,1) ~= 0))
                             concepts_past(:,z) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
                             concepts_future(:,z) = expand_prob(prob_M{M1_i,1}{k}{2},M,M1);
                         else
-                            concepts_past(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1},M,M2);
-                            concepts_future(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{2},M,M2);
+                            concepts_past(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i}(:,1))}{1},M,M2);
+                            concepts_future(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i}(:,1))}{2},M,M2);
                         end
                         z = z + 1;
 
@@ -225,7 +225,7 @@ for i=1: floor(N_M/2)
 
             nIRR = length(M1_IRR) + length(M2_IRR);
             IRR_parts = cell(nIRR,1);
-            phi_parts_all = [phi_M{M1_i}' phi_M{M2_i}'];
+            phi_parts_all = [phi_M{M1_i}(:,1)' phi_M{M2_i}(:,1)'];
             
             for x = 1:nIRR
                 if (x <= length(M1_IRR))
@@ -247,7 +247,7 @@ for i=1: floor(N_M/2)
 
                 if (phi_parts_all(k) ~= 0)
 
-                    if(z <= sum(phi_M{M1_i} ~= 0))
+                    if(z <= sum(phi_M{M1_i}(:,1) ~= 0))
                         if ~isempty(prob_M{M1_i,1}{k}{1})
                             concepts_past(:,z) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
                         end
@@ -255,11 +255,11 @@ for i=1: floor(N_M/2)
                             concepts_future(:,z) = expand_prob(prob_M{M1_i,1}{k}{2},M,M1);
                         end
                     else
-                        if ~isempty(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1})
-                            concepts_past(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1},M,M2);
+                        if ~isempty(prob_M{M2_i,1}{k - length(phi_M{M1_i}(:,1))}{1})
+                            concepts_past(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i}(:,1))}{1},M,M2);
                         end
-                        if ~isempty(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{2})
-                            concepts_future(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{2},M,M2);
+                        if ~isempty(prob_M{M2_i,1}{k - length(phi_M{M1_i}(:,1))}{2})
+                            concepts_future(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i}(:,1))}{2},M,M2);
                         end
                     end
                     
@@ -291,7 +291,7 @@ for i=1: floor(N_M/2)
             fprintf('-------------------------------------------------------\n');
             fprintf('M = %s with partition %s - %s\n',mod_mat2str(M),mod_mat2str(M1),mod_mat2str(M2));
             d_Big_phi = big_phi_shift(M1_IRR, M2_IRR, N, M, IRR_whole,concepts_whole_p,concepts_whole_f,phi_w_concepts, M1, M2,...
-                              IRR_parts,concepts_past,concepts_future, prob_M, phi_M{M1_i}', phi_M{M2_i}', phi_parts,op_big_phi_dist);
+                              IRR_parts,concepts_past,concepts_future, prob_M, phi_M{M1_i}(:,1)', phi_M{M2_i}(:,1)', phi_parts,op_big_phi_dist);
                           
 
         end

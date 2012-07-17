@@ -1,4 +1,4 @@
-function [Big_phi_M phi_M prob_M M_cell MIP_M M_IRR_M] = big_phi_all(x0_s,p,b_table,options)
+function [Big_phi_M phi_M prob_M M_cell MIP_M M_IRR_M] = big_phi_all(x0_s,p,options)
 % [Big_phi_M phi_M prob_M M_cell MIP_M] = big_phi_all(x0_s,p,b_table,options)
 % this is a test.
 %
@@ -18,15 +18,19 @@ op_context = options(6);
 op_console = options(10);
 
 
+global b_table
 % global BRs, global FRs
 
 N = log2(size(p,1)); % number of elements in the whole system
 
 %% subset - build a cell array that contains all of the subsets
+
+% M_cell builds arrays that use the actual node numbers as opposed to
+% logicals - perhaps we should make one of these that is global as well
 M_cell = cell(2^N-1,1); % subtract one since we don't consider the empty system
 
 for i = 1:2^N-1
-    x = trans2(i,N); % we have b_table for this, no?
+    x = b_table{i+1,N};
     C = [];
     for j= 1:N % this can all be done with a any() or something like that
         if x(j) == 1
@@ -60,18 +64,19 @@ for M_i = 1: 2^N-1 % for all proper subsets of the system
         fprintf('System = %s\n\n',mod_mat2str(M));
     end
     if op_fb == 3 % YES - fb simultaneously
-        if op_context == 0 % YES, CONSERVATIVE
-            [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,b_table,options); 
+        if op_context == 0 % ummm... these are exactly the same...
+            % YES, CONSERVATIVE
+            [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,options); 
         else % NO, PROGRESSIVE
-            [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,b_table,options);
+            [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,options);
         end
         MIP_M{M_i} = MIP;
     else
         [Big_phi phi prob_cell] = big_phi_comp(M,x0_s,p,b_table,options);
     end
     Big_phi_M(M_i) = Big_phi; % Big_phi for each subset
-    phi_M{M_i} = phi; % Set of small_phis for each subset of each subset
-    M_IRR_M{M_i} = M_IRR;
+    phi_M{M_i} = phi; % Set of small_phis for each purview of each subset
+    M_IRR_M{M_i} = M_IRR; % what set it looks over??
     
     % THE POINTS IN CONCEPT SPACE
     % ARRAY prob_M

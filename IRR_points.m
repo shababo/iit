@@ -4,12 +4,12 @@ if M_i_max
     REP_cell = prob_M{M_i_max,1};
     REP_prod_cell = prob_M{M_i_max,2};
     MIP_cell = MIP_M{M_i_max};
-    IRR_phi = phi_M{M_i_max};
+    IRR_phi = phi_M{M_i_max}(:,1);
 else
     REP_cell = prob_M{1};
     REP_prod_cell = prob_M{2};
     MIP_cell = MIP_M;
-    IRR_phi = phi_M;   
+    IRR_phi = phi_M(:,1);   
 end
 
 N = length(Complex);

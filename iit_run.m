@@ -1,13 +1,16 @@
-function iit_run(tpm, current_state, in_noise, options, in_J)
+function iit_run(tpm, in_J, current_state, in_noise, options)
+
 
 N = size(tpm,2);
 
-global grain, global noise, global BRs, global FRs, global J
+global grain, global noise, global BRs, global FRs, global J, global b_table
 
 grain = 50;
 noise = in_noise;
 BRs = cell(2^N,2^N); % backward repertoire
 FRs = cell(2^N,2^N); % forward repertoire
+
+J = in_J;
 
 op_ave = options(18);
 
@@ -17,14 +20,17 @@ else
     z_max = 2^N;
 end
 
-if nargin == 4 
-    J = ones(N);
-elseif nargin == 5
-    J = in_J;
-end
+% if nargin == 4 
+%     J = ones(N);
+% elseif nargin == 5
+%     J = in_J;
+% end
 
 
-% binary table
+
+% binary table and states list
+% from now on, all loops over subsets/bipartitions will use
+% b_table for their ordering
 b_table = cell(2^N,N);
 states = zeros(N,2^N);
 for i=1: N
@@ -56,7 +62,7 @@ for z=1: z_max
     if op_ave == 0
         x1 = current_state;
     else
-        x1 = trans2(z-1,N); % trans2 is binary counting but reads R to L (100, 010, 110, ...)
+        x1 = states(:,z); 
     end
     
 %     fprintf('x1=%s\n',mat2str(x1));
@@ -102,7 +108,7 @@ for z=1: z_max
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         else % find the complex
             [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] ...
-                = big_phi_complex(x1,tpm,b_table,options);
+                = big_phi_complex(x1,tpm,options);
             
             if op_fb == 2
                 % subindex b means backward and f means forward

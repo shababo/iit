@@ -1,7 +1,9 @@
-function rep = comp_pers_single(current,other,x0_s,p,b_table,bf_option)
+function rep = comp_pers_single(current,other,x0_s,p,bf_option)
 
 %  compute BRs and FRs for a single perspective but given some fixed
 %  current state
+
+global b_table
 
 N = size(p,2);
 
