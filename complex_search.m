@@ -1,4 +1,4 @@
-function [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,M_IRR_M,N,prob_M, phi_M,options)
+function [Big_phi_MIP MIP Complex M_i_max Big_phi_MIP_M MIP_M] = complex_search(Big_phi_M,M_cell,M_IRR_M,N,prob_M, phi_M,options)
 %% Find complex
 
 Big_phi_MIP_M = zeros(2^N-1,1);
@@ -17,6 +17,10 @@ end
 
 [Big_phi_MIP M_i_max] = max_complex(Big_phi_MIP_M,M_cell);
 Complex = M_cell{M_i_max};
+
+disp('**********************')
+disp(M_i_max == convi(Complex));
+disp('**********************')
 
 MIP = cell(2,1);
 MIP{1} = MIP_M{M_i_max};

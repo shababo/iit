@@ -67,6 +67,7 @@ set(handles.logic_text,'Visible','Off')
 set(handles.noise,'Visible','Off')
 set(handles.noise_text,'Visible','Off')
 
+
 % UIWAIT makes iit wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
@@ -105,6 +106,9 @@ else
     updateLogicTypesView(handles)
     updateConnectivityView(handles)
 end
+
+handles.number_actions = handles.number_actions + 1
+guidata(hObject,handles)
 
 
 % --- Executes during object creation, after setting all properties.
@@ -155,6 +159,10 @@ elseif strcmp(selection,'Connections / Logic Mechanisms')
     
     
 end
+
+handles.number_actions = handles.number_actions + 1
+guidata(hObject,handles)
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -442,7 +450,7 @@ if strcmp(tpm_choice,'State X State')
 end
 
 % permute the tpm so that the row order matches 
-
+% THIS WILL GO AWAY SOON (hopefully)
 permuted_tpm = zeros(size(tpm));
 
 for i = 1:num_states
@@ -452,7 +460,7 @@ for i = 1:num_states
     
 end
 
-tpm = permuted_tpm
+tpm = permuted_tpm;
     
 
 current_state = get(handles.cur_state,'Data')';
@@ -559,6 +567,9 @@ else
 end
 
 update_tpm_from_connections_logic(handles)
+
+handles.number_actions = handles.number_actions + 1
+guidata(hObject,handles)
 
 
 

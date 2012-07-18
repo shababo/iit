@@ -1,4 +1,6 @@
-function [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] = big_phi_complex(x0,p,options)
+function [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell] = big_phi_complex(x0,p,options)
+
+% function [Big_phi_MIP MIP Complex M_i_max Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell] = big_phi_complex(x0,p,options)
 
 % [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] = big_phi_complex(x0,p,b_table,options)
 % 
@@ -21,6 +23,7 @@ function [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M M
 % MIP_M
 
 global b_table
+global output_data
 
 %% options
 op_fb = options(1); % 0: forward repertoire, 1: backward repertoire, 2: both, 3: simultaneous
@@ -69,13 +72,13 @@ if op_fb == 2
 elseif op_fb == 0 || op_fb == 1 || op_fb == 3
     % 0: forward or 1: backward computation or 3: simultaneous forward and
     % backward computation
-    [Big_phi_M phi_M prob_M M_cell MIP_M M_IRR_M] = big_phi_all(x0,p,options);
+    [Big_phi_M phi_M prob_M M_cell concept_MIP_M M_IRR_M] = big_phi_all(x0,p,options)
     % complex search
-    [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell, M_IRR_M, N,prob_M,phi_M,options);
-    % irreducible points
-    [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M,phi_M,MIP_M,Complex, M_i_max,op_fb);
-    fprintf('Sum of small_phis = %f\n',sum(IRR_phi));
-    fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
+    [Big_phi_MIP MIP Complex M_i_max  Big_phi_MIP_M complex_MIP_M] = complex_search(Big_phi_M,M_cell, M_IRR_M, N,prob_M,phi_M,options)
+    % irreducible points - do this outside of here...
+%     [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M,phi_M,MIP_M,Complex, M_i_max,op_fb);
+%     fprintf('Sum of small_phis = %f\n',sum(IRR_phi));
+%     fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
 %     plot_REP(Big_phi_M(M_i_max), IRR_REP,IRR_phi,IRR_MIP, 1, Complex, options)
 end
 

@@ -5,12 +5,23 @@ N = size(tpm,2);
 
 global grain, global noise, global BRs, global FRs, global J, global b_table
 
+global output_data
+
+
+
 grain = 50;
 noise = in_noise;
 BRs = cell(2^N,2^N); % backward repertoire
 FRs = cell(2^N,2^N); % forward repertoire
 
 J = in_J;
+
+output_data.tpm = tpm;
+output_data.J = J;
+output_data.current_state = current_state;
+output_data.noise = noise;
+output_data.options = options;
+output_data.num_nodes = N;
 
 op_ave = options(18);
 
@@ -42,6 +53,8 @@ for i=1: N
     end
 end
 
+output_data.states = states;
+
 % parallel computing
 op_parallel = options(19);
 isOpen = matlabpool('size');
@@ -54,8 +67,17 @@ end
 op_complex = options(15);
 op_fb = options(1);
 op_context = options(6);
-Big_phi_st = zeros(2^N,1);
-Big_phi_MIP_st = zeros(2^N,1);
+
+% init cell arrays for results
+Big_phi_M_st = cell(2^N,1);
+Big_phi_MIP_st = cell(2^N,1);
+MIP_st = cell(2^N,1);
+Complex_st = cell(2^N,1);
+prob_M_st = cell(2^N,1);
+phi_M_st = cell(2^N,1);
+concept_MIP_M_st = cell(2^N,1);
+complex_MIP_M_st = cell(2^N,1);
+
 
 for z=1: z_max
     
@@ -73,8 +95,8 @@ for z=1: z_max
     state_check = sum(check_prob);
     if state_check == 0
 %         fprintf('This state cannot be realized!\n')
-        Big_phi_st(z) = NaN;
-        Big_phi_MIP_st(z) = NaN;
+        Big_phi_M_st{z} = NaN;
+        Big_phi_MIP_st{z} = NaN;
     else
         if op_complex == 0 % only consider whole system
             if op_fb == 2
@@ -107,41 +129,60 @@ for z=1: z_max
         % THE CURRENT SETTINGS TAKE US HERE    
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         else % find the complex
-            [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] ...
+            
+            [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell] ...
                 = big_phi_complex(x1,tpm,options);
             
             if op_fb == 2
-                % subindex b means backward and f means forward
-                IRR_phi_b = IRR_phi{1};
-                IRR_phi_f = IRR_phi{2};
-                IRR_REP_b = IRR_REP{1};
-                IRR_REP_f = IRR_REP{2};
-                M_IRR_b = M_IRR{1};
-                M_IRR_f = M_IRR{2};
-                % state dependent big phi and big phi MIP
-                Big_phi_st(z) = sum(IRR_phi_b)+sum(IRR_phi_f);
+%                 % subindex b means backward and f means forward
+%                 IRR_phi_b = IRR_phi{1};
+%                 IRR_phi_f = IRR_phi{2};
+%                 IRR_REP_b = IRR_REP{1};
+%                 IRR_REP_f = IRR_REP{2};
+%                 M_IRR_b = M_IRR{1};
+%                 M_IRR_f = M_IRR{2};
+%                 % state dependent big phi and big phi MIP
+%                 Big_phi_st(z) = sum(IRR_phi_b)+sum(IRR_phi_f);
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % THE CURRENT SETTINGS TAKE US HERE    
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             else
-                Big_phi_st(z) = sum(IRR_phi);
+                Big_phi_M_st{z} = Big_phi_M;
+                Big_phi_MIP_st{z} = Big_phi_MIP_M;
+                MIP_st{z} = MIP;
+                Complex_st{z} = Complex;
+                prob_M_st{z} = prob_M;
+                phi_M_st{z} = phi_M;
+                concept_MIP_M_st{z} = concept_MIP_M;
+                complex_MIP_M_st{z} = complex_MIP_M;
+                
             end
-            Big_phi_MIP_st(z) = Big_phi_MIP;
         end
     end
     
     % pause;
 end
 
-if op_ave == 1
-    if op_fb == 0
-        Big_phi_ave = sum(Big_phi_st)/2^N;
-    else
-        Big_phi_ave = sum(p_x1 .* Big_phi_st); %weighted ave/expected value
-    end
-    fprintf('Big_phi_ave=%f\n',Big_phi_ave);
-end
+% load up output_data struct
+output_data.Big_phi_M = Big_phi_M_st;
+output_data.Big_phi_MIP = Big_phi_MIP_st;
+output_data.MIP = MIP_st;
+output_data.Complex = Complex_st;
+output_data.concepts_M = prob_M_st;
+output_data.small_phi_M = phi_M_st;
+output_data.concept_MIP_M = concept_MIP_M_st;
+output_data.complex_MIP_M = complex_MIP_M_st;
+output_data.M_cell = M_cell;
+
+% if op_ave == 1
+%     if op_fb == 0
+%         Big_phi_ave = sum(Big_phi_st)/2^N;
+%     else
+%         Big_phi_ave = sum(p_x1 .* Big_phi_st); %weighted ave/expected value
+%     end
+% %     fprintf('Big_phi_ave=%f\n',Big_phi_ave);
+% end
 
 op_close = 0;
 isOpen = matlabpool('size');
@@ -149,4 +190,6 @@ if isOpen > 0 && op_close == 1
     matlabpool close;
 end
 
-fprintf('\n');
+fprintf('Loading GUI... \n');
+
+iit_explorer(output_data)

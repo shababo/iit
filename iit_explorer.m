@@ -65,6 +65,19 @@ guidata(hObject, handles);
 set(handles.Concepts,'Visible','Off')
 set(handles.MIP,'Visible','Off')
 
+% load data
+if nargin == 4 && isstruct(varargin{1})
+    handles.data = varargin{1};
+    guidata(hObject,handles)
+else
+    fprintf('Please load a struct when opening IIT_EXPLORER\n');
+    handles.output = 'ERROR';
+    guidata(hObject,handles)
+    close(gcf)
+end
+
+
+
 
 % --- Outputs from this function are returned to the command line.
 function varargout = iit_explorer_OutputFcn(hObject, eventdata, handles) 
@@ -74,7 +87,7 @@ function varargout = iit_explorer_OutputFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
-varargout{1} = handles.output;
+% varargout{1} = handles.output;
 
 
 % --- Executes on selection change in view_menu.
