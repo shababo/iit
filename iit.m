@@ -22,7 +22,7 @@ function varargout = iit(varargin)
 
 % Edit the above text to modify the response to help iit
 
-% Last Modified by GUIDE v2.5 17-Jul-2012 13:12:12
+% Last Modified by GUIDE v2.5 17-Jul-2012 16:00:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,7 +62,10 @@ guidata(hObject, handles);
 set(handles.Options,'Visible','Off')
 set(handles.connectivity_mat,'Visible','Off')
 set(handles.connect_mat_title,'Visible','Off')
-
+set(handles.logic_types,'Visible','Off')
+set(handles.logic_text,'Visible','Off')
+set(handles.noise,'Visible','Off')
+set(handles.noise_text,'Visible','Off')
 
 % UIWAIT makes iit wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -99,6 +102,7 @@ else
     tpm_choice = tpm_choices{get(handles.tpm_type_menu,'Value')};
     updateTPMview(handles, tpm_choice)
     updateCurrentStateView(handles)
+    updateLogicTypesView(handles)
     updateConnectivityView(handles)
 end
 
@@ -124,6 +128,33 @@ function net_definition_method_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns net_definition_method contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from net_definition_method
+
+contents = cellstr(get(hObject,'String'));
+selection = contents{get(hObject,'Value')};
+
+if strcmp(selection,'TPM / Connections')
+    
+    set(handles.TPM,'Enable','On')
+    set(handles.logic_types,'Enable','Off')
+    set(handles.noise,'Enable','Off')
+    
+elseif strcmp(selection,'Connections / Logic Mechanisms')
+    
+    user_response = confirm_def_switch('Title','Confirm Definition Change');
+    
+    switch lower(user_response)
+        case 'no'
+            return
+        case 'yes'
+            set(handles.TPM,'Enable','Off')
+            set(handles.logic_types,'Enable','On')
+            set(handles.noise,'Enable','On')
+            update_tpm_from_connections_logic(handles)
+            tpm_type_menu_Callback(handles.tpm_type_menu, eventdata, handles)
+    end
+    
+    
+end
 
 
 % --- Executes during object creation, after setting all properties.
@@ -511,6 +542,10 @@ else
     end
 end
 
+update_tpm_from_connections_logic(handles)
+
+
+
 % --- Executes during object creation, after setting all properties.
 function noise_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to noise (see GCBO)
@@ -667,6 +702,10 @@ if strcmp(tpm_choice,'State X State') || strcmp(tpm_choice,'State X Node')
     set(handles.TPM,'Visible','on')
     set(handles.connect_mat_title,'Visible','off')
     set(handles.connectivity_mat,'Visible','off')
+    set(handles.logic_types,'Visible','off')
+    set(handles.logic_text,'Visible','off')
+    set(handles.noise,'Visible','Off')
+    set(handles.noise_text,'Visible','Off')
     
 else
     
@@ -674,7 +713,10 @@ else
     set(handles.TPM,'Visible','off')
     set(handles.connect_mat_title,'Visible','on')
     set(handles.connectivity_mat,'Visible','on')
-    
+    set(handles.logic_types,'Visible','on')
+    set(handles.logic_text,'Visible','on')   
+    set(handles.noise,'Visible','on')
+    set(handles.noise_text,'Visible','on')
 end
     
     
@@ -703,6 +745,9 @@ if strcmp(tpm_choice,'State X State') && size(tpm,2) == num_nodes
             end
         end
     end
+    
+    set(handles.TPM,'Data',new_tpm)
+    
 % if we want state x node and we were in state x state    
 elseif strcmp(tpm_choice,'State X Node') && size(tpm,2) == num_states
     
@@ -720,10 +765,12 @@ elseif strcmp(tpm_choice,'State X Node') && size(tpm,2) == num_states
             end
         end
     end
+    
+    set(handles.TPM,'Data',new_tpm)
 end
 
 updateTPMview(handles, tpm_choice)
-set(handles.TPM,'Data',new_tpm)
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -790,6 +837,10 @@ if (eventdata.NewData ~= 0 && eventdata.NewData ~= 1)
     set(hObject,'Data',connectivity_mat)
 else
     
+    if strcmp(get(handles.logic_types,'Enable'),'on')
+        update_tpm_from_connections_logic(handles)
+    end
+
     set(handles.warning,'String','');
     
 end
@@ -803,13 +854,13 @@ function upload_connectivity_Callback(hObject, eventdata, handles)
 
 filename = uigetfile('*.mat');
 
-if size(get(handles.TPM,'Data'),2) == str2num(get(handles.num_nodes,'String'))
+if size(get(handles.TPM,'Data'),2) == str2double(get(handles.num_nodes,'String'))
     
-    tpm_choice = 'State X Node'
+    tpm_choice = 'State X Node';
     
 else
     
-    tpm_choice = 'State X State'
+    tpm_choice = 'State X State';
 end
 
 
@@ -826,8 +877,8 @@ if (filename ~= 0)
             set(handles.connectivity_mat,'Data',J)
             
             updateCurrentStateView(handles)
-            if  == num_nodes
-                updateTPMview(handles,tpm_choice)
+
+            updateTPMview(handles,tpm_choice)
             
             updateConnectivityView(handles);
         
@@ -867,5 +918,98 @@ else
 end
 
 set(handles.connectivity_mat,'Data',connect_mat_new);
+set(handles.connectivity_mat,'ColumnEditable',true(1,nNodes));
 
-set(handles.TPM,'ColumnEditable',true(1,nNodes));
+if strcmp(get(handles.logic_types,'Enable'),'on')
+    update_tpm_from_connections_logic(handles)
+end
+    
+
+
+
+
+% --- Executes when entered data in editable cell(s) in logic_types.
+function logic_types_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to logic_types (see GCBO)
+% eventdata  structure with the following fields (see UITABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+
+logic_vec = get(hObject,'Data');
+if (eventdata.NewData < 1 || eventdata.NewData > 9)
+    
+    set(handles.warning,'String','Logic Types must be between 1 and 9')
+    logic_vec(eventdata.Indices(2)) = eventdata.PreviousData;
+    set(hObject,'Data',logic_vec)
+    
+else
+    
+    set(handles.warning,'String','');
+    update_tpm_from_connections_logic(handles)
+    
+end
+
+function update_tpm_from_connections_logic(handles)
+
+updateTPMview(handles, 'State X Node')
+logic_types = get(handles.logic_types,'Data');
+nNodes = str2double(get(handles.num_nodes,'String'));
+new_tpm = zeros(2^nNodes,nNodes);
+connection_mat = get(handles.connectivity_mat,'Data');
+noise = str2double(get(handles.noise,'String'));
+
+for k = 1:2^nNodes
+    
+    x0 = trans2(k-1,nNodes);
+    for i = 1:nNodes
+        i_vec = logical(connection_mat(i,:));
+        input_vec = x0(i_vec);
+        new_tpm(k,i) = logic_gates(input_vec,logic_types(i),noise);
+    end
+    
+end
+
+set(handles.TPM,'Data',new_tpm)
+stateXnode_view = 2;
+set(handles.tpm_type_menu,'Value',stateXnode_view);
+
+function updateLogicTypesView(handles)
+
+nNodes = str2double(get(handles.num_nodes,'String'));
+
+log_types_old = get(handles.logic_types,'Data');
+log_types_size_old = length(log_types_old);
+
+% increase size
+if nNodes > log_types_size_old
+    
+    log_types_new = ones(1,nNodes);
+    log_types_new(1:log_types_size_old) = log_types_old;
+
+% decrease size
+else
+    
+    log_types_new = log_types_old(1:nNodes);
+    
+end
+
+set(handles.logic_types,'Data',log_types_new);
+set(handles.logic_types,'ColumnEditable',true(1,nNodes));
+
+
+% --- Executes on button press in pushbutton7.
+function pushbutton7_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pushbutton9.
+function pushbutton9_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton9 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
