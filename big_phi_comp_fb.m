@@ -184,11 +184,13 @@ elseif (op_big_phi == 2 || op_big_phi == 4)
         if (op_big_phi == 2)
             Big_phi = big_phi_info(M_IRR,concepts,concept_phis);
         else
-           Big_phi = NaN;
+            Big_phi = NaN;
         end
 
-    else
+    elseif (op_big_phi == 2)
         Big_phi = 0;
+    else
+        Big_phi = NaN;
     end
 elseif (op_big_phi == 3)
 

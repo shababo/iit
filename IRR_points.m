@@ -1,4 +1,4 @@
-function [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M, phi_M,MIP_M,Complex ,M_i_max,op_fb)
+function [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M, phi_M,MIP_M,subset)
 %% Irreducible points
 if M_i_max
     REP_cell = prob_M{M_i_max,1};
@@ -12,25 +12,19 @@ else
     IRR_phi = phi_M(:,1);   
 end
 
-N = length(Complex);
+N = length(subset);
 
 index_vec_IRR = find(IRR_phi ~= 0);
 N_IRR = length(index_vec_IRR);
 
-if op_fb == 3
-    IRR_REP = cell(N_IRR,2);
-    for i=1: N_IRR
-        j = index_vec_IRR(i);
-        IRR_REP{i,1} = REP_cell{j};
-        IRR_REP{i,2} = REP_prod_cell{j};
-    end
-else
-    IRR_REP = zeros(2^N,N_IRR);
-    for i=1: N_IRR
-        j = index_vec_IRR(i);
-        IRR_REP(:,i) = REP_cell{j};
-    end
+
+IRR_REP = cell(N_IRR,2);
+for i=1: N_IRR
+    j = index_vec_IRR(i);
+    IRR_REP{i,1} = REP_cell{j};
+    IRR_REP{i,2} = REP_prod_cell{j};
 end
+
 
 IRR_MIP = cell(N_IRR,1);
 for i=1: N_IRR
@@ -47,7 +41,7 @@ IRR_phi = IRR_phi';
 M_cell = cell(2^N-1,1);
 k = 1;
 for i=1: N
-    C = nchoosek(Complex,i);
+    C = nchoosek(subset,i);
     N_C = size(C,1);
     for j=1: N_C
         C_j = C(j,:);   

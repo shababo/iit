@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 16-Jul-2012 11:33:13
+% Last Modified by GUIDE v2.5 18-Jul-2012 15:16:37
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -74,7 +74,36 @@ else
     handles.output = 'ERROR';
     guidata(hObject,handles)
     close(gcf)
+    return
 end
+
+num_states = 2^handles.data.num_nodes;
+all_states = ~isempty(handles.data.Big_phi_M{2});
+
+% setup state listbox
+if all_states
+    states = cell(1,num_states + 1);
+    states{1} = 'Average';
+    for i = 1:num_states
+        states{i + 1} = dec2bin(i-1,handles.data.num_nodes);
+    end
+else
+    states = {mod_mat2str(handles.data.current_state')};
+    set(handles.state_list,'Enable','off')
+end
+set(handles.state_list,'String',states);
+
+% setup subset listbox
+nodes = cell(1,handles.data.num_nodes);
+for i = 1:handles.data.num_nodes
+    nodes{i} = num2str(i);
+end
+set(handles.nodes_list,'String',nodes)
+set(handles.nodes_list,'Value',handles.data.Complex{1})
+
+set(handles.overview_concepts_axes,'Visible','off');
+set(handes.summary_panel,'Visible','off');
+
 
 
 
@@ -280,6 +309,57 @@ function listbox3_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function listbox3_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to listbox3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in refresh_button.
+function refresh_button_Callback(hObject, eventdata, handles)
+% hObject    handle to refresh_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+subset = get(handles.nodes_list,'Value');
+state_choice = get(handles.state_list,'Value');
+if state_choice == 1
+    set(handles.overview_concepts_axes,'Visible','off')
+    set(handles.overview_axes_text,'Visible','on')
+else
+    set(handles.overview_axes_text,'Visible','off')
+%     set(handles.overview_loading_text,'Visible','on')
+    state_index = trans10(flipud(trans2(state_choice - 2),handles.data.num_nodes));
+    subset_index = convi(subset) - 1;
+    set(handles.big_phi_text,'String',['Big Phi = ' num2str(handles.data.Big_phi_M{state_index}(subset))])
+    set(handles.big_phi_MIP_text,'String',['Big Phi MIP = ' num2str(handles.data.Big_phi_MIP{state_index}(subset))])
+    set(handles.MIP_text,'String',{'MIP:',
+    [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(handles.data.prob_M{state_index},...
+                                                 handles.data.phi_M{state_index},...
+                                                 handles.data.MIP_M{state_index},subset, subset_index);
+    
+end    
+    
+
+
+
+% --- Executes on selection change in state_list.
+function state_list_Callback(hObject, eventdata, handles)
+% hObject    handle to state_list (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns state_list contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from state_list
+
+
+% --- Executes during object creation, after setting all properties.
+function state_list_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to state_list (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

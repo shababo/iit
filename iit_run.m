@@ -94,7 +94,7 @@ for z=1: z_max
     check_prob = partial_prob_comp(1:N,1:N,x1,tpm,b_table,1); % last argument is op_fb = 1;
     state_check = sum(check_prob);
     if state_check == 0
-%         fprintf('This state cannot be realized!\n')
+        fprintf('This state cannot be realized!\n')
         Big_phi_M_st{z} = NaN;
         Big_phi_MIP_st{z} = NaN;
     else
@@ -131,7 +131,7 @@ for z=1: z_max
         else % find the complex
             
             [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell] ...
-                = big_phi_complex(x1,tpm,options);
+                = big_phi_complex(x1,tpm,options)
             
             if op_fb == 2
 %                 % subindex b means backward and f means forward
@@ -191,5 +191,7 @@ if isOpen > 0 && op_close == 1
 end
 
 fprintf('Loading GUI... \n');
+
+save('output_data_sample.mat','output_data');
 
 iit_explorer(output_data)

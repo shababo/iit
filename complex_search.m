@@ -18,9 +18,6 @@ end
 [Big_phi_MIP M_i_max] = max_complex(Big_phi_MIP_M,M_cell);
 Complex = M_cell{M_i_max};
 
-disp('**********************')
-disp(M_i_max == convi(Complex));
-disp('**********************')
 
 MIP = cell(2,1);
 MIP{1} = MIP_M{M_i_max};

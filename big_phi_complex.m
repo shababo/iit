@@ -1,5 +1,4 @@
 function [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell] = big_phi_complex(x0,p,options)
-
 % function [Big_phi_MIP MIP Complex M_i_max Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell] = big_phi_complex(x0,p,options)
 
 % [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] = big_phi_complex(x0,p,b_table,options)
@@ -74,7 +73,7 @@ elseif op_fb == 0 || op_fb == 1 || op_fb == 3
     % backward computation
     [Big_phi_M phi_M prob_M M_cell concept_MIP_M M_IRR_M] = big_phi_all(x0,p,options)
     % complex search
-    [Big_phi_MIP MIP Complex M_i_max  Big_phi_MIP_M complex_MIP_M] = complex_search(Big_phi_M,M_cell, M_IRR_M, N,prob_M,phi_M,options)
+    [Big_phi_MIP MIP Complex M_i_max  Big_phi_MIP_M complex_MIP_M] = complex_search(Big_phi_M,M_cell, M_IRR_M, N,prob_M,phi_M,options);
     % irreducible points - do this outside of here...
 %     [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M,phi_M,MIP_M,Complex, M_i_max,op_fb);
 %     fprintf('Sum of small_phis = %f\n',sum(IRR_phi));

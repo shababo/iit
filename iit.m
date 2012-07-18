@@ -107,8 +107,6 @@ else
     updateConnectivityView(handles)
 end
 
-handles.number_actions = handles.number_actions + 1
-guidata(hObject,handles)
 
 
 % --- Executes during object creation, after setting all properties.
@@ -160,8 +158,6 @@ elseif strcmp(selection,'Connections / Logic Mechanisms')
     
 end
 
-handles.number_actions = handles.number_actions + 1
-guidata(hObject,handles)
 
 
 
@@ -568,8 +564,6 @@ end
 
 update_tpm_from_connections_logic(handles)
 
-handles.number_actions = handles.number_actions + 1
-guidata(hObject,handles)
 
 
 
