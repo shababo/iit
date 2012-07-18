@@ -1,4 +1,4 @@
-function [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,options)
+function [Big_phi phi_all_values prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,options)
 
 %%  compute big phi for a subset, M
 % M: a subset of the whole system (can be the whole system itself)
@@ -262,13 +262,13 @@ for i_C=1: 2^N-1
                 [string_p string] = make_title_fb(MIP{i_C},op_context,op_min);
                 fprintf('C = %s: Core Concept: %s\n',mod_mat2str(C),string{3});
                 fprintf('MIP = %s\n', string_p{3});
-                fprintf('\tPast: phi_b = %f\n',KLD(prob{i_C}{1},prob_prod{i_C}{1}));
+                fprintf('\tPast: phi_b = %f\n',phi_all_values(i_C,2));
 %                 fprintf('Partition: %s\n',string_p{3});
 %                 fprintf('Distribution (full):\n');
 %                 disp(prob{i_C}{1}');
 %                 fprintf('Distribution (partitioned):\n');
 %                 disp(prob_prod{i_C}{1}');
-                fprintf('\tFuture: phi_f = %f\n',KLD(prob{i_C}{2},prob_prod{i_C}{2}));
+                fprintf('\tFuture: phi_f = %f\n',phi_all_values(i_C,3));
 %                 fprintf('Distribution (full):\n');
 %                 disp(prob{i_C}{2}');
 %                 fprintf('Distribution (partitioned):\n');
