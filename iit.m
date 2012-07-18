@@ -22,7 +22,7 @@ function varargout = iit(varargin)
 
 % Edit the above text to modify the response to help iit
 
-% Last Modified by GUIDE v2.5 17-Jul-2012 16:00:11
+% Last Modified by GUIDE v2.5 17-Jul-2012 20:49:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -417,10 +417,12 @@ tpm_choices = cellstr(get(handles.tpm_type_menu,'String'));
 tpm_choice = tpm_choices{get(handles.tpm_type_menu,'Value')};       
 
 tpm = get(handles.TPM,'Data');
+num_states = size(tpm,1);
+num_nodes = str2double(get(handles.num_nodes,'String'));
 
 if strcmp(tpm_choice,'State X State')
-    num_states = size(tpm,1);
-    num_nodes = str2double(get(handles.num_nodes,'String'));
+    
+    
     new_tpm = zeros(num_states,num_nodes);
     
     for i = 1:num_states
@@ -438,6 +440,20 @@ if strcmp(tpm_choice,'State X State')
     
     tpm = new_tpm;
 end
+
+% permute the tpm so that the row order matches 
+
+permuted_tpm = zeros(size(tpm));
+
+for i = 1:num_states
+    
+    permuted_row_index = trans10(flipud(trans2(i-1,num_nodes)));
+    permuted_tpm(permuted_row_index,:) = tpm(i,:);
+    
+end
+
+tpm = permuted_tpm
+    
 
 current_state = get(handles.cur_state,'Data')';
 noise = str2double(get(handles.noise,'String'));
@@ -681,6 +697,10 @@ if (filename ~= 0)
         set(handles.warning,'String','No variable named ''tpm'' in that data file.')
     end
     
+    tpm_def = 1;
+    set(handles.net_definition,'Value',tpm_def);
+    net_definition_method_Callback(hObject, eventdata, handles);
+    
 end
     
 
@@ -803,21 +823,6 @@ function listbox4_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from listbox4
 
 
-% --- Executes during object creation, after setting all properties.
-function listbox4_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to listbox4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-set(hObject,'Max',2)
-
-
 % --- Executes when entered data in editable cell(s) in connectivity_mat.
 function connectivity_mat_CellEditCallback(hObject, eventdata, handles)
 % hObject    handle to connectivity_mat (see GCBO)
@@ -845,6 +850,8 @@ else
     
 end
 
+update_tpm_from_connections_logic(handles)
+
 
 % --- Executes on button press in upload_connectivity.
 function upload_connectivity_Callback(hObject, eventdata, handles)
@@ -868,21 +875,22 @@ if (filename ~= 0)
     
     load(filename)
 
-    if exist('J')
+    if exist('connectivity_mat')
         
-        if size(J,1) == size(J,2)
+        if size(connectivity_mat,1) == size(connectivity_mat,2)
 
-            num_nodes = size(J,1);
+            num_nodes = size(connectivity_mat,1);
             set(handles.num_nodes,'String',num2str(num_nodes))
-            set(handles.connectivity_mat,'Data',J)
+            set(handles.connectivity_mat,'Data',connectivity_mat)
             
             updateCurrentStateView(handles)
-
             updateTPMview(handles,tpm_choice)
-            
             updateConnectivityView(handles);
-        
             set(handles.warning,'String','');
+            
+%             tpm_def = 1;
+%             set(handles.net_definition,'Value',tpm_def);
+%             net_definition_method_Callback(hObject, eventdata, handles);
         
         else
             
@@ -891,8 +899,12 @@ if (filename ~= 0)
         end
     
     else
-        set(handles.warning,'String','No variable named ''tpm'' in that data file.')
+        set(handles.warning,'String','No variable named ''connectivity_mat'' in that data file.')
     end
+    
+    logical_def = 1;
+    set(handles.net_definition,'Value',logical_def);
+    net_definition_method_Callback(hObject, eventdata, handles);
     
 end
 
@@ -940,13 +952,13 @@ function logic_types_CellEditCallback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 logic_vec = get(hObject,'Data');
-if (eventdata.NewData < 1 || eventdata.NewData > 9)
+if (eventdata.NewData < 1 || eventdata.NewData > 10)
     
     set(handles.warning,'String','Logic Types must be between 1 and 9')
     logic_vec(eventdata.Indices(2)) = eventdata.PreviousData;
     set(hObject,'Data',logic_vec)
     
-else
+els
     
     set(handles.warning,'String','');
     update_tpm_from_connections_logic(handles)
@@ -964,7 +976,11 @@ noise = str2double(get(handles.noise,'String'));
 
 for k = 1:2^nNodes
     
-    x0 = trans2(k-1,nNodes);
+    % we must flip the vector so that the states come in the desired order
+    % however, we have to remember to permute when we send to the backend
+    % of the code... see run function - soon we will standarize this across
+    % both
+    x0 = flipud(trans2(k-1,nNodes));
     for i = 1:nNodes
         i_vec = logical(connection_mat(i,:));
         input_vec = x0(i_vec);
@@ -974,8 +990,13 @@ for k = 1:2^nNodes
 end
 
 set(handles.TPM,'Data',new_tpm)
-stateXnode_view = 2;
-set(handles.tpm_type_menu,'Value',stateXnode_view);
+
+% this is a bit of hack since we set the new tpm as state X node :(
+if(get(handles.tpm_type_menu,'Value') == 1)
+     
+    stateXnode_view = 2;
+    set(handles.tpm_type_menu,'Value',stateXnode_view);
+end
 
 function updateLogicTypesView(handles)
 
@@ -1001,15 +1022,118 @@ set(handles.logic_types,'Data',log_types_new);
 set(handles.logic_types,'ColumnEditable',true(1,nNodes));
 
 
-% --- Executes on button press in pushbutton7.
-function pushbutton7_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton7 (see GCBO)
+% --- Executes on button press in save_button.
+function save_button_Callback(hObject, eventdata, handles)
+% hObject    handle to save_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+tpm = get(handles.TPM,'Data');
+tpm_view = get(handles.tpm_type_menu,'Value');
+logic_types = get(handles.loadogic_types,'Data');
+noise = get(handles.noise,'String');
+connectivity_mat = get(handles.connectivity_mat,'Data');
+cur_state = get(handles.cur_state,'Data');
+net_definition = get(handles.net_definition_method,'Value');
 
-% --- Executes on button press in pushbutton9.
-function pushbutton9_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton9 (see GCBO)
+options_handles = findobj('Style','popupmenu','Parent',handles.Options);
+num_options = length(options_handles);
+options_tags = cell(num_options,1);
+options_values = zeros(num_options,1);
+for i = 1:length(options_handles)
+    
+    options_tags{i} = get(options_handles(i),'Tag');
+    options_values(i) = get(options_handles(i),'Value');
+    
+end
+    
+    
+variable_names = {'tpm','tpm_view','logic_types','noise','connectivity_mat','cur_state','options_tags','options_values','net_definition'};
+uisave(variable_names);
+
+
+% --- Executes on button press in load_button.
+function load_button_Callback(hObject, eventdata, handles)
+% hObject    handle to load_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+filename = uigetfile('*.mat');
+
+if (filename ~= 0)
+    
+    load(filename)
+    
+    if exist('tpm')
+        if size(tpm,2) == size(tpm,1) && isposintscalar(log2(size(tpm,1)))
+
+            num_nodes = log2(size(tpm,1));
+
+            set(handles.num_nodes,'String',num2str(num_nodes))
+            set(handles.tpm_type_menu,'Value',1); % state x state
+            set(handles.TPM,'Data',tpm);
+            updateTPMview(handles,'State X State');
+
+
+        elseif size(tpm,1) == 2^size(tpm,2)
+
+            num_nodes = size(tpm,2);
+
+            set(handles.num_nodes,'String',num2str(num_nodes))
+            set(handles.tpm_type_menu,'Value',2); % state x node
+            set(handles.TPM,'Data',tpm);
+
+            updateTPMview(handles,'State X Node');
+        end
+    end
+
+        
+    if exist('tpm_view')
+        set(handles.tpm_type_menu,'Value',tpm_view);
+    end
+    
+    if exist('logic_types')
+        set(handles.logic_types,'Data',logic_types)
+    end
+    
+    if exist('noise')
+        set(handles.noise,'String',noise)
+    end
+    
+    if exist('cur_state')
+        set(handles.cur_state,'Data',cur_state);
+    end
+    
+    if exist('connectivity_mat')
+
+            set(handles.connectivity_mat,'Data',connectivity_mat)
+            updateCurrentStateView(handles)
+%             updateTPMview(handles,tpm_choice)
+            updateConnectivityView(handles);
+    end 
+    
+    if exist('options_tags') && exist('options_values')
+        
+        options_handles = findobj('Style','popupmenu','Parent',handles.Options);
+        
+        for i = 1:length(options_handles)
+            
+            tag = get(options_handles(i),'Tag');
+            [found, index] = ismember('options_tags', tag);
+            
+            if found
+                set(options_handles(index),'Value',options_values(index))
+            end
+
+        end
+    end
+    
+    if exist('net_definition')
+        set(handles.net_definition_method,'Value','net_definition')
+    end
+    
+    net_definition_method_Callback(hObject, eventdata, handles);
+        
+
+        
+end

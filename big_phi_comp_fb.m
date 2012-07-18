@@ -10,7 +10,6 @@ function [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(M,x0_s,p,options)
 
 global grain
 global J
-global b_table
 % global BRs, global FRs
     
 N = length(M);

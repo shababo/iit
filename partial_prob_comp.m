@@ -4,7 +4,6 @@ function prob = partial_prob_comp(x0_b,x1_b,x1,p,b_table,op_fb,M,C_j)
 % x1: data, x0_b: partition of x0, x1_b: partition of x1
 % p: probability matrix in the whole system
 
-% this 
 
 
 N = log2(size(p,1)); % number of elements in the whole system
