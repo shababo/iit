@@ -1,64 +1,58 @@
-function [] = plot_REP(Big_phi, REP_cell,phi_vec,MIP_cell, fig_st, M, options)
-
-op_figures = options(3);
-op_context = options(6);
-op_min = options(9);
+function [] = plot_REP(Big_phi, REP_cell,phi,MIP_cell, M, overview_axes_panel)
 
 
-if nargin < 6
-    op_context = 0; % default: conservative
-end
-if nargin < 7
-    op_min = 1;
-end
+% op_min = options(9);
+op_min = 1;
 
-N = length(phi_vec);
 
-if op_figures
-    figure(20+fig_st);
-    plot_phi(phi_vec,MIP_cell, M)
-    title('\phi  For Each Purview','FontSize',20);
-    xlabel('Purview','FontSize',16)
-    ylabel('\phi','FontSize',20)
-end
 
-if op_context == 0
+N = size(phi,1);
+
+% if op_figures
+%     figure(20+fig_st);
+%     plot_phi(phi,MIP_cell, M)
+%     title('\phi  For Each Purview','FontSize',20);
+%     xlabel('Purview','FontSize',16)
+%     ylabel('\phi','FontSize',20)
+% end
+
+
     
-    if op_figures
+
         
-        if N > 8
-            r = 16;
-            c = 2;
-            fig_max = 16;
-        else
-            r = N;
-            c = 2;
-            fig_max = 8;
-        end
+if N > 8
+    r = 16;
+    c = 2;
+    fig_max = 16;
+else
+    r = N;
+    c = 2;
+    fig_max = 8;
+end
 
-        pw = 300; % panel width including margin in pixels
-        ph = 50; % panel height including margin in pixels
-        mb = 20; % bottom margin
-        mt = 20; % top margin
-        mh = 25; % margin height
-        mw = 10; % margin width
-        % panel_size = [0, 0, pw, ph]'; % panel size including margin
-        panel_size_w = [50, 0, pw-mw*2, ph-mh]'; % panel size without margin
-        fig_size = [0, 0,  pw*c + 100, ph*r + mb+mt + 50]'; % size of figure window
-        pos_fig = [100,100,0,0]' + fig_size; % position of figure
+pw = 300; % panel width including margin in pixels
+ph = 50; % panel height including margin in pixels
+mb = 20; % bottom margin
+mt = 20; % top margin
+mh = 25; % margin height
+mw = 10; % margin width
+% panel_size = [0, 0, pw, ph]'; % panel size including margin
+panel_size_w = [50, 0, pw-mw*2, ph-mh]'; % panel size without margin
+fig_size = [0, 0,  pw*c + 100, ph*r + mb+mt + 50]'; % size of figure window
+pos_fig = [100,100,0,0]' + fig_size; % position of figure
 
-        pos_vec = zeros(4,r,c);
-        for i=1: r
-            for j=1: c
-                pos_vec(:,i,j) = [(j-1)*pw + 2*(j-1)+mw, (r-i)*ph + 10, 0, 0]' + panel_size_w + [0 mb 0 0]'; % pixels
-                pos_vec([1 3],i,j) = pos_vec([1 3],i,j)/pos_fig(3); % normalization
-                pos_vec([2 4],i,j) = pos_vec([2 4],i,j)/pos_fig(4); % normalization
-            end
-        end
-
-    %     Big_phi = sum(phi_vec);
-        sy = ['Phi=',num2str(Big_phi)];
+pos_vec = zeros(4,r,c);
+for i=1: r
+    for j=1: c
+        pos_vec(:,i,j) = [(j-1)*pw + 2*(j-1)+mw, (r-i)*ph + 10, 0, 0]' + panel_size_w + [0 mb 0 0]'; % pixels
+        pos_vec([1 3],i,j) = pos_vec([1 3],i,j)/pos_fig(3); % normalization
+        pos_vec([2 4],i,j) = pos_vec([2 4],i,j)/pos_fig(4); % normalization
     end
+end
+
+%     Big_phi = sum(phi);
+sy = ['Big Phi=',num2str(Big_phi)];
+    
     
     for i=1 : N
         
@@ -71,9 +65,9 @@ if op_context == 0
         FR_w = prob{2};
         BR_p = prob_prod{1};
         FR_p = prob_prod{2};
-        phi_b = KLD(BR_w,BR_p);
-        phi_f = KLD(FR_w,FR_p);
-        [string_p string] = make_title_fb(MIP_cell{i},op_context,op_min);
+        phi_b = phi(i,2);
+        phi_f = phi(i,3);
+        [string_p string] = make_title_fb(MIP_cell{i},0,1);
         
         s_title = cell(2,1);
         s_title_p = cell(2,1);
@@ -85,18 +79,18 @@ if op_context == 0
         s_title{1}= {['FULL:    ', string{1}, ',  \phi_b=',num2str(phi_b)],['PARTITIONED:    ', string_p{1}]};
         s_title{2}= {['FULL:    ', string{2}, ',  \phi_f=',num2str(phi_f)],['PARTITIONED:    ', string_p{2}]};
         
-        s = [string{3}, ', ', string_p{3},', phi = ',num2str(phi_vec(i))];
+        s = [string{3}, ', ', string_p{3},', phi = ',num2str(phi(i))];
         fprintf('%s\n',s);
         
-        if op_figures
+
             i_rev = N-i+1;
             fig_pi = floor((i_rev-1)/fig_max);
             fig_i = i_rev - fig_pi*fig_max;
             pos_BR = pos_vec(:,fig_i,1);
             pos_FR = pos_vec(:,fig_i,2);
 
-            figure(fig_st+fig_pi)
-            set(gcf,'Position',pos_fig)
+%             figure(fig_st+fig_pi)
+%             set(gcf,'Position',pos_fig)
             if mod(fig_i,min(r,N)) == 0
                 labelON = 1;
             else
@@ -106,7 +100,7 @@ if op_context == 0
             BR(:,1) = BR_w; BR(:,2) = BR_p;
             FR = ones(length(FR_w),2);
             FR(:,1) = FR_w; FR(:,2) = FR_p;
-            plot_BRFR(BR,FR,pos_BR',pos_FR',s_title,labelON)
+            plot_BRFR(BR,FR,pos_BR',pos_FR',s_title,labelON,overview_axes_panel)
     %         plot_BRFR(BR_w,FR_w,pos_BR',pos_FR',s_title,labelON)
 
             if i == N
@@ -116,7 +110,9 @@ if op_context == 0
                 'Units','normalized',...
                 'FontSize',16,...
                 'BackgroundColor','w',...
-                'Position', [0.33 0.9 0.33 0.08]);
+                'Position', [0.33 0.8 0.33 0.12],...
+                'Parent',overview_axes_panel,...
+                'Clipping','on');
 
     %             uicontrol('Style', 'text',...
     %             'String', 'PAST <-- CURRENT',... %replace something with the text you want
@@ -132,8 +128,10 @@ if op_context == 0
     %             'BackgroundColor','w',...
     %             'Position', [0.59 0.79 0.28 0.05]);
 
-                my_legend = legend('Full System','Partitioned System');
-                set(my_legend, 'Position',[.75 .85 .1 .18]);
+                my_legend = legend('Full Concept','Partitioned Concept');
+                set(my_legend, 'Position',[.75 .8 .1 .18],...
+                'Parent',overview_axes_panel,...
+                'Clipping','on');
 
             end
 
@@ -145,7 +143,9 @@ if op_context == 0
             'Units','normalized',...
             'FontSize',13,...
             'BackgroundColor','w',...
-            'Position', subtit_pos);
+            'Position', subtit_pos,...
+                'Parent',overview_axes_panel,...
+                'Clipping','on');
 
     %         subtit_pos = subtit_pos + [.920 0 0 0];
     %         
@@ -155,7 +155,7 @@ if op_context == 0
     %         'FontSize',10,...
     %         'Position', subtit_pos);
 
-            set(gcf,'OuterPosition',[200 100 1000 700]);
+%             set(gcf,'OuterPosition',[200 100 1000 700]);
 
     %         figure(fig_st+fig_pi+10)
     %         set(gcf,'Position',pos_fig)
@@ -200,107 +200,19 @@ if op_context == 0
     %         'Units','normalized',...
     %         'FontSize',10,...
     %         'Position', subtit_pos);
-        
-        end
+
 
     end
     
     
     
-else
-    f_size = zeros(1,2);
-    if N >= 18
-        f_size(1) = 3;
-        f_size(2) = 6;
-    elseif N >= 9
-        f_size(1) = 3;
-        f_size(2) = ceil(N/3);
-    elseif N < 9
-        f_size(1) = 2;
-        f_size(2) = ceil(N/2);
-    end
-    
-    r = f_size(1);
-    c = f_size(2);
-    fig_max = r*c;
-    
-    save test_set
-    
-    pos_vec = zeros(fig_max,4);
-    m_s = 40;
-    p_s = 300;
-    margin = [0, m_s, 0, 0 ];
-    
-    pos_fig = [0,0,p_s*c,p_s*r];
-    pos_fig = pos_fig + r*margin;
-    
-    r_m = m_s/(r*p_s+r*m_s);
-    r_p = r*p_s/(r*p_s+r*m_s);
-    
-    for i=1: r
-        for j=1: c
-            k = (i-1)*c + j;
-            pos_vec(k,:) = [1/c*(j-1), 1/r*(r-i)*r_p, 0, 0];
-            pos_vec(k,:) = pos_vec(k,:) + (r-i+1)*[0, r_m, 0, 0];
-        end
-    end
-    
-    pos_TR = [0.05/c, 0.15/r*r_p, 0.78/c, 0.78/r*r_p];
-    
-    pos_BR = r_p*[0.08/c, 0/r*r_p, 0.07/c, 0.005/r*r_p];
-    pos_BR = pos_BR + [pos_TR(3),pos_TR(2),0,pos_TR(4)];
-    
-    pos_FR = r_p*[0.05/c, 0.05/r*r_p, 0.005/c, 0.07/r*r_p];
-    pos_FR = pos_FR + [0, 0, pos_TR(3), 0];
-    
-    pos3 = zeros(3,4);
-    
-    for i = 1: N
-        fig_pi = floor((i-1)/fig_max);
-        
-        prob = REP_cell{i,1};
-        prob_prod = REP_cell{i,2};
-        [string_p string] = make_title_fb(MIP_cell{i});
-        s_title= [string,': \phi=',num2str(phi_vec(i))];
-        
-        j = i - fig_pi*fig_max;
-        pos_add = pos_vec(j,:);
-        
-        pos3(1,:) = pos_TR + pos_add;
-        pos3(2,:) = pos_BR + pos_add;
-        pos3(3,:) = pos_FR + pos_add;
-        
-        figure(fig_st+fig_pi);
-        % figure('Resize','off');
-        set(gcf,'Position',pos_fig)
-        % set(gcf,'MenuBar','None')
-        plot_TRBRFR(prob,pos3,s_title);
-        if i == N
-            Big_phi_comp = sum(phi_vec);
-            sy = ['\Phi=',num2str(Big_phi_comp,3)];
-            xlabel(sy)
-        end
-        
-        figure(10+fig_st+fig_pi);
-        % figure('Resize','off')
-        set(gcf,'Position',pos_fig)
-        % set(gcf,'MenuBar','None')
-        plot_TRBRFR(prob_prod,pos3,string_p);
-        
-        if i== 1
-            % fprintf('Irreducible points\n');
-        end
-        fprintf('%s\n',s_title);
-       
-    end
-    
-end
+
 
 end
 
-function [] = plot_BRFR(BR,FR,pos_BR,pos_FR,s_title,labelON)
+function [] = plot_BRFR(BR,FR,pos_BR,pos_FR,s_title,labelON,overview_axes_panel)
 
-subplot('Position',pos_BR)
+subplot('Position',pos_BR,'Parent',overview_axes_panel,'Clipping','on')
 h = bar(0:length(BR)-1,BR,'hist');
 set(gca,'XTick',0:length(BR)-1)
 set(gca,'YTickLabel',[0 .5 1])
@@ -320,7 +232,7 @@ else
 end
 
 
-subplot('Position',pos_FR);
+subplot('Position',pos_FR,'Parent',overview_axes_panel,'Clipping','on');
 h = bar(0:length(FR)-1,FR,'hist');
 set(gca,'XTick',0:length(FR)-1)
 set(gca,'YTickLabel',[0 .5 1])
@@ -341,51 +253,7 @@ end
 
 end
 
-function [] = plot_TRBRFR(TR,pos3,s_title)
 
-BR = sum(TR,2);
-BR = BR/sum(BR);
-
-FR = sum(TR,1);
-FR = FR/sum(FR);
-
-pos_TR = pos3(1,:);
-pos_BR = pos3(2,:);
-pos_FR = pos3(3,:);
-
-subplot('Position',pos_TR);
-imagesc(TR);
-colormap(flipud(gray))
-caxis([0 1])
-set(gca,'XTick',[])
-set(gca,'YTick',[])
-title(s_title)
-
-subplot('Position',pos_BR)
-h = bar(0:length(BR)-1,BR);
-set(h,'facecolor','black')
-set(gca,'XTick',0:length(BR)-1)
-set(gca,'YTickLabel',[])
-states = convert(length(BR));
-set(gca,'XTickLabel',num2str(states,'%d')) % uncomment this to have a binary valued x-axis
-axis([-0.5 length(BR)-0.5 0 1.0])
-title('BR')
-set(gca,'YAxisLocation','right')
-set(gca,'XAxisLocation','top')
-set(gca,'CameraUpVector',[-1 0 -1])
-
-subplot('Position',pos_FR);
-h = bar(0:length(FR)-1,FR);
-set(h,'facecolor','black');
-set(gca,'XTick',0:length(FR)-1)
-set(gca,'YTickLabel',[])
-states = convert(length(FR));
-set(gca,'XTickLabel',num2str(states,'%d')) % uncomment this to have a binary valued x-axis
-axis([-0.5 length(FR)-0.5 0 1.0])
-rotateXLabels( gca(), 90) % uncomment if binary values are used on the x-axis
-% title('FR')
-
-end
 
 function states = convert(N)
 states = zeros(N,log2(N));

@@ -77,23 +77,23 @@ for i=1: N_b % past or future
             
             if (bf == 1)
                 if isempty(BRs{current_1,other_1})
-                    BRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,b_table,bf);
+                    BRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,bf);
                 end
                 prob_p1 = BRs{current_1,other_1};
                 
                 if isempty(BRs{current_2,other_2})
-                    BRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,b_table,bf);
+                    BRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,bf);
                 end
                 prob_p2 = BRs{current_2,other_2};
                 
             elseif (bf == 2)
                 if isempty(FRs{current_1,other_1})
-                    FRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,b_table,bf);
+                    FRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,bf);
                 end
                 prob_p1 = FRs{current_1,other_1};
                 
                 if isempty(FRs{current_2,other_2})
-                    FRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,b_table,bf);
+                    FRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,bf);
                 end
                 prob_p2 = FRs{current_2,other_2};
             end

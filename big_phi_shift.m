@@ -48,7 +48,7 @@ for i = 1:nWholeConcepts
     
     IRR_w = IRR_whole{i};
     
-    fprintf('Checking Concept: %s\n',mod_mat2str(IRR_w));
+%     fprintf('Checking Concept: %s\n',mod_mat2str(IRR_w));
     
     % contained in part1
     if all(ismember(IRR_w,part1))
@@ -155,10 +155,10 @@ for i = 1:nWholeConcepts
     phi_sum = phi_sum + abs(phi_whole(i) - part_phi);
     
     %for deubbing, take out
-    fprintf('\tDistance to partitioned past distribution: %f\n',past_dist);
-    fprintf('\tDistance to partitioned future distribution: %f\n',future_dist);
-    fprintf('\tWhole Small Phi: %f | Partitioned Small Phi: %f\n',phi_whole(i),part_phi);
-    fprintf('\tSmall Phi Diff: %f(abs) %f(whole - part)\n',abs(phi_whole(i) - part_phi),phi_whole(i) - part_phi);
+%     fprintf('\tDistance to partitioned past distribution: %f\n',past_dist);
+%     fprintf('\tDistance to partitioned future distribution: %f\n',future_dist);
+%     fprintf('\tWhole Small Phi: %f | Partitioned Small Phi: %f\n',phi_whole(i),part_phi);
+%     fprintf('\tSmall Phi Diff: %f(abs) %f(whole - part)\n',abs(phi_whole(i) - part_phi),phi_whole(i) - part_phi);
     
 end
         

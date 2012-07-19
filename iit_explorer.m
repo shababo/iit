@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 18-Jul-2012 15:16:37
+% Last Modified by GUIDE v2.5 19-Jul-2012 10:13:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -101,7 +101,7 @@ end
 set(handles.nodes_list,'String',nodes)
 set(handles.nodes_list,'Value',handles.data.Complex{1})
 
-set(handles.overview_concepts_axes,'Visible','off');
+set(handles.overview_axes_panel,'Visible','off');
 set(handles.summary_panel,'Visible','off');
 
 
@@ -184,11 +184,12 @@ function complex_button_Callback(hObject, eventdata, handles)
 % hObject    handle to complex_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+set(handles.mip_plot_panel,'Visible','off')
 load('sample_partition.mat')
-% conceptscatter(x,nWholeConcepts,handles.overview_axes,handles.mip_plot_panel);
-[handles.mip_axes height extra_plots] = conceptscatter(x,nWholeConcepts,handles.overview_axes,handles.mip_plot_panel);
+[handles.mip_axes height extra_plots] = conceptscatter(x,nWholeConcepts,handles.mip_main_axes,handles.mip_plot_panel);
 % setappdata(handles.mip_plot_panel,'PlotHeight',height,'ExtraPlots',extra_plots);
 linkdata on
+set(handles.mip_plot_panel,'Visible','on')
 
 
 
@@ -325,6 +326,17 @@ function refresh_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+
+set(handles.overview_axes_panel,'Visible','off')
+current_axes = allchild(handles.overview_axes_panel);
+
+for i = 1:length(current_axes)
+%     if ~strcmp(get(current_axes(i),'Tag'),'overview_concepts_axes')
+        delete(current_axes(i))
+%     end
+end
+
+
 subset = get(handles.nodes_list,'Value');
 state_choice = get(handles.state_list,'Value');
 if length(get(handles.state_list,'String')) == 1
@@ -345,13 +357,18 @@ end
 	set(handles.sum_small_phi_text,'String',['Sum Small Phi = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1)))])
     set(handles.num_core_concepts_text,'String',['# Core Concepts = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1) ~= 0))])
                                         
-    [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(handles.data.prob_M{state_index},...
-                                                 handles.data.phi_M{state_index},...
-                                                 handles.data.complex_MIP_M{state_index},subset, subset_index);
+    [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(handles.data.concepts_M{state_index},...
+                                                 handles.data.small_phi_M{state_index},...
+                                                 handles.data.concept_MIP_M{state_index},subset, subset_index);
+        
+                                             
+    plot_REP(handles.data.Big_phi_M{state_index}(subset_index), IRR_REP, IRR_phi, IRR_MIP,...
+                                        handles.data.Complex{state_index}, handles.overview_axes_panel)
     
 % end    
 
 set(handles.summary_panel,'Visible','on')
+set(handles.overview_axes_panel,'Visible','on')
     
 
 
@@ -376,4 +393,48 @@ function state_list_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on slider movement.
+function slider3_Callback(hObject, eventdata, handles)
+% hObject    handle to slider3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+
+% --- Executes during object creation, after setting all properties.
+function slider3_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on slider movement.
+function slider4_Callback(hObject, eventdata, handles)
+% hObject    handle to slider4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+
+% --- Executes during object creation, after setting all properties.
+function slider4_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
 end

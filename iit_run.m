@@ -131,7 +131,7 @@ for z=1: z_max
         else % find the complex
             
             [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell] ...
-                = big_phi_complex(x1,tpm,options)
+                = big_phi_complex(x1,tpm,options);
             
             if op_fb == 2
 %                 % subindex b means backward and f means forward

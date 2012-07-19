@@ -71,7 +71,7 @@ if op_fb == 2
 elseif op_fb == 0 || op_fb == 1 || op_fb == 3
     % 0: forward or 1: backward computation or 3: simultaneous forward and
     % backward computation
-    [Big_phi_M phi_M prob_M M_cell concept_MIP_M M_IRR_M] = big_phi_all(x0,p,options)
+    [Big_phi_M phi_M prob_M M_cell concept_MIP_M M_IRR_M] = big_phi_all(x0,p,options);
     % complex search
     [Big_phi_MIP MIP Complex M_i_max  Big_phi_MIP_M complex_MIP_M] = complex_search(Big_phi_M,M_cell, M_IRR_M, N,prob_M,phi_M,options);
     % irreducible points - do this outside of here...

@@ -1,4 +1,4 @@
-function [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M, phi_M,MIP_M,subset)
+function [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_M, phi_M,MIP_M,subset,M_i_max)
 %% Irreducible points
 if M_i_max
     REP_cell = prob_M{M_i_max,1};
@@ -35,8 +35,9 @@ end
 % IRR_REP = prob_M{M_i_max};
 % IRR_REP(:,IRR_phi==0) = [];
 
-IRR_phi(IRR_phi==0) = [];
-IRR_phi = IRR_phi';
+% IRR_phi(IRR_phi(:,1) == 0) = [];
+IRR_phi = phi_M{M_i_max}(index_vec_IRR,:);
+
 
 M_cell = cell(2^N-1,1);
 k = 1;
