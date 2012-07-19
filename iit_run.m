@@ -167,6 +167,7 @@ end
 % load up output_data struct
 output_data.Big_phi_M = Big_phi_M_st;
 output_data.Big_phi_MIP = Big_phi_MIP_st;
+% KILL THIS ONE BELOW
 output_data.MIP = MIP_st;
 output_data.Complex = Complex_st;
 output_data.concepts_M = prob_M_st;

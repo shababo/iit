@@ -102,7 +102,7 @@ set(handles.nodes_list,'String',nodes)
 set(handles.nodes_list,'Value',handles.data.Complex{1})
 
 set(handles.overview_concepts_axes,'Visible','off');
-set(handes.summary_panel,'Visible','off');
+set(handles.summary_panel,'Visible','off');
 
 
 
@@ -327,22 +327,31 @@ function refresh_button_Callback(hObject, eventdata, handles)
 
 subset = get(handles.nodes_list,'Value');
 state_choice = get(handles.state_list,'Value');
-if state_choice == 1
-    set(handles.overview_concepts_axes,'Visible','off')
-    set(handles.overview_axes_text,'Visible','on')
+if length(get(handles.state_list,'String')) == 1
+    state_index = 1;
 else
+    state_index = trans10(flipud(trans2(state_choice - 2,handles.data.num_nodes)));
+end
+%     set(handles.overview_concepts_axes,'Visible','off')
+%     set(handles.overview_axes_text,'Visible','on')
+
     set(handles.overview_axes_text,'Visible','off')
 %     set(handles.overview_loading_text,'Visible','on')
-    state_index = trans10(flipud(trans2(state_choice - 2),handles.data.num_nodes));
     subset_index = convi(subset) - 1;
-    set(handles.big_phi_text,'String',['Big Phi = ' num2str(handles.data.Big_phi_M{state_index}(subset))])
-    set(handles.big_phi_MIP_text,'String',['Big Phi MIP = ' num2str(handles.data.Big_phi_MIP{state_index}(subset))])
-    set(handles.MIP_text,'String',{'MIP:',
+    set(handles.big_phi_text,'String',['Big Phi = ' num2str(handles.data.Big_phi_M{state_index}(subset_index))])
+    set(handles.big_phi_MIP_text,'String',['Big Phi MIP = ' num2str(handles.data.Big_phi_MIP{state_index}(subset_index))])
+    set(handles.MIP_text,'String',{'MIP:',[mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
+                                            mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))]})
+	set(handles.sum_small_phi_text,'String',['Sum Small Phi = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1)))])
+    set(handles.num_core_concepts_text,'String',['# Core Concepts = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1) ~= 0))])
+                                        
     [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(handles.data.prob_M{state_index},...
                                                  handles.data.phi_M{state_index},...
-                                                 handles.data.MIP_M{state_index},subset, subset_index);
+                                                 handles.data.complex_MIP_M{state_index},subset, subset_index);
     
-end    
+% end    
+
+set(handles.summary_panel,'Visible','on')
     
 
 
