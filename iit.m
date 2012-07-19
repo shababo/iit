@@ -855,7 +855,7 @@ else
     
 end
 
-update_tpm_from_connections_logic(handles)
+% update_tpm_from_connections_logic(handles)
 
 
 % --- Executes on button press in upload_connectivity.
@@ -963,7 +963,7 @@ if (eventdata.NewData < 1 || eventdata.NewData > 10)
     logic_vec(eventdata.Indices(2)) = eventdata.PreviousData;
     set(hObject,'Data',logic_vec)
     
-els
+else
     
     set(handles.warning,'String','');
     update_tpm_from_connections_logic(handles)

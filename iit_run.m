@@ -11,8 +11,6 @@ global output_data
 
 grain = 50;
 noise = in_noise;
-BRs = cell(2^N,2^N); % backward repertoire
-FRs = cell(2^N,2^N); % forward repertoire
 
 J = in_J;
 
@@ -47,7 +45,7 @@ states = zeros(N,2^N);
 for i=1: N
     for j=1: 2^i
         b_table{j,i} = trans2(j-1,i);
-        if i== N
+        if i == N
             states(:,j) = trans2(j-1,i);
         end
     end
@@ -81,6 +79,9 @@ complex_MIP_M_st = cell(2^N,1);
 
 for z=1: z_max
     
+    BRs = cell(2^N,2^N); % backward repertoire
+    FRs = cell(2^N,2^N); % forward repertoire
+
     if op_ave == 0
         x1 = current_state;
     else
@@ -130,6 +131,9 @@ for z=1: z_max
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         else % find the complex
             
+            disp('*****************')
+            disp(x1)
+            disp('*****************')
             [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell] ...
                 = big_phi_complex(x1,tpm,options);
             
