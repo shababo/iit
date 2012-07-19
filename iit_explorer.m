@@ -52,6 +52,8 @@ function iit_explorer_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to iit_explorer (see VARARGIN)
 
+set(hObject, 'Renderer', 'painters')
+
 % Choose default command line output for iit_explorer
 handles.output = hObject;
 
@@ -186,6 +188,7 @@ function complex_button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 set(handles.mip_plot_panel,'Visible','off')
 load('sample_partition.mat')
+                                             
 [handles.mip_axes height extra_plots] = conceptscatter(x,nWholeConcepts,handles.mip_main_axes,handles.mip_plot_panel);
 % setappdata(handles.mip_plot_panel,'PlotHeight',height,'ExtraPlots',extra_plots);
 linkdata on

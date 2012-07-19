@@ -20,33 +20,39 @@ N = size(phi,1);
     
 
         
-if N > 8
-    r = 16;
-    c = 2;
-    fig_max = 16;
-else
+
     r = N;
     c = 2;
     fig_max = 8;
-end
 
-pw = 300; % panel width including margin in pixels
-ph = 50; % panel height including margin in pixels
-mb = 20; % bottom margin
-mt = 20; % top margin
-mh = 25; % margin height
-mw = 10; % margin width
-% panel_size = [0, 0, pw, ph]'; % panel size including margin
-panel_size_w = [50, 0, pw-mw*2, ph-mh]'; % panel size without margin
-fig_size = [0, 0,  pw*c + 100, ph*r + mb+mt + 50]'; % size of figure window
-pos_fig = [100,100,0,0]' + fig_size; % position of figure
+
+% pw = 300; % panel width including margin in pixels
+% ph = 50; % panel height including margin in pixels
+% mb = 20; % bottom margin
+% mt = 20; % top margin
+% mh = 25; % margin height
+% mw = 10; % margin width
+% % panel_size = [0, 0, pw, ph]'; % panel size including margin
+% panel_size_w = [50, 0, pw-mw*2, ph-mh]'; % panel size without margin
+% fig_size = [0, 0,  pw*c + 100, ph*r + mb+mt + 50]'; % size of figure window
+% pos_fig = [100,100,0,0]' + fig_size; % position of figure
+
+
+left_marg_col1 = .03;
+left_marg_col2 = .57;
+top_start = .55;
+vert_marg = .1;
+plot_h = .075;
+plot_w = .4;
 
 pos_vec = zeros(4,r,c);
 for i=1: r
-    for j=1: c
-        pos_vec(:,i,j) = [(j-1)*pw + 2*(j-1)+mw, (r-i)*ph + 10, 0, 0]' + panel_size_w + [0 mb 0 0]'; % pixels
-        pos_vec([1 3],i,j) = pos_vec([1 3],i,j)/pos_fig(3); % normalization
-        pos_vec([2 4],i,j) = pos_vec([2 4],i,j)/pos_fig(4); % normalization
+    for j=1:c
+        if (j == 1)
+            pos_vec(:,i,j) = [left_marg_col1 top_start-(vert_marg + plot_h)*(i-1) plot_w plot_h];
+        else
+            pos_vec(:,i,j) = [left_marg_col2 top_start-(vert_marg + plot_h)*(i-1) plot_w plot_h];
+        end
     end
 end
 
@@ -54,7 +60,7 @@ end
 sy = ['Big Phi=',num2str(Big_phi)];
     
     
-    for i=1 : N
+for i = 1:N
         
 
         
@@ -79,19 +85,19 @@ sy = ['Big Phi=',num2str(Big_phi)];
         s_title{1}= {['FULL:    ', string{1}, ',  \phi_b=',num2str(phi_b)],['PARTITIONED:    ', string_p{1}]};
         s_title{2}= {['FULL:    ', string{2}, ',  \phi_f=',num2str(phi_f)],['PARTITIONED:    ', string_p{2}]};
         
-        s = [string{3}, ', ', string_p{3},', phi = ',num2str(phi(i))];
-        fprintf('%s\n',s);
+%         s = [string{3}, ', ', string_p{3},', phi = ',num2str(phi(i))];
+%         fprintf('%s\n',s);
         
 
-            i_rev = N-i+1;
-            fig_pi = floor((i_rev-1)/fig_max);
-            fig_i = i_rev - fig_pi*fig_max;
-            pos_BR = pos_vec(:,fig_i,1);
-            pos_FR = pos_vec(:,fig_i,2);
+%             i_rev = N-i+1;
+%             fig_pi = floor((i_rev-1)/fig_max);
+%             fig_i = i_rev - fig_pi*fig_max;
+            pos_BR = pos_vec(:,i,1)';
+            pos_FR = pos_vec(:,i,2)';
 
 %             figure(fig_st+fig_pi)
 %             set(gcf,'Position',pos_fig)
-            if mod(fig_i,min(r,N)) == 0
+            if mod(i,min(r,N)) == 0
                 labelON = 1;
             else
                 labelON = 0;
@@ -100,7 +106,7 @@ sy = ['Big Phi=',num2str(Big_phi)];
             BR(:,1) = BR_w; BR(:,2) = BR_p;
             FR = ones(length(FR_w),2);
             FR(:,1) = FR_w; FR(:,2) = FR_p;
-            plot_BRFR(BR,FR,pos_BR',pos_FR',s_title,labelON,overview_axes_panel)
+            plot_BRFR(BR,FR,pos_BR,pos_FR,s_title,labelON,overview_axes_panel)
     %         plot_BRFR(BR_w,FR_w,pos_BR',pos_FR',s_title,labelON)
 
             if i == N
@@ -136,7 +142,7 @@ sy = ['Big Phi=',num2str(Big_phi)];
             end
 
             x0 = combine(MIP_cell{i}{1,2},MIP_cell{i}{2,2});
-            subtit_pos = pos_BR' - [.08 0 .35 0];
+            subtit_pos = [.46 pos_BR(2) .06 .10];
 
             uicontrol('Style', 'text',...
             'String', {mod_mat2str(x0),['phi = ', num2str(min(phi_f,phi_b))]},... %replace something with the text you want
@@ -147,74 +153,18 @@ sy = ['Big Phi=',num2str(Big_phi)];
                 'Parent',overview_axes_panel,...
                 'Clipping','on');
 
-    %         subtit_pos = subtit_pos + [.920 0 0 0];
-    %         
-    %         uicontrol('Style', 'text',...
-    %         'String', ['phi = ', num2str(min(phi_f,phi_b))],... %replace something with the text you want
-    %         'Units','normalized',...
-    %         'FontSize',10,...
-    %         'Position', subtit_pos);
-
-%             set(gcf,'OuterPosition',[200 100 1000 700]);
-
-    %         figure(fig_st+fig_pi+10)
-    %         set(gcf,'Position',pos_fig)
-    %         plot_BRFR(BR_p,FR_p,pos_BR',pos_FR',s_title_p,labelON)
-    %         if i == 1
-    %             xlabel(sy);
-    %             
-    %         elseif i == N
-    %             
-    %             uicontrol('Style', 'text',...
-    %             'String', 'MIP of Core Concepts For Complex',... %replace something with the text you want
-    %             'Units','normalized',...
-    %             'FontSize',16,...
-    %             'Position', [0.33 0.9 0.43 0.08]);
-    %         
-    %             uicontrol('Style', 'text',...
-    %             'String', 'PAST <-- CURRENT',... %replace something with the text you want
-    %             'Units','normalized',...
-    %             'FontSize',13,...
-    %             'Position', [0.15 0.82 0.28 0.05]);
-    %         
-    %             uicontrol('Style', 'text',...
-    %             'String', 'CURRENT --> FUTURE',... %replace something with the text you want
-    %             'Units','normalized',...
-    %             'FontSize',13,...
-    %             'Position', [0.59 0.82 0.28 0.05]);
-    %         end
-    %         
-    %         x0 = combine(MIP_cell{i}{1,2},MIP_cell{i}{2,2});
-    %         subtit_pos = pos_BR' - [.08 0 .33 0];
-    %         
-    %         uicontrol('Style', 'text',...
-    %         'String', mod_mat2str(x0),... %replace something with the text you want
-    %         'Units','normalized',...
-    %         'FontSize',13,...
-    %         'Position', subtit_pos);
-    %     
-    %         subtit_pos = subtit_pos + [.920 0 0 0];
-    %         
-    %         uicontrol('Style', 'text',...
-    %         'String', ['phi = ', num2str(min(phi_f,phi_b))],... %replace something with the text you want
-    %         'Units','normalized',...
-    %         'FontSize',10,...
-    %         'Position', subtit_pos);
-
-
-    end
-    
-    
-    
-
+end
 
 end
 
+                
+
+
 function [] = plot_BRFR(BR,FR,pos_BR,pos_FR,s_title,labelON,overview_axes_panel)
 
-subplot('Position',pos_BR,'Parent',overview_axes_panel,'Clipping','on')
+subplot('Position',pos_BR,'Parent',overview_axes_panel,'Clipping','on','Units','normalized')
 h = bar(0:length(BR)-1,BR,'hist');
-set(gca,'XTick',0:length(BR)-1)
+set(gca,'XTick',0:length(BR)-1,'Clipping','on','Units','normalized')
 set(gca,'YTickLabel',[0 .5 1])
 
 states = convert(length(BR));
@@ -232,7 +182,7 @@ else
 end
 
 
-subplot('Position',pos_FR,'Parent',overview_axes_panel,'Clipping','on');
+subplot('Position',pos_FR,'Parent',overview_axes_panel);
 h = bar(0:length(FR)-1,FR,'hist');
 set(gca,'XTick',0:length(FR)-1)
 set(gca,'YTickLabel',[0 .5 1])

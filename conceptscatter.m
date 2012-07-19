@@ -128,7 +128,7 @@ end
 j = rows/2;
 axPos = [pos(1)+(j-1)*width pos(2)+(rows - j - .5)*height ...
             width*(1-space)*(j+2) height*(1-space)*(j+2)];
-axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'Clipping','on'); 
+axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel); 
 scatter3(whole(:,4),whole(:,5),whole(:,6),'MarkerFaceColor','g','Parent',axes3D)
 hold on
 scatter3(part(:,4),part(:,5),part(:,6),'MarkerFaceColor','b','Parent',axes3D)
