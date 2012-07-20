@@ -273,12 +273,13 @@ function brush_toggle_OnCallback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 brush on
 
-for i = 1:length(handles.mip_axes)
-    
-    brushed = findall(handles.mip_axes{i},'tag','Brushing');
-    set(handles.brushed,'Parent',handles.mip_plot_panel,'Clipping','on')
-    
-end
+% below is an attempt to get 
+% for i = 1:length(handles.mip_axes)
+%     
+%     brushed = findall(handles.mip_axes{i},'tag','Brushing');
+%     set(handles.brushed,'Parent',handles.mip_plot_panel,'Clipping','on')
+%     
+% end
 
 
 % --- Executes on selection change in listbox2.

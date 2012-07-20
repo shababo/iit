@@ -5,11 +5,12 @@ function [ax, height, extra_plots] = conceptscatter(x,nWholeConcepts, parent_pan
 % assignin('base','x',x);
 
 concept_var = var(x);
-concept_var_states = zeros(8,1);
+num_dims = min(size(x,2),8);
+concept_var_states = zeros(num_dims,1);
 
-for i = 1:8
+for i = 1:num_dims
     
-    [max concept_var_states(i)] = max(concept_var);
+    [max_val concept_var_states(i)] = max(concept_var);
     concept_var(concept_var_states(i)) = [];
     
 end
@@ -22,8 +23,8 @@ dims = size(x,2);
 assignin('base','whole',whole)
 assignin('base','part',part)
 
-rows = size(x,2); cols = rows;
-rows = 8; cols = rows;
+% rows = size(x,2); cols = rows;
+rows = num_dims; cols = rows;
 extra_plots = rows - dims;
 XvsX = true;
 
@@ -94,11 +95,12 @@ x_bound = [0 1 0];
 y_bound = [1 0 0];
 % these are the loops that need to be changed to enable data linking
 
-ax = cell(nchoosek(size(x,2),2)+1,1); % all pairs of dims plus the 3D plot
+% ax = cell(nchoosek(size(x,2),2)+1,1); % all pairs of dims plus the 3D plot
+ax = cell(nchoosek(num_dims,2)+1,1); % all pairs of dims plus the 3D plot
 ax_index = 1;
-for i=size(x,2):-1:1, % count down from rows to 1
+for i=num_dims:-1:1, % count down from rows to 1
    for j=i-1:-1:1, % count down from cols to 1
-        axPos = [pos(1)+(j-1)*width pos(2)+(rows-i)*height ...
+        axPos = [pos(1)+(j-1)*width pos(2)+(rows-i+1)*height ...
             width*(1-space) height*(1-space)];
         ax{ax_index} = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'Clipping','On');
 %         findax = findaxpos(paxes, axPos);
@@ -108,12 +110,14 @@ for i=size(x,2):-1:1, % count down from rows to 1
 %         else
 %             ax(i,j) = findax(1);
 %         end
-        plot(whole(:,j),...
-           whole(:,i),'.g','parent',ax{ax_index});
+        state1 = concept_var_states(i);
+        state2 = concept_var_states(j);
+        plot(whole(:,state2),...
+           whole(:,state1),'.g','parent',ax{ax_index});
 %        linkdata on
         hold on;
-        plot(part(:,j), ...
-            part(:,i),'.b','parent',ax{ax_index});
+        plot(part(:,state2), ...
+            part(:,state1),'.b','parent',ax{ax_index});
         hold on;
 
         choices = nchoosek([1 2 3],2);
@@ -141,9 +145,9 @@ j = rows/2;
 axPos = [pos(1)+(j-1)*width pos(2)+(rows - j - .5)*height ...
             width*(1-space)*(j+2) height*(1-space)*(j+2)];
 axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel); 
-scatter3(whole(:,4),whole(:,5),whole(:,6),'MarkerFaceColor','g','Parent',axes3D)
+scatter3(whole(:,concept_var_states(1)),whole(:,concept_var_states(2)),whole(:,concept_var_states(3)),'MarkerFaceColor','g','Parent',axes3D)
 hold on
-scatter3(part(:,4),part(:,5),part(:,6),'MarkerFaceColor','b','Parent',axes3D)
+scatter3(part(:,concept_var_states(1)),part(:,concept_var_states(2)),part(:,concept_var_states(3)),'MarkerFaceColor','b','Parent',axes3D)
 set(axes3D,'xlimmode','manual','ylimmode','manual','xgrid','off','ygrid','off',...
             'xlim',[-.25 1.25],'ylim',[-.25 1.25],'zlim',[-.25 1.25],...
             'xticklabel','','yticklabel','','zticklabel','','CameraViewAngleMode','manual')
