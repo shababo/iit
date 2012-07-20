@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 19-Jul-2012 10:13:03
+% Last Modified by GUIDE v2.5 19-Jul-2012 20:14:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -105,6 +105,8 @@ set(handles.nodes_list,'Value',handles.data.Complex{1})
 
 set(handles.overview_axes_panel,'Visible','off');
 set(handles.summary_panel,'Visible','off');
+
+% set(handles.overview_scroll_panel,'Parent',handles.overview_axes_panel)
 
 
 
@@ -329,49 +331,66 @@ function refresh_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-set(handles.overview_axes_panel,'Visible','off')
-current_axes = allchild(handles.overview_axes_panel);
-
-for i = 1:length(current_axes)
-%     if ~strcmp(get(current_axes(i),'Tag'),'overview_concepts_axes')
-        delete(current_axes(i))
-%     end
-end
-
+view_choices = cellstr(get(handles.view_menu,'String'));
+view = view_choices{get(handles.view_menu,'Value')};
 
 subset = get(handles.nodes_list,'Value');
 state_choice = get(handles.state_list,'Value');
+
 if length(get(handles.state_list,'String')) == 1
     state_index = 1;
 else
     state_index = trans10(flipud(trans2(state_choice - 2,handles.data.num_nodes)));
 end
-%     set(handles.overview_concepts_axes,'Visible','off')
-%     set(handles.overview_axes_text,'Visible','on')
+
+if strcmp(view,'Overview')
+    
+    set(handles.overview_axes_panel,'Visible','off')
+    current_display_elements = allchild(handles.overview_axes_panel);
+
+    for i = 1:length(current_axes)
+            delete(current_display_elements(i))
+    end
+
+
 
     set(handles.overview_axes_text,'Visible','off')
-%     set(handles.overview_loading_text,'Visible','on')
     subset_index = convi(subset) - 1;
     set(handles.big_phi_text,'String',['Big Phi = ' num2str(handles.data.Big_phi_M{state_index}(subset_index))])
     set(handles.big_phi_MIP_text,'String',['Big Phi MIP = ' num2str(handles.data.Big_phi_MIP{state_index}(subset_index))])
     set(handles.MIP_text,'String',{'MIP:',[mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
                                             mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))]})
-	set(handles.sum_small_phi_text,'String',['Sum Small Phi = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1)))])
+    set(handles.sum_small_phi_text,'String',['Sum Small Phi = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1)))])
     set(handles.num_core_concepts_text,'String',['# Core Concepts = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1) ~= 0))])
-                                        
+
     [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(handles.data.concepts_M{state_index},...
                                                  handles.data.small_phi_M{state_index},...
                                                  handles.data.concept_MIP_M{state_index},subset, subset_index);
-        
-                                             
+
+
+% 	disp(handles.overview_scroll_panel)
     plot_REP(handles.data.Big_phi_M{state_index}(subset_index), IRR_REP, IRR_phi, IRR_MIP,...
                                         handles.data.Complex{state_index}, handles.overview_axes_panel)
-    
-% end    
 
-set(handles.summary_panel,'Visible','on')
-set(handles.overview_axes_panel,'Visible','on')
+    % end    
+
+    set(handles.summary_panel,'Visible','on')
+    set(handles.overview_axes_panel,'Visible','on')
+    set(handles.panel_slider,'Value',1.0)
+
+elseif stcmp(view,'MIP)
+   
+    set(handles.mip_plot_panel,'Visible','off')
+
+    
+    
+    [handles.mip_axes height extra_plots] = conceptscatter(x,nWholeConcepts,handles.mip_main_axes,handles.mip_plot_panel);
+
+    linkdata on
+    set(handles.mip_plot_panel,'Visible','on') 
+    
+    
+end
     
 
 
@@ -400,18 +419,23 @@ end
 
 
 % --- Executes on slider movement.
-function slider3_Callback(hObject, eventdata, handles)
-% hObject    handle to slider3 (see GCBO)
+function panel_slider_Callback(hObject, eventdata, handles)
+% hObject    handle to panel_slider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
+shift = get(hObject,'Value')
+position = get(handles.overview_axes_panel,'Position')
+position(2) = (1 - position(4))*shift;
+set(handles.overview_axes_panel,'Position',position)
+
 
 % --- Executes during object creation, after setting all properties.
-function slider3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider3 (see GCBO)
+function panel_slider_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to panel_slider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -421,14 +445,6 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
 end
 
 
-% --- Executes on slider movement.
-function slider4_Callback(hObject, eventdata, handles)
-% hObject    handle to slider4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 
 % --- Executes during object creation, after setting all properties.
