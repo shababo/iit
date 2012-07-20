@@ -1,5 +1,8 @@
 function iit_run(tpm, in_J, current_state, in_noise, options)
 
+tic
+
+fprintf('\nRunning...\n\n')
 
 N = size(tpm,2);
 
@@ -75,6 +78,9 @@ prob_M_st = cell(2^N,1);
 phi_M_st = cell(2^N,1);
 concept_MIP_M_st = cell(2^N,1);
 complex_MIP_M_st = cell(2^N,1);
+Big_phi_MIP_all_M_st = cell(2^N,1);
+complex_MIP_all_M_st = cell(2^N,1);
+purviews_M_st = cell(2^N,1);
 
 
 for z=1: z_max
@@ -88,6 +94,7 @@ for z=1: z_max
         x1 = states(:,z); 
     end
     
+    fprintf(['State: ' num2str(x1') '\n'])
 %     fprintf('x1=%s\n',mat2str(x1));
     
     % partial_prob_comp(partition, partition, state, prob_matrix, binary
@@ -95,7 +102,7 @@ for z=1: z_max
     check_prob = partial_prob_comp(1:N,1:N,x1,tpm,b_table,1); % last argument is op_fb = 1;
     state_check = sum(check_prob);
     if state_check == 0
-        fprintf('This state cannot be realized!\n')
+        fprintf('\tThis state cannot be realized...\n')
         Big_phi_M_st{z} = NaN;
         Big_phi_MIP_st{z} = NaN;
     else
@@ -130,11 +137,8 @@ for z=1: z_max
         % THE CURRENT SETTINGS TAKE US HERE    
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         else % find the complex
-            
-            disp('*****************')
-            disp(x1)
-            disp('*****************')
-            [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell] ...
+            fprintf('\tComputing state...\n')
+            [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell Big_phi_MIP_all_M complex_MIP_M_all purviews_M] ...
                 = big_phi_complex(x1,tpm,options);
             
             if op_fb == 2
@@ -160,6 +164,9 @@ for z=1: z_max
                 phi_M_st{z} = phi_M;
                 concept_MIP_M_st{z} = concept_MIP_M;
                 complex_MIP_M_st{z} = complex_MIP_M;
+                Big_phi_MIP_all_M_st{z} = Big_phi_MIP_all_M;
+                complex_MIP_all_M_st{z} = complex_MIP_M_all;
+                purviews_M_st{z} = purviews_M;
                 
             end
         end
@@ -179,6 +186,10 @@ output_data.small_phi_M = phi_M_st;
 output_data.concept_MIP_M = concept_MIP_M_st;
 output_data.complex_MIP_M = complex_MIP_M_st;
 output_data.M_cell = M_cell;
+output_data.Big_phi_MIP_all_M = Big_phi_MIP_all_M_st;
+output_data.complex_MIP_all_M = complex_MIP_all_M_st;
+output_data.purviews_M = purviews_M_st;
+
 
 % if op_ave == 1
 %     if op_fb == 0
@@ -194,6 +205,8 @@ isOpen = matlabpool('size');
 if isOpen > 0 && op_close == 1
     matlabpool close;
 end
+
+toc
 
 fprintf('Loading GUI... \n');
 

@@ -38,7 +38,7 @@ set(plot_panel,'Position',[0.18076477404403243,0.0,0.7833140208574739,1.0]);
 % pos_fig = [100,100,0,0]' + fig_size; % position of figure
 
 scaling = r/4;
-disp(scaling)
+
 
 if scaling > 1
       

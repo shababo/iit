@@ -1,30 +1,31 @@
-function [ax, height, extra_plots] = conceptscatter(x,nWholeConcepts, parent_panel)
+function [ax, height, extra_plots] = conceptscatter(x,nWholeConcepts, w_highlight_indices, parent_panel, mip_axes)
 % BASED ON GPLOTMATRIX
 
 % x = rand(size(in_data))
 % assignin('base','x',x);
 
-concept_var = var(x);
+
 num_dims = min(size(x,2),8);
-concept_var_states = zeros(num_dims,1);
+num_nodes = log2(num_dims);
+concept_var = var(x);
+% concept_var_states = zeros(num_dims,1);
 
-for i = 1:num_dims
-    
-    [max_val concept_var_states(i)] = max(concept_var);
-    concept_var(concept_var_states(i)) = [];
-    
-end
+replot = ~isempty(mip_axes);
 
+[sorted_vars concept_var_states] = sort(concept_var,'descend');
 
-whole = rand(size(x(1:nWholeConcepts,:)));
-part = rand(size(x(nWholeConcepts+1:end,:)));
+whole = x(1:nWholeConcepts,:);
+part = x(nWholeConcepts+1:end,:);
+
+% whole = rand(size(x(1:nWholeConcepts,:)));
+% part = rand(size(x(nWholeConcepts+1:end,:)));
 dims = size(x,2);
-
-assignin('base','whole',whole)
-assignin('base','part',part)
+% 
+% assignin('base','whole',whole)
+% assignin('base','part',part)
 
 % rows = size(x,2); cols = rows;
-rows = num_dims; cols = rows;
+rows = 8; cols = rows;
 extra_plots = rows - dims;
 XvsX = true;
 
@@ -81,7 +82,7 @@ siz = repmat(get(0,'defaultlinemarkersize'), size(sym));
 ax2filled = false(rows,1);
 % % % % 
 pos = get(parent_panel,'Position');
-width = pos(3)/cols;
+width = pos(3)/8;
 % height = pos(4)/rows;
 height = width;
 space = .04; % 2 percent space between axes
@@ -96,65 +97,121 @@ y_bound = [1 0 0];
 % these are the loops that need to be changed to enable data linking
 
 % ax = cell(nchoosek(size(x,2),2)+1,1); % all pairs of dims plus the 3D plot
-ax = cell(nchoosek(num_dims,2)+1,1); % all pairs of dims plus the 3D plot
+
+if replot
+    ax = mip_axes;
+else
+    ax = cell(nchoosek(num_dims,2)+1,1); % all pairs of dims plus the 3D plot
+end
+
 ax_index = 1;
-for i=num_dims:-1:1, % count down from rows to 1
-   for j=i-1:-1:1, % count down from cols to 1
-        axPos = [pos(1)+(j-1)*width pos(2)+(rows-i+1)*height ...
-            width*(1-space) height*(1-space)];
-        ax{ax_index} = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'Clipping','On');
-%         findax = findaxpos(paxes, axPos);
-%         if isempty(findax),
-%             ax(i,j) = axes('Position',axPos,'HandleVisibility',BigAxHV,'parent',BigAxParent);
-%             set(ax(i,j),'visible','on');
-%         else
-%             ax(i,j) = findax(1);
-%         end
-        state1 = concept_var_states(i);
-        state2 = concept_var_states(j);
-        plot(whole(:,state2),...
-           whole(:,state1),'.g','parent',ax{ax_index});
-%        linkdata on
-        hold on;
-        plot(part(:,state2), ...
-            part(:,state1),'.b','parent',ax{ax_index});
-        hold on;
-
-        choices = nchoosek([1 2 3],2);
-
-        for k = 1:size(choices,1)
-
-            hold on
-            plot(x_bound(choices(k,:)),y_bound(choices(k,:)),'k','Parent',ax{ax_index});
-
+for i = 8:-1:0 % count down from rows to 1
+   for j = i-1:-1:1, % count down from cols to 1
+       
+       if ~replot
+            axPos = [(j-1)*width+space (rows-i)*height+space ...
+                width*(1-space) height*(1-space)];
+            ax{ax_index} = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,...
+                'DrawMode','fast','Clipping','On');
+            
+            xlim(i,j,:) = get(ax{ax_index},'xlim');
+            ylim(i,j,:) = get(ax{ax_index},'ylim');
+        else
+           plots = findobj(ax{ax_index},'Parent',ax{ax_index});
+           for k = 1:length(plots)
+               delete(plots(k))
+           end
         end
+
         
-%         linkdata on
-%         set(hh(i,j,:),'markersize',markersize);
+        if (i <= num_dims)
+            
+           set(ax{ax_index},'Visible','on')
+           state1 = concept_var_states(i);
+           state2 = concept_var_states(j);
+
+            plot(ax{ax_index},whole(:,state2),...
+                whole(:,state1),'dg')
+            
+
+
+
+            hold on;
+            plot(ax{ax_index},part(:,state2), ...
+                part(:,state1),'xb');
+            hold on;
+            
+            plot(ax{ax_index},whole(w_highlight_indices,state2), ...
+                whole(w_highlight_indices,state1),'.r');
+            hold on;
+            
+            choices = nchoosek([1 2 3],2);
+
+            for k = 1:size(choices,1)
+
+                hold on
+                plot(ax{ax_index},x_bound(choices(k,:)),y_bound(choices(k,:)),'k');
+
+            end
+        else
+            set(ax{ax_index},'Visible','off')
+        end
+
+
+        
+        if j == 1 && i <= num_dims
+            ylabel(ax{ax_index},dec2bin(state1-1,num_nodes))
+        end
+        if i == num_dims && j <= num_dims
+            xlabel(ax{ax_index},dec2bin(state2-1,num_nodes))
+        end
+       
         set(ax{ax_index},'xlimmode','manual','ylimmode','manual','xgrid','off','ygrid','off',...
-            'xlim',[-.25 1.25],'ylim',[-.25 1.25],'xticklabel','','yticklabel','')
-        xlim(i,j,:) = get(ax{ax_index},'xlim');
-        ylim(i,j,:) = get(ax{ax_index},'ylim');
-        
+                'xlim',[-.25 1.25],'ylim',[-.25 1.25],'xticklabel','','yticklabel','')
         ax_index = ax_index + 1;
 
    end
 end
 
-j = rows/2;
-axPos = [pos(1)+(j-1)*width pos(2)+(rows - j - .5)*height ...
-            width*(1-space)*(j+2) height*(1-space)*(j+2)];
-axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel); 
-scatter3(whole(:,concept_var_states(1)),whole(:,concept_var_states(2)),whole(:,concept_var_states(3)),'MarkerFaceColor','g','Parent',axes3D)
+j = ceil(rows/2);
+
+if ~replot
+    axPos = [(j+1)*width+space (rows - j - .5)*height+space ...
+            width*(1-space)*(j+.75) height*(1-space)*(j+.75)];
+    axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'DrawMode','fast');
+
+    ax{ax_index} = axes3D;
+else
+   plots = findobj(ax{ax_index},'Parent',ax{ax_index});
+   for k = 1:length(plots)
+       delete(plots(k))
+   end
+end
+scatter3(ax{ax_index},whole(:,concept_var_states(1)),whole(:,concept_var_states(2)),...
+    whole(:,concept_var_states(3)),'Marker','d','MarkerFaceColor','g')
+
 hold on
-scatter3(part(:,concept_var_states(1)),part(:,concept_var_states(2)),part(:,concept_var_states(3)),'MarkerFaceColor','b','Parent',axes3D)
-set(axes3D,'xlimmode','manual','ylimmode','manual','xgrid','off','ygrid','off',...
-            'xlim',[-.25 1.25],'ylim',[-.25 1.25],'zlim',[-.25 1.25],...
-            'xticklabel','','yticklabel','','zticklabel','','CameraViewAngleMode','manual')
 
+scatter3(ax{ax_index},part(:,concept_var_states(1)),part(:,concept_var_states(2)),...
+    part(:,concept_var_states(3)),'Marker','x','MarkerFaceColor','b')
+
+hold on
+
+scatter3(ax{ax_index},whole(w_highlight_indices,concept_var_states(1)),whole(w_highlight_indices,concept_var_states(2)),...
+    whole(w_highlight_indices,concept_var_states(3)),'Marker','.','MarkerFaceColor','r')
+
+xlabel(ax{ax_index},dec2bin(concept_var_states(1)-1,num_nodes))
+ylabel(ax{ax_index},dec2bin(concept_var_states(2)-1,num_nodes))
+zlabel(ax{ax_index},dec2bin(concept_var_states(3)-1,num_nodes))
+
+
+set(ax{ax_index},'xlimmode','manual','ylimmode','manual',...
+        'xlim',[-.25 1.25],'ylim',[-.25 1.25],'zlim',[-.25 1.25],...
+        'CameraViewAngleMode','manual')
         
-ax{ax_index} = axes3D;
 
+
+% plot tetrahedron bounds
 x_bound = [0 0 1 0];
 y_bound = [0 1 0 0];
 z_bound = [0 0 0 1];
@@ -163,16 +220,17 @@ choices = nchoosek([1 2 3 4],2);
 for i = 1:size(choices,1)
     
     hold on
-    plot3(x_bound(choices(i,:)),y_bound(choices(i,:)),z_bound(choices(i,:)),'k','Parent',axes3D);
+    plot3(ax{ax_index},x_bound(choices(i,:)),y_bound(choices(i,:)),z_bound(choices(i,:)),'k');
     
 end
 
+% linkdata on
 
-linkdata on
-whole = x(1:nWholeConcepts,:);
-part = x(nWholeConcepts+1:end,:);
-assignin('base','whole',whole)
-assignin('base','part',part)
+% replace with real data
+% whole = x(1:nWholeConcepts,:);
+% part = x(nWholeConcepts+1:end,:);
+% assignin('base','whole',whole)
+% assignin('base','part',part)
 
 
 % x(:) = in_data(:);

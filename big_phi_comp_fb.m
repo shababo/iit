@@ -99,6 +99,38 @@ prob_cell{2} = prob_prod;
 phi = phi_all_values(:,1);
 phi_m = zeros(N,3); % cumulative sum
 
+index_vec_IRR = find(phi ~= 0);
+N_IRR = length(index_vec_IRR);
+
+if(N_IRR~=0)
+
+    concepts = zeros(2^N,N_IRR);
+    concept_phis = zeros(1,N_IRR);
+
+
+    j = 1;
+    for i = 1:2^N-1
+
+        if (phi(i) ~= 0)
+
+            concepts(:,j) = prob{i}{1};
+            concept_phis(j) = phi(i);
+            j = j + 1;
+        end
+
+    end
+
+    M_IRR = cell(N_IRR,1);
+
+    for i=1: N_IRR
+        j = index_vec_IRR(i);
+        M_IRR{i} = C_x0{j};
+    end
+
+end 
+    
+
+
 % PRETTY SURE THIS CAN JUST BE DONE WITH A SUM() CALL
 for i_C=1: 2^N-1
     C = C_x0{i_C};
@@ -125,26 +157,26 @@ if (op_big_phi == 0)
 elseif (op_big_phi == 1)
 
 
-    index_vec_IRR = find(phi ~= 0);
-    N_IRR = length(index_vec_IRR);
+%     index_vec_IRR = find(phi ~= 0);
+%     N_IRR = length(index_vec_IRR);
 
     if(N_IRR~=0)
 
-        concepts = zeros(2^N,N_IRR);
-        concept_phis = zeros(1,N_IRR);
-
-
-        j = 1;
-        for i = 1:2^N-1
-
-            if (phi(i) ~= 0)
-
-                concepts(:,j) = prob{i}{1};
-                concept_phis(j) = phi(i);
-                j = j + 1;
-            end
-
-        end
+%         concepts = zeros(2^N,N_IRR);
+%         concept_phis = zeros(1,N_IRR);
+% 
+% 
+%         j = 1;
+%         for i = 1:2^N-1
+% 
+%             if (phi(i) ~= 0)
+% 
+%                 concepts(:,j) = prob{i}{1};
+%                 concept_phis(j) = phi(i);
+%                 j = j + 1;
+%             end
+% 
+%         end
 
         Big_phi = big_phi_volume(concepts,concept_phis,grain);
 

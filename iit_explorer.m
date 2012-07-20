@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 19-Jul-2012 20:14:06
+% Last Modified by GUIDE v2.5 20-Jul-2012 13:45:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,7 +52,7 @@ function iit_explorer_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to iit_explorer (see VARARGIN)
 
-set(hObject, 'Renderer', 'painters')
+% set(hObject, 'Renderer', 'painters')
 
 % Choose default command line output for iit_explorer
 handles.output = hObject;
@@ -78,6 +78,9 @@ else
     close(gcf)
     return
 end
+
+handles.mip_axes = [];
+guidata(hObject,handles);
 
 num_states = 2^handles.data.num_nodes;
 all_states = ~isempty(handles.data.Big_phi_M{2});
@@ -148,6 +151,8 @@ selection = view_choices{get(hObject,'Value')};
 selection = selection(selection ~= ' ');
 eval(['set(handles.' selection ',''Visible'',''On'')'])
 
+refresh_subset_button_Callback(handles.refresh_subset_button,eventdata,handles)
+
 
 % --- Executes during object creation, after setting all properties.
 function view_menu_CreateFcn(hObject, eventdata, handles)
@@ -189,72 +194,22 @@ end
 function complex_button_Callback(hObject, eventdata, handles)
 % hObject    handle to complex_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-set(handles.mip_plot_panel,'Visible','off')
-load('sample_partition.mat')
-                                             
-[handles.mip_axes height extra_plots] = conceptscatter(x,nWholeConcepts,handles.mip_main_axes,handles.mip_plot_panel);
-% setappdata(handles.mip_plot_panel,'PlotHeight',height,'ExtraPlots',extra_plots);
-linkdata on
-set(handles.mip_plot_panel,'Visible','on')
+% handles    structure with handles and user data (see GUIDATA)\
+
+state_index = get_state_index(handles);
+set(handles.nodes_list,'Value',handles.data.Complex{state_index})
+
+refresh_subset_button_Callback(handles.refresh_subset_button, eventdata, handles)
 
 
 
-% --- Executes on slider movement.
-function slider1_Callback(hObject, eventdata, handles)
-% hObject    handle to slider1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+function state_index = get_state_index(handles)
 
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-
-% set(handles.mip_plot_panel,'PlotHeight',height,'ExtraPlots',extra_plots);
-
-% slide_val = get(hObject,'Value');
-% % i could precombine these two values... we'll see...
-% height = get(handles.mip_plot_panel,'PlotHeight');
-% extra_plots = get(handles.mip_plot_panel,'ExtraPlots');
-% offset = (height * extra_plots) * (1 - slide_val);
-% for i= 1:length(handles.mip_axes)
-%    
-%     old_pos = get(ax{i},'Position');
-% %     set(ax{i},'Position',old_pos + [0 offset 
-%     
-% end
-
-
-% --- Executes during object creation, after setting all properties.
-function slider1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-end
-
-
-% --- Executes on slider movement.
-function slider2_Callback(hObject, eventdata, handles)
-% hObject    handle to slider2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-
-
-% --- Executes during object creation, after setting all properties.
-function slider2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
+state_choice = get(handles.state_list,'Value');
+if length(get(handles.state_list,'String')) == 1
+    state_index = 1;
+else
+    state_index = trans10(flipud(trans2(state_choice - 2,handles.data.num_nodes)));
 end
 
 
@@ -282,19 +237,19 @@ brush on
 % end
 
 
-% --- Executes on selection change in listbox2.
-function listbox2_Callback(hObject, eventdata, handles)
-% hObject    handle to listbox2 (see GCBO)
+% --- Executes on selection change in partition_list.
+function partition_list_Callback(hObject, eventdata, handles)
+% hObject    handle to partition_list (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns listbox2 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from listbox2
+% Hints: contents = cellstr(get(hObject,'String')) returns partition_list contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from partition_list
 
 
 % --- Executes during object creation, after setting all properties.
-function listbox2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to listbox2 (see GCBO)
+function partition_list_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to partition_list (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -305,19 +260,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in listbox3.
-function listbox3_Callback(hObject, eventdata, handles)
-% hObject    handle to listbox3 (see GCBO)
+% --- Executes on selection change in purviews_list.
+function purviews_list_Callback(hObject, eventdata, handles)
+% hObject    handle to purviews_list (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns listbox3 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from listbox3
+% Hints: contents = cellstr(get(hObject,'String')) returns purviews_list contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from purviews_list
 
 
 % --- Executes during object creation, after setting all properties.
-function listbox3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to listbox3 (see GCBO)
+function purviews_list_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to purviews_list (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -328,9 +283,9 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in refresh_button.
-function refresh_button_Callback(hObject, eventdata, handles)
-% hObject    handle to refresh_button (see GCBO)
+% --- Executes on button press in refresh_subset_button.
+function refresh_subset_button_Callback(hObject, eventdata, handles)
+% hObject    handle to refresh_subset_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -340,18 +295,21 @@ view = view_choices{get(handles.view_menu,'Value')};
 subset = get(handles.nodes_list,'Value');
 subset_index = convi(subset) - 1;
 
-N = length(subset);
+state_index = get_state_index(handles);
 
-state_choice = get(handles.state_list,'Value');
-if length(get(handles.state_list,'String')) == 1
-    state_index = 1;
-else
-    state_index = trans10(flipud(trans2(state_choice - 2,handles.data.num_nodes)));
+if isempty(handles.data.Complex{state_index})
+    set(handles.overview_axes_panel,'Visible','off')
+    set(handles.overview_axes_text,'String','This state in not realizable','Visible','on')
+    return
 end
+    
 
 if strcmp(view,'Overview')
     
     set(handles.overview_axes_panel,'Visible','off')
+    
+    drawnow
+    
     current_display_elements = allchild(handles.overview_axes_panel);
 
     for i = 1:length(current_display_elements)
@@ -384,88 +342,133 @@ if strcmp(view,'Overview')
     set(handles.panel_slider,'Value',1.0)
 
 elseif strcmp(view,'MIP')
-   
-    set(handles.mip_plot_panel,'Visible','off')
-    set(handles.mip_loading_text,'Visible','on')
-    current_display_elements = allchild(handles.mip_plot_panel);
-
-    for i = 1:length(current_display_elements)
-            delete(current_display_elements(i))
+    
+    partition_names = cell(length(handles.data.complex_MIP_all_M{state_index}{subset_index}),1);
+    for i = 1:length(handles.data.complex_MIP_all_M{state_index}{subset_index})
+        partition_names{i} = [mod_mat2str(handles.data.complex_MIP_all_M{state_index}{subset_index}{i}) '-'...
+                             mod_mat2str(pick_rest(subset,handles.data.complex_MIP_all_M{state_index}{subset_index}{i}))];
     end
-
-    % get phi values for the whole
-    w_phi_all = handles.data.small_phi_M{state_index}{subset_index}(:,1)';
-    w_phi_concepts = w_phi_all(w_phi_all ~= 0);
-%     IRR_whole = M_IRR_M{whole_i};
+    set(handles.partition_list,'String',partition_names)
     
+%     select_MIP(handles, subset, state_index, subset_index)
+    MIP_string = [mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
+                                                mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))];
+    MIP_index = find(strcmp(MIP_string,partition_names));
+    set(handles.partition_list,'Value',MIP_index)
     
-    % get concepts for the whole
-    w_concept_dists_p = zeros(2^N,length(w_phi_concepts));
-    w_concept_dists_f = zeros(2^N,length(w_phi_concepts));
-    
-    z = 1;
-    for i = 1:length(w_phi_all)
-        if (w_phi_all(i) ~= 0)
-            
-            if ~isempty(handles.data.concepts_M{state_index}{subset_index,1}{i}{1})
-                w_concept_dists_p(:,z) = handles.data.concepts_M{state_index}{subset_index,1}{i}{1};
-            end
-            if ~isempty(handles.data.concepts_M{state_index}{subset_index,1}{i}{2})
-                w_concept_dists_f(:,z) = handles.data.concepts_M{state_index}{subset_index,1}{i}{2};
-            end
-            z = z + 1;
-        end
-    end  
-    
-    
-    
-%     handles.data.concept_MIP_M{state_index}{subset_index} = concept_MIP_M_st;
-    MIP_p1 = handles.data.complex_MIP_M{state_index}{subset_index};
-    MIP_p1_index = convi(MIP_p1) - 1;
-    MIP_p2 = pick_rest(subset,MIP_p1);
-    MIP_p2_index = convi(MIP_p2) - 1;
-    
-    parts_phi_all = [handles.data.small_phi_M{state_index}{MIP_p1_index}(:,1)' ...
-                          handles.data.small_phi_M{state_index}{MIP_p2_index}(:,1)'];
-                                            
-    nIRR = sum(parts_phi_all ~= 0);
-
-    p_concept_dists_p = zeros(2^N,nIRR);
-    p_concept_dists_f = zeros(2^N,nIRR);
-    parts_phi_concepts = parts_phi_all(parts_phi_all ~= 0);
-
-    z = 1;
-    for k = 1:length(parts_phi_all)
-
-        if (parts_phi_all(k) ~= 0)
-
-            if(z <= sum(handles.data.small_phi_M{state_index}{MIP_p1_index}(:,1) ~= 0))
-                p_concept_dists_p(:,z) = expand_prob(handles.data.concepts_M{state_index}{MIP_p1_index,1}{k}{1},subset,MIP_p1);
-                p_concept_dists_f(:,z) = expand_prob(handles.data.concepts_M{state_index}{MIP_p1_index,1}{k}{2},subset,MIP_p1);
-            else
-                k_offset = k - size(handles.data.small_phi_M{state_index}{MIP_p1_index},1);
-                p_concept_dists_p(:,z) = ...
-                    expand_prob(handles.data.concepts_M{state_index}{MIP_p2_index,1}{k_offset}{1},subset,MIP_p2);
-                p_concept_dists_f(:,z) = ...
-                    expand_prob(handles.data.concepts_M{state_index}{MIP_p2_index,1}{k_offset}{2},subset,MIP_p2);
-            end
-            z = z + 1;
-
-        end
-
+    concept_names = cell(length(handles.data.purviews_M{state_index}{subset_index}),1);
+    for i = 1:length(handles.data.purviews_M{state_index}{subset_index})
+        concept_names{i} = [mod_mat2str(handles.data.purviews_M{state_index}{subset_index}{i}) ' w'];
     end
+    set(handles.purviews_list,'String',concept_names)
+    set(handles.purviews_list,'Value',[]);
     
-    all_concepts_p = [w_concept_dists_p'; p_concept_dists_p'];    
-    [handles.mip_axes height extra_plots] = conceptscatter(all_concepts_p,size(w_concept_dists_p,2),handles.mip_plot_panel);
-
-    linkdata on
-    set(handles.mip_loading_text,'Visible','off')
-    set(handles.mip_plot_panel,'Visible','on') 
+    plot_partition(handles);
     
     
 end
     
+function select_MIP(handles, subset, state_index, subset_index)
 
+MIP_string = [mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
+                                            mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))];
+MIP_index = find(strcmp(MIP_string,partition_names));
+set(handles.partition_list,'Value',MIP_index)
+
+function plot_partition(handles, state_index, subset_index, subset)
+subset = get(handles.nodes_list,'Value');
+subset_index = convi(subset) - 1;
+
+state_index = get_state_index(handles);
+
+N = length(subset);
+
+set(handles.mip_loading_text,'Visible','on')
+set(handles.mip_plot_panel,'Visible','off')
+
+drawnow
+
+%     current_display_elements = allchild(handles.mip_plot_panel);
+% 
+%     for i = 1:length(current_display_elements)
+%             delete(current_display_elements(i))
+%     end
+
+% get phi values for the whole
+w_phi_all = handles.data.small_phi_M{state_index}{subset_index}(:,1)';
+w_phi_concepts = w_phi_all(w_phi_all ~= 0);
+%     IRR_whole = M_IRR_M{whole_i};
+
+
+% get concepts for the whole
+w_concept_dists_p = zeros(2^N,length(w_phi_concepts));
+w_concept_dists_f = zeros(2^N,length(w_phi_concepts));
+
+z = 1;
+for i = 1:length(w_phi_all)
+    if (w_phi_all(i) ~= 0)
+
+        if ~isempty(handles.data.concepts_M{state_index}{subset_index,1}{i}{1})
+            w_concept_dists_p(:,z) = handles.data.concepts_M{state_index}{subset_index,1}{i}{1};
+        end
+        if ~isempty(handles.data.concepts_M{state_index}{subset_index,1}{i}{2})
+            w_concept_dists_f(:,z) = handles.data.concepts_M{state_index}{subset_index,1}{i}{2};
+        end
+        z = z + 1;
+    end
+end  
+
+
+
+%     handles.data.concept_MIP_M{state_index}{subset_index} = concept_MIP_M_st;
+MIP_index = get(handles.partition_list,'Value');
+MIP_p1 = handles.data.complex_MIP_all_M{state_index}{subset_index}{MIP_index};
+MIP_p1_index = convi(MIP_p1) - 1;
+MIP_p2 = pick_rest(subset,MIP_p1);
+MIP_p2_index = convi(MIP_p2) - 1;
+
+parts_phi_all = [handles.data.small_phi_M{state_index}{MIP_p1_index}(:,1)' ...
+                      handles.data.small_phi_M{state_index}{MIP_p2_index}(:,1)'];
+
+nIRR = sum(parts_phi_all ~= 0);
+
+p_concept_dists_p = zeros(2^N,nIRR);
+p_concept_dists_f = zeros(2^N,nIRR);
+parts_phi_concepts = parts_phi_all(parts_phi_all ~= 0);
+
+z = 1;
+for k = 1:length(parts_phi_all)
+
+    if (parts_phi_all(k) ~= 0)
+        %we could change the if below to check against k instead...
+        if(z <= sum(handles.data.small_phi_M{state_index}{MIP_p1_index}(:,1) ~= 0))
+            p_concept_dists_p(:,z) = expand_prob(handles.data.concepts_M{state_index}{MIP_p1_index,1}{k}{1},subset,MIP_p1);
+            p_concept_dists_f(:,z) = expand_prob(handles.data.concepts_M{state_index}{MIP_p1_index,1}{k}{2},subset,MIP_p1);
+        else
+            k_offset = k - size(handles.data.small_phi_M{state_index}{MIP_p1_index},1);
+            p_concept_dists_p(:,z) = ...
+                expand_prob(handles.data.concepts_M{state_index}{MIP_p2_index,1}{k_offset}{1},subset,MIP_p2);
+            p_concept_dists_f(:,z) = ...
+                expand_prob(handles.data.concepts_M{state_index}{MIP_p2_index,1}{k_offset}{2},subset,MIP_p2);
+        end
+        z = z + 1;
+
+    end
+
+end
+
+w_highlight_indices = get(handles.purviews_list,'Value');
+
+all_concepts_p = [w_concept_dists_p'; p_concept_dists_p'];    
+[handles.mip_axes] = conceptscatter(all_concepts_p,size(w_concept_dists_p,2), w_highlight_indices, handles.mip_plot_panel,handles.mip_axes);
+guidata(gcf,handles)
+
+
+
+%     linkdata on
+
+set(handles.mip_loading_text,'Visible','off')
+set(handles.mip_plot_panel,'Visible','on') 
 
 
 % --- Executes on selection change in state_list.
@@ -500,8 +503,8 @@ function panel_slider_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
-shift = get(hObject,'Value')
-position = get(handles.overview_axes_panel,'Position')
+shift = get(hObject,'Value');
+position = get(handles.overview_axes_panel,'Position');
 position(2) = (1 - position(4))*shift;
 set(handles.overview_axes_panel,'Position',position)
 
@@ -518,15 +521,27 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
 end
 
 
-
-
-% --- Executes during object creation, after setting all properties.
-function slider4_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider4 (see GCBO)
+% --- Executes on button press in mip_button.
+function mip_button_Callback(hObject, eventdata, handles)
+% hObject    handle to mip_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
+% handles    structure with handles and user data (see GUIDATA)
 
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-end
+
+% --- Executes on button press in partition_plot_refresh.
+function partition_plot_refresh_Callback(hObject, eventdata, handles)
+% hObject    handle to partition_plot_refresh (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+plot_partition(handles)
+
+
+% --- Executes on button press in clear_purview_list.
+function clear_purview_list_Callback(hObject, eventdata, handles)
+% hObject    handle to clear_purview_list (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+set(handles.purviews_list,'Value',[]);
+plot_partition(handles)

@@ -1,4 +1,4 @@
-function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,options)
+function [Big_phi_MIP MIP Big_phi_cand MIP_cand] = MIP_search(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,options)
 
 %%
 % Find the Big-phi MIP in a subset M
@@ -13,14 +13,15 @@ function [Big_phi_MIP MIP] = MIP_search(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,opti
 save('prob_M.mat','prob_M')
 
 global grain;
-%debug remove me
-fprintf('----------------------------------------------\n');
-fprintf('M = %s\n',mat2str(M));
+% %debug remove me
+% fprintf('----------------------------------------------\n');
+% fprintf('M = %s\n',mat2str(M));
 
 op_big_phi = options(11);
 op_sum = options(12);
 op_normalize = options(13);
 op_big_phi_dist = options(17);
+op_console = options(10);
 
 N_M = length(M);
 
@@ -288,8 +289,8 @@ for i=1: floor(N_M/2)
 % 
 %                 end
 
-            fprintf('-------------------------------------------------------\n');
-            fprintf('M = %s with partition %s - %s\n',mod_mat2str(M),mod_mat2str(M1),mod_mat2str(M2));
+%             fprintf('-------------------------------------------------------\n');
+%             fprintf('M = %s with partition %s - %s\n',mod_mat2str(M),mod_mat2str(M1),mod_mat2str(M2));
             d_Big_phi = big_phi_shift(M1_IRR, M2_IRR, N, M, IRR_whole,concepts_whole_p,concepts_whole_f,phi_w_concepts, M1, M2,...
                               IRR_parts,concepts_past,concepts_future, prob_M, phi_M{M1_i}(:,1)', phi_M{M2_i}(:,1)', phi_parts,op_big_phi_dist);
                           
@@ -347,6 +348,6 @@ end
 MIP = MIP_cand{i_phi_min};
 M2 = pick_rest(M,MIP);
 
-if (Big_phi_MIP ~= 0)
+if (op_console && Big_phi_MIP ~= 0)
     fprintf('M = %s\nMIP = %s-%s, Big_phi_MIP = %f\n',mat2str(M),mod_mat2str(MIP),mod_mat2str(M2),Big_phi_MIP);
 end

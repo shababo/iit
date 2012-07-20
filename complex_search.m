@@ -1,16 +1,24 @@
-function [Big_phi_MIP MIP Complex M_i_max Big_phi_MIP_M MIP_M] = complex_search(Big_phi_M,M_cell,M_IRR_M,N,prob_M, phi_M,options)
+function [Big_phi_MIP MIP Complex M_i_max Big_phi_MIP_M MIP_M Big_phi_MIP_all_M MIP_all_M] = complex_search(Big_phi_M,M_cell,M_IRR_M,N,prob_M, phi_M,options)
 %% Find complex
 
-Big_phi_MIP_M = zeros(2^N-1,1);
-MIP_M = cell(2^N-1,1);
+op_console = options(10);
 
-fprintf('\n')
-fprintf('\nBig_phi_MIP in subset M:\n\n')
+Big_phi_MIP_M = zeros(2^N-1,1);
+Big_phi_MIP_all_M = cell(2^N-1,1);
+MIP_M = cell(2^N-1,1);
+MIP_all_M = cell(2^N-1,1);
+
+if op_console
+    fprintf('\n')
+    fprintf('\nBig_phi_MIP in subset M:\n\n')
+end
+    
 for M_i = 1: 2^N-1
     M = M_cell{M_i};
     if length(M) > 1
         
-        [Big_phi_MIP_M(M_i) MIP_M{M_i}] = MIP_search(M,N,Big_phi_M, M_IRR_M, prob_M, phi_M,options);
+        [Big_phi_MIP_M(M_i) MIP_M{M_i} Big_phi_MIP_all_M{M_i} MIP_all_M{M_i}] = ...
+                                    MIP_search(M,N,Big_phi_M, M_IRR_M, prob_M, phi_M,options);
         
     end
 end
@@ -25,10 +33,12 @@ Big_phi = Big_phi_M(M_i_max);
 
 MIP{2} = pick_rest(Complex,MIP{1});
 
-fprintf('\n')
-fprintf('---------------------------------------------------------------------\n\n')
- fprintf('Complex = %s\nBig_phi = %f\nMIP = %s-%s\nBig_phi_MIP = %f\n', ...
-     mat2str(Complex),Big_phi, mod_mat2str(MIP{1}),mod_mat2str(MIP{2}),Big_phi_MIP);
+if op_console
+    fprintf('\n')
+    fprintf('---------------------------------------------------------------------\n\n')
+    fprintf('Complex = %s\nBig_phi = %f\nMIP = %s-%s\nBig_phi_MIP = %f\n', ...
+         mat2str(Complex),Big_phi, mod_mat2str(MIP{1}),mod_mat2str(MIP{2}),Big_phi_MIP);
+end
  
  
 end
