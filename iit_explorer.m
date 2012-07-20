@@ -106,6 +106,8 @@ set(handles.nodes_list,'Value',handles.data.Complex{1})
 set(handles.overview_axes_panel,'Visible','off');
 set(handles.summary_panel,'Visible','off');
 
+
+
 % set(handles.overview_scroll_panel,'Parent',handles.overview_axes_panel)
 
 
@@ -335,8 +337,11 @@ view_choices = cellstr(get(handles.view_menu,'String'));
 view = view_choices{get(handles.view_menu,'Value')};
 
 subset = get(handles.nodes_list,'Value');
-state_choice = get(handles.state_list,'Value');
+subset_index = convi(subset) - 1;
 
+N = length(subset);
+
+state_choice = get(handles.state_list,'Value');
 if length(get(handles.state_list,'String')) == 1
     state_index = 1;
 else
@@ -348,14 +353,13 @@ if strcmp(view,'Overview')
     set(handles.overview_axes_panel,'Visible','off')
     current_display_elements = allchild(handles.overview_axes_panel);
 
-    for i = 1:length(current_axes)
+    for i = 1:length(current_display_elements)
             delete(current_display_elements(i))
     end
 
 
 
     set(handles.overview_axes_text,'Visible','off')
-    subset_index = convi(subset) - 1;
     set(handles.big_phi_text,'String',['Big Phi = ' num2str(handles.data.Big_phi_M{state_index}(subset_index))])
     set(handles.big_phi_MIP_text,'String',['Big Phi MIP = ' num2str(handles.data.Big_phi_MIP{state_index}(subset_index))])
     set(handles.MIP_text,'String',{'MIP:',[mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
@@ -378,15 +382,83 @@ if strcmp(view,'Overview')
     set(handles.overview_axes_panel,'Visible','on')
     set(handles.panel_slider,'Value',1.0)
 
-elseif stcmp(view,'MIP)
+elseif strcmp(view,'MIP')
    
     set(handles.mip_plot_panel,'Visible','off')
+    set(handles.mip_loading_text,'Visible','on')
+    current_display_elements = allchild(handles.mip_plot_panel);
 
+    for i = 1:length(current_display_elements)
+            delete(current_display_elements(i))
+    end
+
+    % get phi values for the whole
+    w_phi_all = handles.data.small_phi_M{state_index}{subset_index}(:,1)';
+    w_phi_concepts = w_phi_all(w_phi_all ~= 0);
+%     IRR_whole = M_IRR_M{whole_i};
     
     
-    [handles.mip_axes height extra_plots] = conceptscatter(x,nWholeConcepts,handles.mip_main_axes,handles.mip_plot_panel);
+    % get concepts for the whole
+    w_concept_dists_p = zeros(2^N,length(w_phi_concepts));
+    w_concept_dists_f = zeros(2^N,length(w_phi_concepts));
+    
+    z = 1;
+    for i = 1:length(w_phi_all)
+        if (w_phi_all(i) ~= 0)
+            
+            if ~isempty(handles.data.concepts_M{state_index}{subset_index,1}{i}{1})
+                w_concept_dists_p(:,z) = handles.data.concepts_M{state_index}{subset_index,1}{i}{1};
+            end
+            if ~isempty(handles.data.concepts_M{state_index}{subset_index,1}{i}{2})
+                w_concept_dists_f(:,z) = handles.data.concepts_M{state_index}{subset_index,1}{i}{2};
+            end
+            z = z + 1;
+        end
+    end  
+    
+    
+    
+%     handles.data.concept_MIP_M{state_index}{subset_index} = concept_MIP_M_st;
+    MIP_p1 = handles.data.complex_MIP_M{state_index}{subset_index};
+    MIP_p1_index = convi(MIP_p1) - 1;
+    MIP_p2 = pick_rest(subset,MIP_p1);
+    MIP_p2_index = convi(MIP_p2) - 1;
+    
+    parts_phi_all = [handles.data.small_phi_M{state_index}{MIP_p1_index}(:,1)' ...
+                          handles.data.small_phi_M{state_index}{MIP_p2_index}(:,1)'];
+                                            
+    nIRR = sum(parts_phi_all ~= 0);
+
+    p_concept_dists_p = zeros(2^N,nIRR);
+    p_concept_dists_f = zeros(2^N,nIRR);
+    parts_phi_concepts = parts_phi_all(parts_phi_all ~= 0);
+
+    z = 1;
+    for k = 1:length(parts_phi_all)
+
+        if (parts_phi_all(k) ~= 0)
+
+            if(z <= sum(handles.data.small_phi_M{state_index}{MIP_p1_index}(:,1) ~= 0))
+                p_concept_dists_p(:,z) = expand_prob(handles.data.concepts_M{state_index}{MIP_p1_index,1}{k}{1},subset,MIP_p1);
+                p_concept_dists_f(:,z) = expand_prob(handles.data.concepts_M{state_index}{MIP_p1_index,1}{k}{2},subset,MIP_p1);
+            else
+                k_offset = k - size(handles.data.small_phi_M{state_index}{MIP_p1_index},1);
+                p_concept_dists_p(:,z) = ...
+                    expand_prob(handles.data.concepts_M{state_index}{MIP_p2_index,1}{k_offset}{1},subset,MIP_p2);
+                p_concept_dists_f(:,z) = ...
+                    expand_prob(handles.data.concepts_M{state_index}{MIP_p2_index,1}{k_offset}{2},subset,MIP_p2);
+            end
+            z = z + 1;
+
+        end
+
+    end
+    
+    all_concepts_p = [w_concept_dists_p'; p_concept_dists_p'];    
+    [handles.mip_axes height extra_plots] = conceptscatter(all_concepts_p,size(w_concept_dists_p,2),handles.mip_plot_panel);
 
     linkdata on
+    set(handles.mip_loading_text,'Visible','off')
     set(handles.mip_plot_panel,'Visible','on') 
     
     

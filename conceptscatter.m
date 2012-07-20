@@ -11,8 +11,8 @@ dims = size(x,2);
 assignin('base','whole',whole)
 assignin('base','part',part)
 
-% rows = size(x,2); cols = rows;
-rows = 8; cols = rows;
+rows = size(x,2); cols = rows;
+% rows = 8; cols = rows;
 extra_plots = rows - dims;
 XvsX = true;
 
