@@ -1,8 +1,19 @@
-function [ax, height, extra_plots] = conceptscatter(x,nWholeConcepts, BigAx, parent_panel)
+function [ax, height, extra_plots] = conceptscatter(x,nWholeConcepts, parent_panel)
 % BASED ON GPLOTMATRIX
 
 % x = rand(size(in_data))
 % assignin('base','x',x);
+
+concept_var = var(x);
+concept_var_states = zeros(8,1);
+
+for i = 1:8
+    
+    [max concept_var_states(i)] = max(concept_var);
+    concept_var(concept_var_states(i)) = [];
+    
+end
+
 
 whole = rand(size(x(1:nWholeConcepts,:)));
 part = rand(size(x(nWholeConcepts+1:end,:)));
@@ -12,7 +23,7 @@ assignin('base','whole',whole)
 assignin('base','part',part)
 
 rows = size(x,2); cols = rows;
-% rows = 8; cols = rows;
+rows = 8; cols = rows;
 extra_plots = rows - dims;
 XvsX = true;
 
@@ -26,21 +37,21 @@ XvsX = true;
 % clf; % will this clear the whole gui? YES!
 % BigAx = handles.overview_axes;
 hold_state = ishold;
-set(BigAx,'Visible','off','color','none','Parent',parent_panel)
+% set(BigAx,'Visible','off','color','none','Parent',parent_panel)
 
 clr = 'bgrcmyk';
 sym = '.';
 
 
 siz = repmat(get(0,'defaultlinemarkersize'), size(sym));
-if any(sym=='.'),
-  units = get(BigAx,'units');
-%   set(BigAx,'units','pixels');
-  pos = get(BigAx,'Position');
-%   set(BigAx,'units',units);
-  siz(sym == '.') = max(1,min(15, ...
-                   round(15*min(pos(3:4))/size(x,1)/max(rows,cols))));
-end
+% % % if any(sym=='.'),
+% % %   units = get(BigAx,'units');
+% % % %   set(BigAx,'units','pixels');
+% % %   pos = get(BigAx,'Position');
+% % % %   set(BigAx,'units',units);
+% % %   siz(sym == '.') = max(1,min(15, ...
+% % %                    round(15*min(pos(3:4))/size(x,1)/max(rows,cols))));
+% % % end
 
 
 % Store global data for datatips into BixAx
@@ -52,9 +63,9 @@ end
 % setappdata(BigAx,'ginds',ginds);
 % setappdata(BigAx,'xnam',xnam);
 % setappdata(BigAx,'ynam',ynam);
-setappdata(BigAx,'x',x);
-setappdata(BigAx,'y',x);
-setappdata(BigAx,'XvsX',XvsX);
+% % % setappdata(BigAx,'x',x);
+% % % setappdata(BigAx,'y',x);
+% % % setappdata(BigAx,'XvsX',XvsX);
 % setappdata(BigAx,'gn',gn);
 
 % TOOK OUT TO GET LINKING WORKING... NOT SURE IF IT MAKES A DIFF
@@ -67,7 +78,8 @@ setappdata(BigAx,'XvsX',XvsX);
 
 % Create and plot into axes
 ax2filled = false(rows,1);
-pos = get(BigAx,'Position');
+% % % % 
+pos = get(parent_panel,'Position');
 width = pos(3)/cols;
 % height = pos(4)/rows;
 height = width;
@@ -219,10 +231,10 @@ assignin('base','part',part)
 % end
 
 % Make BigAx the CurrentAxes
-set(gcf,'CurrentAx',BigAx)
-if ~hold_state,
-   set(gcf,'NextPlot','replace')
-end
+% set(gcf,'CurrentAx',BigAx)
+% if ~hold_state,
+%    set(gcf,'NextPlot','replace')
+% end
 
 
 
