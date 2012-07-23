@@ -36,7 +36,7 @@ MIP_cand = cell(N_Bp,1);
 whole_i = trans_M(M,N);
 Big_phi_w = Big_phi_M(whole_i);
 
-if (op_big_phi == 4)
+if (op_big_phi == [4 5])
     
     phi_whole = phi_M{whole_i}(:,1)';
     phi_w_concepts = phi_whole(phi_whole ~= 0);
@@ -57,6 +57,18 @@ if (op_big_phi == 4)
             z = z + 1;
         end
     end  
+    
+    whole_concepts_cell_p = cell(length(phi_w_concepts),2);
+    whole_concepts_cell_f = cell(length(phi_w_concepts),2);
+    
+    for i = 1:length(phi_w_concepts)
+        
+       whole_concepts_cell_p{i,1} = concepts_whole_p(:,i);
+       whole_concepts_cell_f{i,1} = concepts_whole_f(:,i); 
+       whole_concepts_cell_p{i,2} = phi_w_concepts(i);
+       whole_concepts_cell_f{i,2} = phi_w_concepts(i);
+       
+    end
 %     
 %     phi_whole = phi_w_concepts;
     
@@ -294,10 +306,65 @@ for i=1: floor(N_M/2)
             d_Big_phi = big_phi_shift(M1_IRR, M2_IRR, N, M, IRR_whole,concepts_whole_p,concepts_whole_f,phi_w_concepts, M1, M2,...
                               IRR_parts,concepts_past,concepts_future, prob_M, phi_M{M1_i}(:,1)', phi_M{M2_i}(:,1)', phi_parts,op_big_phi_dist);
                           
+        elseif(op_big_phi == 5)
+            
+            
+            
+            phi = [phi_M{M1_i}' phi_M{M2_i}'];
+            nIRR = sum(phi ~= 0);
+            
+%             disp('***************')
+%             disp(M1_IRR);
+%             disp(length(M1_IRR));
+%             disp(M2_IRR);
+%             disp(length(M2_IRR));
+%             disp(nIRR)
+%             disp(phi)
+%             disp(phi ~= 0);
+%             disp(sum(phi ~= 0));
+            
 
+
+            concepts_past = zeros(2^N_M,nIRR);
+            concepts_future = zeros(2^N_M,nIRR);
+            concept_phis = phi(phi ~= 0);
+
+            z = 1;
+            for k = 1:length(phi)
+
+                if (phi(k) ~= 0)
+
+                    if(z <= sum(phi_M{M1_i} ~= 0))
+                        concepts_past(:,z) = expand_prob(prob_M{M1_i,1}{k}{1},M,M1);
+                        concepts_future(:,z) = expand_prob(prob_M{M1_i,1}{k}{2},M,M1);
+                    else
+                        concepts_past(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{1},M,M2);
+                        concepts_future(:,z) = expand_prob(prob_M{M2_i,1}{k - length(phi_M{M1_i})}{2},M,M2);
+                    end
+                    z = z + 1;
+
+                end
+
+            end
+            
+            part_concepts_cell_p = cell(nIRR,2);
+            part_concepts_cell_f = cell(nIRR,2);
+
+            for k = 1:nIRR
+
+               part_concepts_cell_p{k,1} = concepts_past(:,k);
+               part_concepts_cell_f{k,1} = concepts_future(:,k); 
+               part_concepts_cell_p{k,2} = concept_phis(k);
+               part_concepts_cell_f{k,2} = concept_phis(k);
+
+            end
+            
+            d_Big_phi = C_distance(part_concepts_cell_p,whole_concepts_cell_p)...
+                + C_distance(part_concepts_cell_f,whole_concepts_cell_f)
+        
         end
         
-        if (op_big_phi ~= 4)
+        if (any(op_big_phi == [0 1 2 3]))
             
             % 07-06-12 CHANGED TO ABS VALUE
             d_Big_phi = abs(Big_phi_w - Big_phi_partition);

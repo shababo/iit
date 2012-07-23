@@ -103,6 +103,8 @@ for i=1: N_b % past or future
                 phi = KLD(prob{bf},prob_p);
             elseif (op_small_phi == 1)
                 phi = emd_hat_gd_metric_mex(prob{bf}',prob_p',gen_dist_matrix(length(prob_p)));
+            elseif (op_small_phi == 2)
+                phi = k_distance(prob{bf},prob_p);
             end
             prob_prod_vec{i,j,bf} = prob_p;
             

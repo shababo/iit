@@ -94,9 +94,11 @@ if op_min == 0 % PHI IS SUM OF BACKWARD AND FORWARD
                         
                         if op_small_phi == 0
                             phi = KLD(prob_bw,prob_bp) + KLD(prob_fw,prob_fp);
-                        else
+                        elseif op_small_phi == 1
                             phi = emd_hat_gd_metric_mex(prob_bw,prob_bp,gen_dist_matrix(length(prob_bw))) +...
                                 emd_hat_gd_metric_mex(prob_fw,prob_fp,gen_dist_matrix(length(prob_fp)));
+                        elseif op_small_phi == 2
+                            phi = k_distance(prob_bw,prob_bp) + k_distance(prob_fw,prob_fp);
                         end
                         
                         prob_prod = cell(2,1);
@@ -110,6 +112,8 @@ if op_min == 0 % PHI IS SUM OF BACKWARD AND FORWARD
                             phi = KLD(prob(:),prob_prod(:));
                         elseif (op_small_phi == 1)
                             phi = emd_hat_gd_metric_mex(prob(:),prob_prod(:),gen_dist_matrix(length(prob(:))));
+                        elseif op_small_phi == 2
+                            phi = k_distance(prob(:),prob_prod(:));
                         end
                         
                         prob_prod_vec{i,j,k} = prob_prod;
@@ -194,6 +198,8 @@ else % OP_MIN = 1, PHI IS MINIMUM OF BACKWARDS AND FORWARDS COMPUTATIONS
                         phi = KLD(prob{bf},prob_p);
                     elseif (op_small_phi == 1)
                         phi = emd_hat_gd_metric_mex(prob{bf},prob_p,gen_dist_matrix(length(prob_p)));
+                    elseif op_small_phi == 2
+                        phi = k_distance(prob{bf},prob_p);
                     end
                     prob_prod_vec{i,j,bf} = prob_p;
                 else

@@ -5,7 +5,6 @@ function [phi prob prob_prod_MIP MIP] = phi_comp_ex(options,M,x0,x0_s,p,M_p,J)
 % op_disp = 1;
 % op_single = 1;
 
-global b_table
 
 op_context = options(6);
 op_empty = options(8);
