@@ -6,7 +6,7 @@ function [ax, height, extra_plots] = conceptscatter(x,nWholeConcepts, w_highligh
 
 
 num_dims = min(size(x,2),8);
-num_nodes = log2(num_dims);
+num_nodes = log2(size(x,2));
 concept_var = var(x);
 % concept_var_states = zeros(num_dims,1);
 
@@ -130,19 +130,18 @@ for i = 8:-1:0 % count down from rows to 1
            state1 = concept_var_states(i);
            state2 = concept_var_states(j);
 
+
+            plot(ax{ax_index},part(:,state2), ...
+                part(:,state1),'*b');
+            hold on;
+            
+            
             plot(ax{ax_index},whole(:,state2),...
                 whole(:,state1),'dg')
-            
-
-
-
-            hold on;
-            plot(ax{ax_index},part(:,state2), ...
-                part(:,state1),'xb');
             hold on;
             
             plot(ax{ax_index},whole(w_highlight_indices,state2), ...
-                whole(w_highlight_indices,state1),'.r');
+                whole(w_highlight_indices,state1),'or','MarkerSize',8);
             hold on;
             
             choices = nchoosek([1 2 3],2);
@@ -187,18 +186,20 @@ else
        delete(plots(k))
    end
 end
-scatter3(ax{ax_index},whole(:,concept_var_states(1)),whole(:,concept_var_states(2)),...
-    whole(:,concept_var_states(3)),'Marker','d','MarkerFaceColor','g')
-
-hold on
 
 scatter3(ax{ax_index},part(:,concept_var_states(1)),part(:,concept_var_states(2)),...
-    part(:,concept_var_states(3)),'Marker','x','MarkerFaceColor','b')
+    part(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','b','SizeData',50)
+hold on
+
+scatter3(ax{ax_index},whole(:,concept_var_states(1)),whole(:,concept_var_states(2)),...
+    whole(:,concept_var_states(3)),'Marker','d','MarkerEdgeColor','g','SizeData',75)
 
 hold on
 
 scatter3(ax{ax_index},whole(w_highlight_indices,concept_var_states(1)),whole(w_highlight_indices,concept_var_states(2)),...
-    whole(w_highlight_indices,concept_var_states(3)),'Marker','.','MarkerFaceColor','r')
+    whole(w_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','r','SizeData',80)
+hold on
+
 
 xlabel(ax{ax_index},dec2bin(concept_var_states(1)-1,num_nodes))
 ylabel(ax{ax_index},dec2bin(concept_var_states(2)-1,num_nodes))

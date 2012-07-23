@@ -342,6 +342,12 @@ function state_option_menu_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns state_option_menu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from state_option_menu
 
+if get(hObject,'Value') == 1
+    set(handles.cur_state,'Enable','on')
+else
+    set(handles.cur_state,'Enable','off')
+end
+
 
 % --- Executes during object creation, after setting all properties.
 function state_option_menu_CreateFcn(hObject, eventdata, handles)
@@ -1035,7 +1041,7 @@ function save_button_Callback(hObject, eventdata, handles)
 
 tpm = get(handles.TPM,'Data');
 tpm_view = get(handles.tpm_type_menu,'Value');
-logic_types = get(handles.loadogic_types,'Data');
+logic_types = get(handles.logic_types,'Data');
 noise = get(handles.noise,'String');
 connectivity_mat = get(handles.connectivity_mat,'Data');
 cur_state = get(handles.cur_state,'Data');

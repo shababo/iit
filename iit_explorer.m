@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 20-Jul-2012 13:45:36
+% Last Modified by GUIDE v2.5 20-Jul-2012 16:08:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -350,7 +350,7 @@ elseif strcmp(view,'MIP')
     end
     set(handles.partition_list,'String',partition_names)
     
-%     select_MIP(handles, subset, state_index, subset_index)
+    select_MIP(handles, subset, state_index, subset_index)
     MIP_string = [mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
                                                 mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))];
     MIP_index = find(strcmp(MIP_string,partition_names));
@@ -370,6 +370,7 @@ end
     
 function select_MIP(handles, subset, state_index, subset_index)
 
+partition_names = get(handles.partition_list,'String');
 MIP_string = [mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
                                             mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))];
 MIP_index = find(strcmp(MIP_string,partition_names));
@@ -459,8 +460,13 @@ end
 
 w_highlight_indices = get(handles.purviews_list,'Value');
 
-all_concepts_p = [w_concept_dists_p'; p_concept_dists_p'];    
-[handles.mip_axes] = conceptscatter(all_concepts_p,size(w_concept_dists_p,2), w_highlight_indices, handles.mip_plot_panel,handles.mip_axes);
+if get(handles.past_future_list,'Value') == 1
+    all_concepts = [w_concept_dists_p'; p_concept_dists_p'];
+else
+    all_concepts = [w_concept_dists_f'; p_concept_dists_f'];
+end
+
+[handles.mip_axes] = conceptscatter(all_concepts,size(w_concept_dists_p,2), w_highlight_indices, handles.mip_plot_panel,handles.mip_axes);
 guidata(gcf,handles)
 
 
@@ -527,6 +533,13 @@ function mip_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+subset = get(handles.nodes_list,'Value');
+subset_index = convi(subset) - 1;
+
+state_index = get_state_index(handles);
+
+select_MIP(handles, subset, state_index, subset_index)
+
 
 % --- Executes on button press in partition_plot_refresh.
 function partition_plot_refresh_Callback(hObject, eventdata, handles)
@@ -545,3 +558,26 @@ function clear_purview_list_Callback(hObject, eventdata, handles)
 
 set(handles.purviews_list,'Value',[]);
 plot_partition(handles)
+
+
+% --- Executes on selection change in past_future_list.
+function past_future_list_Callback(hObject, eventdata, handles)
+% hObject    handle to past_future_list (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns past_future_list contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from past_future_list
+
+
+% --- Executes during object creation, after setting all properties.
+function past_future_list_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to past_future_list (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
