@@ -183,7 +183,7 @@ elseif (op_big_phi == 1)
     else
         Big_phi = 0;
     end
-elseif (op_big_phi == 2 || op_big_phi == 4)
+elseif (op_big_phi == 2 || op_big_phi == 4 || op_big_phi == 5)
 
     index_vec_IRR = find(phi ~= 0);
     N_IRR = length(index_vec_IRR);

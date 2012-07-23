@@ -18,7 +18,7 @@ N=length(P);
 
 % if (N <= 5)
     
-    tic
+%     tic
     A = repmat((0:N-1)',1,N);
     B = A';
     hamming_distance_factors = 2.^(-sum(dec2bin(bitxor(A,B)) == '1',2));
