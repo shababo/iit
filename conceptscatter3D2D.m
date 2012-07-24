@@ -1,127 +1,59 @@
-function [ax, height, extra_plots] = conceptscatter3D2D(x,nWholeConcepts, w_highlight_indices, parent_panel, mip_axes)
+function [ax, height, extra_plots] = conceptscatter3D2D(x,nWholeConcepts, highlight_indices, parent_panel, mip_axes)
 % BASED ON GPLOTMATRIX
-
-% x = rand(size(in_data))
-% assignin('base','x',x);
-
 
 num_dims = min(size(x,2),8);
 num_nodes = log2(size(x,2));
 concept_var = var(x);
 % concept_var_states = zeros(num_dims,1);
 
-replot = ~isempty(mip_axes);
+% replot = ~isempty(mip_axes);
 
-[sorted_vars concept_var_states] = sort(concept_var,'descend');
+[~, concept_var_states] = sort(concept_var,'descend');
 
 whole = x(1:nWholeConcepts,:);
 part = x(nWholeConcepts+1:end,:);
 
-% whole = rand(size(x(1:nWholeConcepts,:)));
-% part = rand(size(x(nWholeConcepts+1:end,:)));
+w_highlight_indices = highlight_indices(highlight_indices <= nWholeConcepts);
+p_highlight_indices = highlight_indices(highlight_indices > nWholeConcepts) - nWholeConcepts;
+
 dims = size(x,2);
-% 
-% assignin('base','whole',whole)
-% assignin('base','part',part)
 
-% rows = size(x,2); cols = rows;
-rows = 8; cols = rows;
+rows = 8; 
+cols = rows;
 extra_plots = rows - dims;
-XvsX = true;
 
-
-% [g,gn] = mgrp2idx(g,size(x,1),',');
-% ng = max(g);
-
-% ynam = xnam;
-
-% Create/find BigAx and make it invisible
-% clf; % will this clear the whole gui? YES!
-% BigAx = handles.overview_axes;
-hold_state = ishold;
-% set(BigAx,'Visible','off','color','none','Parent',parent_panel)
-
-clr = 'bgrcmyk';
-sym = '.';
-
-
-siz = repmat(get(0,'defaultlinemarkersize'), size(sym));
-% % % if any(sym=='.'),
-% % %   units = get(BigAx,'units');
-% % % %   set(BigAx,'units','pixels');
-% % %   pos = get(BigAx,'Position');
-% % % %   set(BigAx,'units',units);
-% % %   siz(sym == '.') = max(1,min(15, ...
-% % %                    round(15*min(pos(3:4))/size(x,1)/max(rows,cols))));
-% % % end
-
-
-% Store global data for datatips into BixAx
-% ginds = cell(1,ng);
-% for i=1:ng
-%     ginds{i} = find(g==i);
-% end
-
-% setappdata(BigAx,'ginds',ginds);
-% setappdata(BigAx,'xnam',xnam);
-% setappdata(BigAx,'ynam',ynam);
-% % % setappdata(BigAx,'x',x);
-% % % setappdata(BigAx,'y',x);
-% % % setappdata(BigAx,'XvsX',XvsX);
-% setappdata(BigAx,'gn',gn);
-
-% TOOK OUT TO GET LINKING WORKING... NOT SURE IF IT MAKES A DIFF
-% Make datatips show up in front of axes
-% dcm_obj = datacursormode(ancestor(BigAx,'figure'));
-% set(dcm_obj,'EnableAxesStacking',true);
-% 
-% dataCursorBehaviorObj = hgbehaviorfactory('DataCursor');
-% set(dataCursorBehaviorObj,'UpdateFcn',@gplotmatrixDatatipCallback);
-
-% Create and plot into axes
-ax2filled = false(rows,1);
-% % % % 
 pos = get(parent_panel,'Position');
-width = pos(3)/8;
-% height = pos(4)/rows;
+width = pos(3)/rows;
 height = width;
 space = .04; % 2 percent space between axes
-pos(1:2) = pos(1:2) + space*[width height]; % shift starting point by spacing
-[m,n,k] = size(x); %#ok<ASGLU>
 xlim = repmat(cat(3,zeros(rows,1),ones(rows,1)),[rows 1 1]);
 ylim = repmat(cat(3,zeros(rows,1)',ones(rows,1)'),[1 cols 1]);
 
 
 x_bound = [0 1 0];
 y_bound = [1 0 0];
-% these are the loops that need to be changed to enable data linking
 
-% ax = cell(nchoosek(size(x,2),2)+1,1); % all pairs of dims plus the 3D plot
-
-if replot
-    ax = mip_axes;
-else
-    ax = cell(nchoosek(num_dims,2)+1,1); % all pairs of dims plus the 3D plot
+existing_axes = findobj(parent_panel,'Parent',parent_panel);
+for k = 1:length(existing_axes)
+   delete(existing_axes(k))
 end
+
+ax = cell(nchoosek(num_dims,2)+1,1); % all pairs of dims plus the 3D plot
 
 ax_index = 1;
 for i = 8:-1:0 % count down from rows to 1
    for j = i-1:-1:1, % count down from cols to 1
        
-       if ~replot
-            axPos = [(j-1)*width+space (rows-i)*height+space ...
-                width*(1-space) height*(1-space)];
-            ax{ax_index} = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,...
-                'DrawMode','fast','Clipping','On');
-            
-            xlim(i,j,:) = get(ax{ax_index},'xlim');
-            ylim(i,j,:) = get(ax{ax_index},'ylim');
-        else
-           plots = findobj(ax{ax_index},'Parent',ax{ax_index});
-           for k = 1:length(plots)
-               delete(plots(k))
-           end
-        end
+
+
+        axPos = [(j-1)*width+space (rows-i)*height+space ...
+            width*(1-space) height*(1-space)];
+        ax{ax_index} = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,...
+            'DrawMode','fast','Clipping','On');
+
+        xlim(i,j,:) = get(ax{ax_index},'xlim');
+        ylim(i,j,:) = get(ax{ax_index},'ylim');
+
 
         
         if (i <= num_dims)
@@ -137,11 +69,16 @@ for i = 8:-1:0 % count down from rows to 1
             
             
             plot(ax{ax_index},whole(:,state2),...
-                whole(:,state1),'dg','Clipping','on')
+                whole(:,state1),'*g','Clipping','on')
             hold on;
+            
             
             plot(ax{ax_index},whole(w_highlight_indices,state2), ...
                 whole(w_highlight_indices,state1),'or','MarkerSize',8,'Clipping','on');
+            hold on;
+            
+            plot(ax{ax_index},part(p_highlight_indices,state2), ...
+                part(p_highlight_indices,state1),'om','MarkerSize',8,'Clipping','on');
             hold on;
             
             choices = nchoosek([1 2 3],2);
@@ -174,32 +111,31 @@ end
 
 j = ceil(rows/2);
 
-if ~replot
-    axPos = [(j+1)*width+space (rows - j - .5)*height+space ...
-            width*(1-space)*(j+.75) height*(1-space)*(j+.75)];
-    axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'DrawMode','fast');
 
-    ax{ax_index} = axes3D;
-else
-   plots = findobj(ax{ax_index},'Parent',ax{ax_index});
-   for k = 1:length(plots)
-       delete(plots(k))
-   end
-end
+   
+axPos = [(j-.5)*width+space (rows - j + .5)*height+space ...
+        width*(1-space)*(j+.75) height*(1-space)*(j+.75)];
+axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'DrawMode','fast');
+
+ax{ax_index} = axes3D;
+
 
 scatter3(ax{ax_index},part(:,concept_var_states(1)),part(:,concept_var_states(2)),...
-    part(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','b','SizeData',50,'Clipping','on')
+    part(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','b','SizeData',75,'Clipping','on')
 hold on
 
 scatter3(ax{ax_index},whole(:,concept_var_states(1)),whole(:,concept_var_states(2)),...
-    whole(:,concept_var_states(3)),'Marker','d','MarkerEdgeColor','g','SizeData',75,'Clipping','on')
+    whole(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','g','SizeData',75,'Clipping','on')
 
 hold on
 
 scatter3(ax{ax_index},whole(w_highlight_indices,concept_var_states(1)),whole(w_highlight_indices,concept_var_states(2)),...
-    whole(w_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','r','SizeData',80,'Clipping','on')
+    whole(w_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','r','SizeData',100,'Clipping','on')
 hold on
 
+scatter3(ax{ax_index},part(p_highlight_indices,concept_var_states(1)),part(p_highlight_indices,concept_var_states(2)),...
+    part(p_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','m','SizeData',100,'Clipping','on')
+hold on
 
 xlabel(ax{ax_index},dec2bin(concept_var_states(1)-1,num_nodes))
 ylabel(ax{ax_index},dec2bin(concept_var_states(2)-1,num_nodes))

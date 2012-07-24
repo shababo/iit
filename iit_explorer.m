@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 24-Jul-2012 14:19:49
+% Last Modified by GUIDE v2.5 24-Jul-2012 14:35:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -65,7 +65,7 @@ guidata(hObject, handles);
 
 % Set initial View
 set(handles.Concepts,'Visible','Off')
-set(handles.MIP,'Visible','Off')
+set(handles.SystemPartitions,'Visible','Off')
 
 % load data
 if nargin == 4 && isstruct(varargin{1})
@@ -246,6 +246,8 @@ function partition_list_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns partition_list contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from partition_list
 
+update_purviews_list(handles)
+
 
 % --- Executes during object creation, after setting all properties.
 function partition_list_CreateFcn(hObject, eventdata, handles)
@@ -292,7 +294,9 @@ function refresh_subset_button_Callback(hObject, eventdata, handles)
 view_choices = cellstr(get(handles.view_menu,'String'));
 view = view_choices{get(handles.view_menu,'Value')};
 
-[subset subset_index state_index] = get_subset_and_state(handles);
+[handles.data.subset handles.data.subset_index handles.data.state_index] = get_subset_and_state(handles);
+guidata(gcf,hanldes)
+
 
 if isempty(handles.data.Complex{state_index})
     set(handles.overview_axes_panel,'Visible','off')
@@ -376,17 +380,8 @@ elseif strcmp(view,'System Partitions')
     set(handles.partition_list,'String',partition_names)
     
     select_MIP(handles, subset, state_index, subset_index)
-    MIP_string = [mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
-                                                mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))];
-    MIP_index = find(strcmp(MIP_string,partition_names));
-    set(handles.partition_list,'Value',MIP_index)
-    
-    concept_names = cell(length(handles.data.purviews_M{state_index}{subset_index}),1);
-    for i = 1:length(handles.data.purviews_M{state_index}{subset_index})
-        concept_names{i} = [mod_mat2str(handles.data.purviews_M{state_index}{subset_index}{i}) ' w'];
-    end
-    set(handles.purviews_list,'String',concept_names)
-    set(handles.purviews_list,'Value',[]);
+
+    update_purviews_list(handles)
     
     plot_partition(handles);
     
@@ -402,7 +397,8 @@ set(handles.partition_list,'Value',MIP_index)
 
 function plot_partition(handles)
 
-[subset subset_index state_index] = get_subset_and_state(handles);
+subset = handles.data.subset; subset_index = handles.data.subset_index;
+state_index = handles.data.state_index;
 
 N = length(subset);
 
@@ -437,15 +433,10 @@ end
 
 
 
-%     handles.data.concept_MIP_M{state_index}{subset_index} = concept_MIP_M_st;
-MIP_index = get(handles.partition_list,'Value');
-MIP_p1 = handles.data.complex_MIP_all_M{state_index}{subset_index}{MIP_index};
-MIP_p1_index = convi(MIP_p1) - 1;
-MIP_p2 = pick_rest(subset,MIP_p1);
-MIP_p2_index = convi(MIP_p2) - 1;
+[partition1 partition1_index partition2 partition2_index] = get_partitions(handles);
 
-parts_phi_all = [handles.data.small_phi_M{state_index}{MIP_p1_index}(:,1)' ...
-                      handles.data.small_phi_M{state_index}{MIP_p2_index}(:,1)'];
+parts_phi_all = [handles.data.small_phi_M{state_index}{partition1_index}(:,1)' ...
+                      handles.data.small_phi_M{state_index}{partition2_index}(:,1)'];
 
 nIRR = sum(parts_phi_all ~= 0);
 
@@ -458,15 +449,15 @@ for k = 1:length(parts_phi_all)
 
     if (parts_phi_all(k) ~= 0)
         %we could change the if below to check against k instead...
-        if(z <= sum(handles.data.small_phi_M{state_index}{MIP_p1_index}(:,1) ~= 0))
-            p_concept_dists_p(:,z) = expand_prob(handles.data.concepts_M{state_index}{MIP_p1_index,1}{k}{1},subset,MIP_p1);
-            p_concept_dists_f(:,z) = expand_prob(handles.data.concepts_M{state_index}{MIP_p1_index,1}{k}{2},subset,MIP_p1);
+        if(z <= sum(handles.data.small_phi_M{state_index}{partition1_index}(:,1) ~= 0))
+            p_concept_dists_p(:,z) = expand_prob(handles.data.concepts_M{state_index}{partition1_index,1}{k}{1},subset,partition1);
+            p_concept_dists_f(:,z) = expand_prob(handles.data.concepts_M{state_index}{partition1_index,1}{k}{2},subset,partition1);
         else
-            k_offset = k - size(handles.data.small_phi_M{state_index}{MIP_p1_index},1);
+            k_offset = k - size(handles.data.small_phi_M{state_index}{partition1_index},1);
             p_concept_dists_p(:,z) = ...
-                expand_prob(handles.data.concepts_M{state_index}{MIP_p2_index,1}{k_offset}{1},subset,MIP_p2);
+                expand_prob(handles.data.concepts_M{state_index}{partition2_index,1}{k_offset}{1},subset,partition2);
             p_concept_dists_f(:,z) = ...
-                expand_prob(handles.data.concepts_M{state_index}{MIP_p2_index,1}{k_offset}{2},subset,MIP_p2);
+                expand_prob(handles.data.concepts_M{state_index}{partition2_index,1}{k_offset}{2},subset,partition2);
         end
         z = z + 1;
 
@@ -478,25 +469,43 @@ plot_choices = get(handles.partition_plot_menu,'String');
 plot_choice_index = get(handles.partition_plot_menu,'Value');
 plot_choice = plot_choices{plot_choice_index};
 
-if strcmp(plot_choice
-
-w_highlight_indices = get(handles.purviews_list,'Value');
-
 if get(handles.past_future_list,'Value') == 1
     all_concepts = [w_concept_dists_p'; p_concept_dists_p'];
 else
     all_concepts = [w_concept_dists_f'; p_concept_dists_f'];
 end
 
-[handles.mip_axes] = conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), w_highlight_indices, handles.mip_plot_panel,handles.mip_axes);
-guidata(gcf,handles)
+% 3D & 2D Scatter - Variance
+% 3D Scatter - Variance
+% 3D Scatter - PCA (unavail)
+% 2D Scatter - Variance
+% Concept Bar Graphs
 
+if strcmp(plot_choice,'3D & 2D Scatter - Variance')
+
+    w_highlight_indices = get(handles.purviews_list,'Value');
+    [handles.mip_axes] = conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), w_highlight_indices, handles.mip_plot_panel,handles.mip_axes);
+    % guidata(gcf,handles)
+
+end
 
 
 %     linkdata on
 
 set(handles.mip_loading_text,'Visible','off')
 set(handles.mip_plot_panel,'Visible','on') 
+
+function [partition_p1 partition1_index partition_p2 partition2_index] = get_partitions(handles)
+
+subset = handles.data.subset; subset_index = handles.data.subset_index;
+state_index = handles.data.state_index;
+
+partition_index = get(handles.partition_list,'Value');
+
+partition_p1 = handles.data.complex_MIP_all_M{state_index}{subset_index}{partition_index};
+partition1_index = convi(partition_p1) - 1;
+partition_p2 = pick_rest(subset,partition_p1);
+partition2_index = convi(partition_p2) - 1;
 
 
 % --- Executes on selection change in state_list.
@@ -555,7 +564,8 @@ function mip_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[subset subset_index state_index] = get_subset_and_state(handles);
+subset = handles.data.subset; subset_index = handles.data.subset_index;
+state_index = handles.data.state_index;
 
 select_MIP(handles, subset, state_index, subset_index)
 
@@ -634,7 +644,8 @@ function output_concepts_Callback(hObject, eventdata, handles)
 
 concept_indices = get(handles.output_concepts_list,'Value');
 
-[subset subset_index state_index] = get_subset_and_state(handles);
+subset = handles.data.subset; subset_index = handles.data.subset_index;
+state_index = handles.data.state_index;
 
 concept_count = length(get(handles.output_concepts_list,'String'))/2;
 
@@ -690,3 +701,34 @@ function partition_plot_menu_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+function update_purviews_list(handles)
+
+
+subset_index = handles.data.subset_index;
+state_index = handles.data.state_index;
+[~, partition1_index ~, partition2_index] = get_partitions(handles);
+
+num_concepts_whole = length(handles.data.purviews_M{state_index}{subset_index,1});
+num_concepts_part1 = length(handles.data.purviews_M{state_index}{partition1_index,1});
+num_concepts_part2 = length(handles.data.purviews_M{state_index}{partition2_index,1});
+num_concepts = num_concepts_whole + num_concepts_part1 + num_concepts_part2;
+             
+concept_names = cell(num_concepts,1);
+
+for i = 1:num_concepts_whole
+    concept_names{i} = [mod_mat2str(handles.data.purviews_M{state_index}{subset_index}{i}) '_whole'];
+end
+
+for i = num_concepts_whole + 1 : num_concepts_whole + num_concepts_part1
+    concept_names{i} = [mod_mat2str(handles.data.purviews_M{state_index}{partition1_index}{i-num_concepts_whole}) '_part1'];
+end
+
+for i = num_concepts_whole + num_concepts_part1 + 1:num_concepts
+    concept_names{i} = [mod_mat2str(handles.data.purviews_M{state_index}{partition2_index}{i-num_concepts_part1-num_concepts_whole}) '_part1'];
+end
+
+set(handles.purviews_list,'String',concept_names)
+set(handles.purviews_list,'Value',[]);
+
+
