@@ -1,4 +1,4 @@
-function [ax, height, extra_plots] = conceptscatter(x,nWholeConcepts, w_highlight_indices, parent_panel, mip_axes)
+function [ax, height, extra_plots] = conceptscatter3D2D(x,nWholeConcepts, w_highlight_indices, parent_panel, mip_axes)
 % BASED ON GPLOTMATRIX
 
 % x = rand(size(in_data))
@@ -132,16 +132,16 @@ for i = 8:-1:0 % count down from rows to 1
 
 
             plot(ax{ax_index},part(:,state2), ...
-                part(:,state1),'*b');
+                part(:,state1),'*b','Clipping','on');
             hold on;
             
             
             plot(ax{ax_index},whole(:,state2),...
-                whole(:,state1),'dg')
+                whole(:,state1),'dg','Clipping','on')
             hold on;
             
             plot(ax{ax_index},whole(w_highlight_indices,state2), ...
-                whole(w_highlight_indices,state1),'or','MarkerSize',8);
+                whole(w_highlight_indices,state1),'or','MarkerSize',8,'Clipping','on');
             hold on;
             
             choices = nchoosek([1 2 3],2);
@@ -149,7 +149,7 @@ for i = 8:-1:0 % count down from rows to 1
             for k = 1:size(choices,1)
 
                 hold on
-                plot(ax{ax_index},x_bound(choices(k,:)),y_bound(choices(k,:)),'k');
+                plot(ax{ax_index},x_bound(choices(k,:)),y_bound(choices(k,:)),'k','Clipping','on');
 
             end
         else
@@ -166,7 +166,7 @@ for i = 8:-1:0 % count down from rows to 1
         end
        
         set(ax{ax_index},'xlimmode','manual','ylimmode','manual','xgrid','off','ygrid','off',...
-                'xlim',[-.25 1.25],'ylim',[-.25 1.25],'xticklabel','','yticklabel','')
+                'xlim',[-.25 1.25],'ylim',[-.25 1.25],'xticklabel','','yticklabel','','Clipping','on')
         ax_index = ax_index + 1;
 
    end
@@ -188,16 +188,16 @@ else
 end
 
 scatter3(ax{ax_index},part(:,concept_var_states(1)),part(:,concept_var_states(2)),...
-    part(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','b','SizeData',50)
+    part(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','b','SizeData',50,'Clipping','on')
 hold on
 
 scatter3(ax{ax_index},whole(:,concept_var_states(1)),whole(:,concept_var_states(2)),...
-    whole(:,concept_var_states(3)),'Marker','d','MarkerEdgeColor','g','SizeData',75)
+    whole(:,concept_var_states(3)),'Marker','d','MarkerEdgeColor','g','SizeData',75,'Clipping','on')
 
 hold on
 
 scatter3(ax{ax_index},whole(w_highlight_indices,concept_var_states(1)),whole(w_highlight_indices,concept_var_states(2)),...
-    whole(w_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','r','SizeData',80)
+    whole(w_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','r','SizeData',80,'Clipping','on')
 hold on
 
 
@@ -208,7 +208,7 @@ zlabel(ax{ax_index},dec2bin(concept_var_states(3)-1,num_nodes))
 
 set(ax{ax_index},'xlimmode','manual','ylimmode','manual',...
         'xlim',[-.25 1.25],'ylim',[-.25 1.25],'zlim',[-.25 1.25],...
-        'CameraViewAngleMode','manual')
+        'CameraViewAngleMode','manual','Clipping','on')
         
 
 
@@ -221,7 +221,7 @@ choices = nchoosek([1 2 3 4],2);
 for i = 1:size(choices,1)
     
     hold on
-    plot3(ax{ax_index},x_bound(choices(i,:)),y_bound(choices(i,:)),z_bound(choices(i,:)),'k');
+    plot3(ax{ax_index},x_bound(choices(i,:)),y_bound(choices(i,:)),z_bound(choices(i,:)),'k','Clipping','on');
     
 end
 

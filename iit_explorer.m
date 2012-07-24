@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 23-Jul-2012 21:26:46
+% Last Modified by GUIDE v2.5 24-Jul-2012 14:19:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -213,28 +213,28 @@ else
 end
 
 
-% --------------------------------------------------------------------
-function brush_toggle_OffCallback(hObject, eventdata, handles)
-% hObject    handle to brush_toggle (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-brush off
-
-
-% --------------------------------------------------------------------
-function brush_toggle_OnCallback(hObject, eventdata, handles)
-% hObject    handle to brush_toggle (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-brush on
-
-% below is an attempt to get 
-% for i = 1:length(handles.mip_axes)
-%     
-%     brushed = findall(handles.mip_axes{i},'tag','Brushing');
-%     set(handles.brushed,'Parent',handles.mip_plot_panel,'Clipping','on')
-%     
-% end
+% % --------------------------------------------------------------------
+% function brush_toggle_OffCallback(hObject, eventdata, handles)
+% % hObject    handle to brush_toggle (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% brush off
+% 
+% 
+% % --------------------------------------------------------------------
+% function brush_toggle_OnCallback(hObject, eventdata, handles)
+% % hObject    handle to brush_toggle (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% brush on
+% 
+% % below is an attempt to get 
+% % for i = 1:length(handles.mip_axes)
+% %     
+% %     brushed = findall(handles.mip_axes{i},'tag','Brushing');
+% %     set(handles.brushed,'Parent',handles.mip_plot_panel,'Clipping','on')
+% %     
+% % end
 
 
 % --- Executes on selection change in partition_list.
@@ -292,7 +292,7 @@ function refresh_subset_button_Callback(hObject, eventdata, handles)
 view_choices = cellstr(get(handles.view_menu,'String'));
 view = view_choices{get(handles.view_menu,'Value')};
 
-[subset subset_index state_index] = get_subset_and_state(handles)
+[subset subset_index state_index] = get_subset_and_state(handles);
 
 if isempty(handles.data.Complex{state_index})
     set(handles.overview_axes_panel,'Visible','off')
@@ -337,30 +337,6 @@ if strcmp(view,'Overview')
     set(handles.summary_panel,'Visible','on')
     set(handles.overview_axes_panel,'Visible','on')
     set(handles.panel_slider,'Value',1.0)
-
-elseif strcmp(view,'MIP')
-    
-    partition_names = cell(length(handles.data.complex_MIP_all_M{state_index}{subset_index}),1);
-    for i = 1:length(handles.data.complex_MIP_all_M{state_index}{subset_index})
-        partition_names{i} = [mod_mat2str(handles.data.complex_MIP_all_M{state_index}{subset_index}{i}) '-'...
-                             mod_mat2str(pick_rest(subset,handles.data.complex_MIP_all_M{state_index}{subset_index}{i}))];
-    end
-    set(handles.partition_list,'String',partition_names)
-    
-    select_MIP(handles, subset, state_index, subset_index)
-    MIP_string = [mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
-                                                mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))];
-    MIP_index = find(strcmp(MIP_string,partition_names));
-    set(handles.partition_list,'Value',MIP_index)
-    
-    concept_names = cell(length(handles.data.purviews_M{state_index}{subset_index}),1);
-    for i = 1:length(handles.data.purviews_M{state_index}{subset_index})
-        concept_names{i} = [mod_mat2str(handles.data.purviews_M{state_index}{subset_index}{i}) ' w'];
-    end
-    set(handles.purviews_list,'String',concept_names)
-    set(handles.purviews_list,'Value',[]);
-    
-    plot_partition(handles);
     
 elseif strcmp(view,'Concepts')
     
@@ -388,8 +364,31 @@ elseif strcmp(view,'Concepts')
         concept_names{i} = [mod_mat2str(M_cell{i-num_concepts}) '_future'];
     end
     set(handles.output_concepts_list,'String',concept_names)
-    set(handles.output_concepts_list,'Value',[]);
+    set(handles.output_concepts_list,'Value',[]);    
+
+elseif strcmp(view,'System Partitions')
     
+    partition_names = cell(length(handles.data.complex_MIP_all_M{state_index}{subset_index}),1);
+    for i = 1:length(handles.data.complex_MIP_all_M{state_index}{subset_index})
+        partition_names{i} = [mod_mat2str(handles.data.complex_MIP_all_M{state_index}{subset_index}{i}) '-'...
+                             mod_mat2str(pick_rest(subset,handles.data.complex_MIP_all_M{state_index}{subset_index}{i}))];
+    end
+    set(handles.partition_list,'String',partition_names)
+    
+    select_MIP(handles, subset, state_index, subset_index)
+    MIP_string = [mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
+                                                mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))];
+    MIP_index = find(strcmp(MIP_string,partition_names));
+    set(handles.partition_list,'Value',MIP_index)
+    
+    concept_names = cell(length(handles.data.purviews_M{state_index}{subset_index}),1);
+    for i = 1:length(handles.data.purviews_M{state_index}{subset_index})
+        concept_names{i} = [mod_mat2str(handles.data.purviews_M{state_index}{subset_index}{i}) ' w'];
+    end
+    set(handles.purviews_list,'String',concept_names)
+    set(handles.purviews_list,'Value',[]);
+    
+    plot_partition(handles);
     
 end
     
@@ -401,9 +400,9 @@ MIP_string = [mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index})
 MIP_index = find(strcmp(MIP_string,partition_names));
 set(handles.partition_list,'Value',MIP_index)
 
-function plot_partition(handles, state_index, subset_index, subset)
+function plot_partition(handles)
 
-[subset subset_index state_index] = get_subset_and_state(handles)
+[subset subset_index state_index] = get_subset_and_state(handles);
 
 N = length(subset);
 
@@ -411,12 +410,6 @@ set(handles.mip_loading_text,'Visible','on')
 set(handles.mip_plot_panel,'Visible','off')
 
 drawnow
-
-%     current_display_elements = allchild(handles.mip_plot_panel);
-% 
-%     for i = 1:length(current_display_elements)
-%             delete(current_display_elements(i))
-%     end
 
 % get phi values for the whole
 w_phi_all = handles.data.small_phi_M{state_index}{subset_index}(:,1)';
@@ -481,6 +474,12 @@ for k = 1:length(parts_phi_all)
 
 end
 
+plot_choices = get(handles.partition_plot_menu,'String');
+plot_choice_index = get(handles.partition_plot_menu,'Value');
+plot_choice = plot_choices{plot_choice_index};
+
+if strcmp(plot_choice
+
 w_highlight_indices = get(handles.purviews_list,'Value');
 
 if get(handles.past_future_list,'Value') == 1
@@ -489,7 +488,7 @@ else
     all_concepts = [w_concept_dists_f'; p_concept_dists_f'];
 end
 
-[handles.mip_axes] = conceptscatter(all_concepts,size(w_concept_dists_p,2), w_highlight_indices, handles.mip_plot_panel,handles.mip_axes);
+[handles.mip_axes] = conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), w_highlight_indices, handles.mip_plot_panel,handles.mip_axes);
 guidata(gcf,handles)
 
 
@@ -566,6 +565,7 @@ function partition_plot_refresh_Callback(hObject, eventdata, handles)
 % hObject    handle to partition_plot_refresh (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 
 plot_partition(handles)
 
@@ -667,3 +667,26 @@ function [subset subset_index] = get_subset(handles)
 
 subset = get(handles.nodes_list,'Value');
 subset_index = convi(subset) - 1;
+
+
+% --- Executes on selection change in partition_plot_menu.
+function partition_plot_menu_Callback(hObject, eventdata, handles)
+% hObject    handle to partition_plot_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns partition_plot_menu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from partition_plot_menu
+
+
+% --- Executes during object creation, after setting all properties.
+function partition_plot_menu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to partition_plot_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
