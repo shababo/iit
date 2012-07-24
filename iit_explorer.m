@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 20-Jul-2012 16:08:40
+% Last Modified by GUIDE v2.5 23-Jul-2012 21:26:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -292,10 +292,7 @@ function refresh_subset_button_Callback(hObject, eventdata, handles)
 view_choices = cellstr(get(handles.view_menu,'String'));
 view = view_choices{get(handles.view_menu,'Value')};
 
-subset = get(handles.nodes_list,'Value');
-subset_index = convi(subset) - 1;
-
-state_index = get_state_index(handles);
+[subset subset_index state_index] = get_subset_and_state(handles)
 
 if isempty(handles.data.Complex{state_index})
     set(handles.overview_axes_panel,'Visible','off')
@@ -365,6 +362,34 @@ elseif strcmp(view,'MIP')
     
     plot_partition(handles);
     
+elseif strcmp(view,'Concepts')
+    
+    N = length(subset);
+    
+    M_cell = cell(2^N-1,1);
+    
+    k = 1;
+    for i = 1:N 
+        C = nchoosek(subset,i); 
+        N_C = size(C,1);
+        for j = 1:N_C % for all combos of size i
+            x0 = C(j,:); % pick a combination
+            M_cell{k} = x0;% store combo
+            k = k + 1;
+        end
+    end
+
+    num_concepts = length(M_cell);
+    concept_names = cell(2*num_concepts,1);
+    for i = 1:num_concepts
+        concept_names{i} = [mod_mat2str(M_cell{i}) '_past'];
+    end
+    for i = num_concepts+1:2*num_concepts
+        concept_names{i} = [mod_mat2str(M_cell{i-num_concepts}) '_future'];
+    end
+    set(handles.output_concepts_list,'String',concept_names)
+    set(handles.output_concepts_list,'Value',[]);
+    
     
 end
     
@@ -377,10 +402,8 @@ MIP_index = find(strcmp(MIP_string,partition_names));
 set(handles.partition_list,'Value',MIP_index)
 
 function plot_partition(handles, state_index, subset_index, subset)
-subset = get(handles.nodes_list,'Value');
-subset_index = convi(subset) - 1;
 
-state_index = get_state_index(handles);
+[subset subset_index state_index] = get_subset_and_state(handles)
 
 N = length(subset);
 
@@ -533,10 +556,7 @@ function mip_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-subset = get(handles.nodes_list,'Value');
-subset_index = convi(subset) - 1;
-
-state_index = get_state_index(handles);
+[subset subset_index state_index] = get_subset_and_state(handles);
 
 select_MIP(handles, subset, state_index, subset_index)
 
@@ -581,3 +601,69 @@ function past_future_list_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on selection change in output_concepts_list.
+function output_concepts_list_Callback(hObject, eventdata, handles)
+% hObject    handle to output_concepts_list (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns output_concepts_list contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from output_concepts_list
+
+
+% --- Executes during object creation, after setting all properties.
+function output_concepts_list_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to output_concepts_list (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in output_concepts.
+function output_concepts_Callback(hObject, eventdata, handles)
+% hObject    handle to output_concepts (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+concept_indices = get(handles.output_concepts_list,'Value');
+
+[subset subset_index state_index] = get_subset_and_state(handles);
+
+concept_count = length(get(handles.output_concepts_list,'String'))/2;
+
+for i = 1:length(concept_indices)
+    
+    concept_names = cellstr(get(handles.output_concepts_list,'String'));
+    name = concept_names{concept_indices(i)};
+    name = ['purview_' mod_mat2str(subset) '_' name];
+    name(name == '[') = [];
+    name(name == ']') = [];
+    name(name == ' ') = [];  
+    if concept_indices(i) <= concept_count
+        assignin('base',name,handles.data.concepts_M{state_index}{subset_index,1}{concept_indices(i)}{1})
+    else
+        assignin('base',name,handles.data.concepts_M{state_index}{subset_index,1}{concept_indices(i)-concept_count}{2})
+    end
+
+end
+
+
+plot_partition(handles);
+
+function [subset subset_index state_index] = get_subset_and_state(handles)
+
+[subset subset_index] = get_subset(handles);
+
+state_index = get_state_index(handles);
+
+function [subset subset_index] = get_subset(handles)
+
+subset = get(handles.nodes_list,'Value');
+subset_index = convi(subset) - 1;

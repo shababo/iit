@@ -112,7 +112,7 @@ else % take minimum of forward and backward
        phi(1) = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
     end
     
-    phi(find(phi < 10e-4)) = 0;
+%     phi(find(phi < 10e-4)) = 0;
 end
 
 %% imposing maxent on units outside of perspectives
