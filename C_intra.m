@@ -18,15 +18,15 @@ if opt_fi_count == 1
     Nc=size(C,1);
     N=length(C{1,1});
     tot = 0;
-    Wc=0;
+%    Wc=0;
     if opt_EMD==1
         for i=1:Nc
-           Wc=Wc+C{i,2};
+%           Wc=Wc+C{i,2};
            for j =(i+1) : Nc
-                   tot = tot + (emd_hat_gd_metric_mex(C{i,1},C{j,1},gen_dist_matrix(N))+abs(C{i,2}-C{j,2})) * C{i,2}*C{j,2};
+                   tot = tot + (emd_hat_gd_metric_mex(C{i,1},C{j,1},gen_dist_matrix(N))+abs(C{i,2}-C{j,2})) * sqrt(C{i,2}*C{j,2});
            end
         end
-        tot = tot/Wc;
+ %       tot = tot/Wc^2;
     else
         for i=1:Nc
            Wc=Wc+C{i,2};
@@ -34,7 +34,7 @@ if opt_fi_count == 1
                    tot = tot +  k_inter(C{i,1},C{j,1})* C{i,2}*C{j,2};
            end
         end
-        tot = tot/Wc^2;
+ %       tot = tot/Wc^2;
     end
     intra = tot;
 else
@@ -49,7 +49,7 @@ else
            end
         end
         if Nc>1 
-            tot = tot/sqrt(nchoosek(Nc,2));
+%            tot = tot/sqrt(nchoosek(Nc,2));
         end
     else
         for i=1:Nc
@@ -58,7 +58,7 @@ else
            end
         end
         if Nc>1 
-            tot = tot/nchoosek(Nc,2);
+ %           tot = tot/nchoosek(Nc,2);
         end
     end
     intra = tot;

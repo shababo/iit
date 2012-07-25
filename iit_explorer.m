@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 24-Jul-2012 14:35:02
+% Last Modified by GUIDE v2.5 24-Jul-2012 16:51:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -109,6 +109,8 @@ set(handles.nodes_list,'Value',handles.data.Complex{1})
 set(handles.overview_axes_panel,'Visible','off');
 set(handles.summary_panel,'Visible','off');
 
+refresh_subset_button_Callback(handles.refresh_subset_button,eventdata,handles)
+
 
 
 % set(handles.overview_scroll_panel,'Parent',handles.overview_axes_panel)
@@ -137,6 +139,9 @@ function view_menu_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns view_menu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from view_menu
 
+subset = handles.data.subset; subset_index = handles.data.subset_index;
+state_index = handles.data.state_index;
+
 view_choices = cellstr(get(hObject,'String'));
 % turn all views off
 for i = 1:length(view_choices)
@@ -147,11 +152,91 @@ for i = 1:length(view_choices)
 end
 
 % turn selected view on
-selection = view_choices{get(hObject,'Value')};
-selection = selection(selection ~= ' ');
-eval(['set(handles.' selection ',''Visible'',''On'')'])
+view = view_choices{get(hObject,'Value')};
+view_no_spaces = view(view ~= ' ');
+eval(['set(handles.' view_no_spaces ',''Visible'',''On'')'])
 
-refresh_subset_button_Callback(handles.refresh_subset_button,eventdata,handles)
+if strcmp(view,'Overview')
+    
+    set(handles.overview_axes_panel,'Visible','off')
+    
+    drawnow
+    
+    current_display_elements = allchild(handles.overview_axes_panel);
+
+    for i = 1:length(current_display_elements)
+            delete(current_display_elements(i))
+    end
+
+
+
+    set(handles.overview_axes_text,'Visible','off')
+    set(handles.big_phi_text,'String',['Big Phi = ' num2str(handles.data.Big_phi_M{state_index}(subset_index))])
+    set(handles.big_phi_MIP_text,'String',['Big Phi MIP = ' num2str(handles.data.Big_phi_MIP{state_index}(subset_index))])
+    set(handles.MIP_text,'String',{'MIP:',[mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
+                                            mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))]})
+    set(handles.sum_small_phi_text,'String',['Sum Small Phi = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1)))])
+    set(handles.num_core_concepts_text,'String',['# Core Concepts = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1) ~= 0))])
+
+    [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(handles.data.concepts_M{state_index},...
+                                                 handles.data.small_phi_M{state_index},...
+                                                 handles.data.concept_MIP_M{state_index},subset, subset_index);
+
+
+% 	disp(handles.overview_scroll_panel)
+    plot_REP(handles.data.Big_phi_M{state_index}(subset_index), IRR_REP, IRR_phi, IRR_MIP,...
+                                        handles.data.Complex{state_index}, handles.overview_axes_panel)
+
+    % end    
+
+    set(handles.summary_panel,'Visible','on')
+    set(handles.overview_axes_panel,'Visible','on')
+    set(handles.panel_slider,'Value',1.0)
+    
+elseif strcmp(view,'Concepts')
+    
+    N = length(subset);
+    
+    M_cell = cell(2^N-1,1);
+    
+    k = 1;
+    for i = 1:N 
+        C = nchoosek(subset,i); 
+        N_C = size(C,1);
+        for j = 1:N_C % for all combos of size i
+            x0 = C(j,:); % pick a combination
+            M_cell{k} = x0;% store combo
+            k = k + 1;
+        end
+    end
+
+    num_concepts = length(M_cell);
+    concept_names = cell(2*num_concepts,1);
+    for i = 1:num_concepts
+        concept_names{i} = [mod_mat2str(M_cell{i}) '_past'];
+    end
+    for i = num_concepts+1:2*num_concepts
+        concept_names{i} = [mod_mat2str(M_cell{i-num_concepts}) '_future'];
+    end
+    set(handles.output_concepts_list,'String',concept_names)
+    set(handles.output_concepts_list,'Value',[]);    
+
+elseif strcmp(view,'System Partitions')
+    
+    partition_names = cell(length(handles.data.complex_MIP_all_M{state_index}{subset_index}),1);
+    for i = 1:length(handles.data.complex_MIP_all_M{state_index}{subset_index})
+        partition_names{i} = [mod_mat2str(handles.data.complex_MIP_all_M{state_index}{subset_index}{i}) '-'...
+                             mod_mat2str(pick_rest(subset,handles.data.complex_MIP_all_M{state_index}{subset_index}{i}))];
+    end
+    set(handles.partition_list,'String',partition_names)
+    
+    select_MIP(handles, subset, state_index, subset_index)
+
+    update_purviews_list(handles)
+    
+    plot_partition(handles);
+    
+end
 
 
 % --- Executes during object creation, after setting all properties.
@@ -291,101 +376,21 @@ function refresh_subset_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-view_choices = cellstr(get(handles.view_menu,'String'));
-view = view_choices{get(handles.view_menu,'Value')};
-
 [handles.data.subset handles.data.subset_index handles.data.state_index] = get_subset_and_state(handles);
-guidata(gcf,hanldes)
+guidata(gcf,handles)
 
+state_index = handles.data.state_index;
 
 if isempty(handles.data.Complex{state_index})
     set(handles.overview_axes_panel,'Visible','off')
     set(handles.overview_axes_text,'String','This state in not realizable','Visible','on')
     return
 end
+
+view_menu_Callback(handles.view_menu, eventdata, handles)
     
 
-if strcmp(view,'Overview')
-    
-    set(handles.overview_axes_panel,'Visible','off')
-    
-    drawnow
-    
-    current_display_elements = allchild(handles.overview_axes_panel);
 
-    for i = 1:length(current_display_elements)
-            delete(current_display_elements(i))
-    end
-
-
-
-    set(handles.overview_axes_text,'Visible','off')
-    set(handles.big_phi_text,'String',['Big Phi = ' num2str(handles.data.Big_phi_M{state_index}(subset_index))])
-    set(handles.big_phi_MIP_text,'String',['Big Phi MIP = ' num2str(handles.data.Big_phi_MIP{state_index}(subset_index))])
-    set(handles.MIP_text,'String',{'MIP:',[mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index}) '-'...
-                                            mod_mat2str(pick_rest(subset,handles.data.complex_MIP_M{state_index}{subset_index}))]})
-    set(handles.sum_small_phi_text,'String',['Sum Small Phi = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1)))])
-    set(handles.num_core_concepts_text,'String',['# Core Concepts = ' num2str(sum(handles.data.small_phi_M{state_index}{subset_index}(:,1) ~= 0))])
-
-    [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(handles.data.concepts_M{state_index},...
-                                                 handles.data.small_phi_M{state_index},...
-                                                 handles.data.concept_MIP_M{state_index},subset, subset_index);
-
-
-% 	disp(handles.overview_scroll_panel)
-    plot_REP(handles.data.Big_phi_M{state_index}(subset_index), IRR_REP, IRR_phi, IRR_MIP,...
-                                        handles.data.Complex{state_index}, handles.overview_axes_panel)
-
-    % end    
-
-    set(handles.summary_panel,'Visible','on')
-    set(handles.overview_axes_panel,'Visible','on')
-    set(handles.panel_slider,'Value',1.0)
-    
-elseif strcmp(view,'Concepts')
-    
-    N = length(subset);
-    
-    M_cell = cell(2^N-1,1);
-    
-    k = 1;
-    for i = 1:N 
-        C = nchoosek(subset,i); 
-        N_C = size(C,1);
-        for j = 1:N_C % for all combos of size i
-            x0 = C(j,:); % pick a combination
-            M_cell{k} = x0;% store combo
-            k = k + 1;
-        end
-    end
-
-    num_concepts = length(M_cell);
-    concept_names = cell(2*num_concepts,1);
-    for i = 1:num_concepts
-        concept_names{i} = [mod_mat2str(M_cell{i}) '_past'];
-    end
-    for i = num_concepts+1:2*num_concepts
-        concept_names{i} = [mod_mat2str(M_cell{i-num_concepts}) '_future'];
-    end
-    set(handles.output_concepts_list,'String',concept_names)
-    set(handles.output_concepts_list,'Value',[]);    
-
-elseif strcmp(view,'System Partitions')
-    
-    partition_names = cell(length(handles.data.complex_MIP_all_M{state_index}{subset_index}),1);
-    for i = 1:length(handles.data.complex_MIP_all_M{state_index}{subset_index})
-        partition_names{i} = [mod_mat2str(handles.data.complex_MIP_all_M{state_index}{subset_index}{i}) '-'...
-                             mod_mat2str(pick_rest(subset,handles.data.complex_MIP_all_M{state_index}{subset_index}{i}))];
-    end
-    set(handles.partition_list,'String',partition_names)
-    
-    select_MIP(handles, subset, state_index, subset_index)
-
-    update_purviews_list(handles)
-    
-    plot_partition(handles);
-    
-end
     
 function select_MIP(handles, subset, state_index, subset_index)
 
@@ -475,18 +480,31 @@ else
     all_concepts = [w_concept_dists_f'; p_concept_dists_f'];
 end
 
+highlight_indices = get(handles.purviews_list,'Value');
+
+% options for plot view
+
 % 3D & 2D Scatter - Variance
 % 3D Scatter - Variance
 % 3D Scatter - PCA (unavail)
 % 2D Scatter - Variance
 % Concept Bar Graphs
 
+% reset panel position
+set(handles.mip_plot_panel,'Position',[0.14600231749710313,0.01160541586073501,0.8122827346465816,0.9052224371373307]);
+
+% display chosen plot view
 if strcmp(plot_choice,'3D & 2D Scatter - Variance')
 
-    w_highlight_indices = get(handles.purviews_list,'Value');
-    [handles.mip_axes] = conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), w_highlight_indices, handles.mip_plot_panel,handles.mip_axes);
+    
+    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), highlight_indices, handles.mip_plot_panel);
     % guidata(gcf,handles)
-
+    
+% else
+%     
+%     %plot_REP(Big_phi, REP_cell,phi,MIP_cell, M, plot_panel)
+% %     plot_partition_bar(all_concepts,size(w_concept_dists_p,2), highlight_indices, handles.mip_plot_panel);
+    
 end
 
 
@@ -730,5 +748,3 @@ end
 
 set(handles.purviews_list,'String',concept_names)
 set(handles.purviews_list,'Value',[]);
-
-

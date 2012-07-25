@@ -1,5 +1,7 @@
-function [ax, height, extra_plots] = conceptscatter3D2D(x,nWholeConcepts, highlight_indices, parent_panel, mip_axes)
+function [ax, height, extra_plots] = conceptscatter3D2D(x,nWholeConcepts, highlight_indices, parent_panel)
 % BASED ON GPLOTMATRIX
+
+set(parent_panel,'Position',[0.14600231749710313,0.01160541586073501,0.8122827346465816,0.9052224371373307]);
 
 num_dims = min(size(x,2),8);
 num_nodes = log2(size(x,2));
