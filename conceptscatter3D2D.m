@@ -1,7 +1,7 @@
 function [ax, height, extra_plots] = conceptscatter3D2D(x,nWholeConcepts, highlight_indices, parent_panel)
 % BASED ON GPLOTMATRIX
 
-set(parent_panel,'Position',[0.14600231749710313,0.01160541586073501,0.8122827346465816,0.9052224371373307]);
+
 
 num_dims = min(size(x,2),8);
 num_nodes = log2(size(x,2));
@@ -35,10 +35,6 @@ ylim = repmat(cat(3,zeros(rows,1)',ones(rows,1)'),[1 cols 1]);
 x_bound = [0 1 0];
 y_bound = [1 0 0];
 
-existing_axes = findobj(parent_panel,'Parent',parent_panel);
-for k = 1:length(existing_axes)
-   delete(existing_axes(k))
-end
 
 ax = cell(nchoosek(num_dims,2)+1,1); % all pairs of dims plus the 3D plot
 

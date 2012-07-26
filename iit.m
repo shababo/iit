@@ -1140,7 +1140,7 @@ if (filename ~= 0)
     end
     
     if exist('net_definition')
-        set(handles.net_definition_method,'Value','net_definition')
+        set(handles.net_definition_method,'Value',net_definition)
     end
     
     net_definition_method_Callback(hObject, eventdata, handles);
