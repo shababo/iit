@@ -1,4 +1,5 @@
-function [ax, height, extra_plots] = conceptscatter3D2D(x,nWholeConcepts, highlight_indices, parent_panel)
+function [ax, height, extra_plots] = conceptscatter3D2D(x,nWholeConcepts, highlight_indices, parent_panel,...
+                                                view_option, dim_option)
 % BASED ON GPLOTMATRIX
 
 
@@ -20,7 +21,7 @@ p_highlight_indices = highlight_indices(highlight_indices > nWholeConcepts) - nW
 
 dims = size(x,2);
 
-rows = 8; 
+rows = 7; 
 cols = rows;
 extra_plots = rows - dims;
 
@@ -37,128 +38,140 @@ y_bound = [1 0 0];
 
 
 ax = cell(nchoosek(num_dims,2)+1,1); % all pairs of dims plus the 3D plot
-
 ax_index = 1;
-for i = 8:-1:0 % count down from rows to 1
-   for j = i-1:-1:1, % count down from cols to 1
-       
+
+if any(strcmp(view_option,{'2D','2D3D'}))
+    
+    for i = 8:-1:2 % count down from rows to 1
+       for j = i-1:-1:1, % count down from cols to 1
 
 
-        axPos = [(j-1)*width+space (rows-i)*height+space ...
-            width*(1-space) height*(1-space)];
-        ax{ax_index} = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,...
-            'DrawMode','fast','Clipping','On');
 
-        xlim(i,j,:) = get(ax{ax_index},'xlim');
-        ylim(i,j,:) = get(ax{ax_index},'ylim');
+            axPos = [(j-1)*width+space (rows-i+1)*height+space ...
+                width*(1-space) height*(1-space)];
+            ax{ax_index} = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,...
+                'DrawMode','fast','Clipping','On');
 
-
-        
-        if (i <= num_dims)
-            
-           set(ax{ax_index},'Visible','on')
-           state1 = concept_var_states(i);
-           state2 = concept_var_states(j);
+            xlim(i,j,:) = get(ax{ax_index},'xlim');
+            ylim(i,j,:) = get(ax{ax_index},'ylim');
 
 
-            plot(ax{ax_index},part(:,state2), ...
-                part(:,state1),'*b','Clipping','on');
-            hold on;
-            
-            
-            plot(ax{ax_index},whole(:,state2),...
-                whole(:,state1),'*g','Clipping','on')
-            hold on;
-            
-            
-            plot(ax{ax_index},whole(w_highlight_indices,state2), ...
-                whole(w_highlight_indices,state1),'or','MarkerSize',8,'Clipping','on');
-            hold on;
-            
-            plot(ax{ax_index},part(p_highlight_indices,state2), ...
-                part(p_highlight_indices,state1),'om','MarkerSize',8,'Clipping','on');
-            hold on;
-            
-            choices = nchoosek([1 2 3],2);
 
-            for k = 1:size(choices,1)
+            if (i <= num_dims)
 
-                hold on
-                plot(ax{ax_index},x_bound(choices(k,:)),y_bound(choices(k,:)),'k','Clipping','on');
+               set(ax{ax_index},'Visible','on')
+               state1 = concept_var_states(i);
+               state2 = concept_var_states(j);
 
+
+                plot(ax{ax_index},part(:,state2), ...
+                    part(:,state1),'*b','Clipping','on');
+                hold on;
+
+
+                plot(ax{ax_index},whole(:,state2),...
+                    whole(:,state1),'*g','Clipping','on')
+                hold on;
+
+
+                plot(ax{ax_index},whole(w_highlight_indices,state2), ...
+                    whole(w_highlight_indices,state1),'or','MarkerSize',8,'Clipping','on');
+                hold on;
+
+                plot(ax{ax_index},part(p_highlight_indices,state2), ...
+                    part(p_highlight_indices,state1),'om','MarkerSize',8,'Clipping','on');
+                hold on;
+
+                choices = nchoosek([1 2 3],2);
+
+                for k = 1:size(choices,1)
+
+                    hold on
+                    plot(ax{ax_index},x_bound(choices(k,:)),y_bound(choices(k,:)),'k','Clipping','on');
+
+                end
+            else
+                set(ax{ax_index},'Visible','off')
             end
-        else
-            set(ax{ax_index},'Visible','off')
-        end
 
 
-        
-        if j == 1 && i <= num_dims
-            ylabel(ax{ax_index},dec2bin(state1-1,num_nodes))
-        end
-        if i == num_dims && j <= num_dims
-            xlabel(ax{ax_index},dec2bin(state2-1,num_nodes))
-        end
-       
-        set(ax{ax_index},'xlimmode','manual','ylimmode','manual','xgrid','off','ygrid','off',...
-                'xlim',[-.25 1.25],'ylim',[-.25 1.25],'xticklabel','','yticklabel','','Clipping','on')
-        ax_index = ax_index + 1;
 
-   end
+            if j == 1 && i <= num_dims
+                ylabel(ax{ax_index},dec2bin(state1-1,num_nodes))
+            end
+            if i == num_dims && j <= num_dims
+                xlabel(ax{ax_index},dec2bin(state2-1,num_nodes))
+            end
+
+            set(ax{ax_index},'xlimmode','manual','ylimmode','manual','xgrid','off','ygrid','off',...
+                    'xlim',[-.25 1.25],'ylim',[-.25 1.25],'xticklabel','','yticklabel','','Clipping','on')
+            ax_index = ax_index + 1;
+
+       end
+    end
 end
 
-j = ceil(rows/2);
 
-
-   
-axPos = [(j-.5)*width+space (rows - j + .5)*height+space ...
-        width*(1-space)*(j+.75) height*(1-space)*(j+.75)];
-axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'DrawMode','fast');
-
-ax{ax_index} = axes3D;
-
-
-scatter3(ax{ax_index},part(:,concept_var_states(1)),part(:,concept_var_states(2)),...
-    part(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','b','SizeData',75,'Clipping','on')
-hold on
-
-scatter3(ax{ax_index},whole(:,concept_var_states(1)),whole(:,concept_var_states(2)),...
-    whole(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','g','SizeData',75,'Clipping','on')
-
-hold on
-
-scatter3(ax{ax_index},whole(w_highlight_indices,concept_var_states(1)),whole(w_highlight_indices,concept_var_states(2)),...
-    whole(w_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','r','SizeData',100,'Clipping','on')
-hold on
-
-scatter3(ax{ax_index},part(p_highlight_indices,concept_var_states(1)),part(p_highlight_indices,concept_var_states(2)),...
-    part(p_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','m','SizeData',100,'Clipping','on')
-hold on
-
-xlabel(ax{ax_index},dec2bin(concept_var_states(1)-1,num_nodes))
-ylabel(ax{ax_index},dec2bin(concept_var_states(2)-1,num_nodes))
-zlabel(ax{ax_index},dec2bin(concept_var_states(3)-1,num_nodes))
-
-
-set(ax{ax_index},'xlimmode','manual','ylimmode','manual',...
-        'xlim',[-.25 1.25],'ylim',[-.25 1.25],'zlim',[-.25 1.25],...
-        'CameraViewAngleMode','manual','Clipping','on')
-        
-
-
-% plot tetrahedron bounds
-x_bound = [0 0 1 0];
-y_bound = [0 1 0 0];
-z_bound = [0 0 0 1];
-choices = nchoosek([1 2 3 4],2);
-
-for i = 1:size(choices,1)
+if any(strcmp(view_option,{'3D','2D3D'})) 
     
+    if strcmp(view_option,'2D3D')
+        row_pos = ceil(rows/2) - .5;
+        col_pos = (rows - row_pos);
+        size_scale = row_pos + 1.25;
+    else
+        row_pos = ceil(rows/4) - .5;
+        col_pos = row_pos;
+        size_scale = 4*row_pos;
+    end
+
+    axPos = [row_pos*width+space col_pos*height+space ...
+            width*(1-space)*size_scale height*(1-space)*size_scale];
+    axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'DrawMode','fast');
+
+    ax{ax_index} = axes3D;
+
+
+    scatter3(ax{ax_index},part(:,concept_var_states(1)),part(:,concept_var_states(2)),...
+        part(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','b','SizeData',75,'Clipping','on')
     hold on
-    plot3(ax{ax_index},x_bound(choices(i,:)),y_bound(choices(i,:)),z_bound(choices(i,:)),'k','Clipping','on');
-    
-end
 
+    scatter3(ax{ax_index},whole(:,concept_var_states(1)),whole(:,concept_var_states(2)),...
+        whole(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','g','SizeData',75,'Clipping','on')
+
+    hold on
+
+    scatter3(ax{ax_index},whole(w_highlight_indices,concept_var_states(1)),whole(w_highlight_indices,concept_var_states(2)),...
+        whole(w_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','r','SizeData',100,'Clipping','on')
+    hold on
+
+    scatter3(ax{ax_index},part(p_highlight_indices,concept_var_states(1)),part(p_highlight_indices,concept_var_states(2)),...
+        part(p_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','m','SizeData',100,'Clipping','on')
+    hold on
+
+    xlabel(ax{ax_index},dec2bin(concept_var_states(1)-1,num_nodes))
+    ylabel(ax{ax_index},dec2bin(concept_var_states(2)-1,num_nodes))
+    zlabel(ax{ax_index},dec2bin(concept_var_states(3)-1,num_nodes))
+
+
+    set(ax{ax_index},'xlimmode','manual','ylimmode','manual',...
+            'xlim',[-.25 1.25],'ylim',[-.25 1.25],'zlim',[-.25 1.25],...
+            'CameraViewAngleMode','manual','Clipping','on')
+
+
+
+    % plot tetrahedron bounds
+    x_bound = [0 0 1 0];
+    y_bound = [0 1 0 0];
+    z_bound = [0 0 0 1];
+    choices = nchoosek([1 2 3 4],2);
+
+    for i = 1:size(choices,1)
+
+        hold on
+        plot3(ax{ax_index},x_bound(choices(i,:)),y_bound(choices(i,:)),z_bound(choices(i,:)),'k','Clipping','on');
+
+    end
+end
 % linkdata on
 
 % replace with real data

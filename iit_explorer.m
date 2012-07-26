@@ -332,6 +332,7 @@ function partition_list_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from partition_list
 
 update_purviews_list(handles)
+set(handles.partition_plot_refresh,'BackgroundColor','g')
 
 
 % --- Executes during object creation, after setting all properties.
@@ -355,6 +356,8 @@ function purviews_list_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns purviews_list contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from purviews_list
+
+set(handles.partition_plot_refresh,'BackgroundColor','g')
 
 
 % --- Executes during object creation, after setting all properties.
@@ -402,13 +405,47 @@ set(handles.partition_list,'Value',MIP_index)
 
 function plot_partition(handles)
 
+subset = handles.data.subset; subset_index = handles.data.subset_index;
+state_index = handles.data.state_index;
+
+[partition1 partition1_index partition2 partition2_index] = get_partitions(handles);
+
+partition_index = 0;
+for i = 1:length(partition1)-1
+    partition_index = partition_index + nchoosek(length(subset),i);
+end
+[~, additional] = intersect(nchoosek(subset,length(partition1)),partition1,'rows');
+partition_index = partition_index + additional;
+
+system_partition_text = ['System: ' mod_mat2str(subset)];
+partition_choices = get(handles.partition_list,'String');
+partition_text = partition_choices{get(handles.partition_list,'Value')};
+system_partition_text = [system_partition_text ', Partition: ' partition_text];
+big_phi_partition_text = ['Big Phi (partition) = ' num2str(handles.data.Big_phi_MIP_all_M{state_index}{subset_index}(partition_index,1))];
+
+highlight_indices = get(handles.purviews_list,'Value');
+
+if ~isempty(highlight_indices)
+    purviews_list = get(handles.purviews_list,'String');
+    selected_concepts_text = ['Selected Concepts: ' purviews_list{highlight_indices(1)}];
+    for i = 2:length(highlight_indices)
+        selected_concepts_text = [selected_concepts_text ', ' purviews_list{highlight_indices(i)}];
+    end
+else
+    selected_concepts_text = 'Selected Concepts: None';
+end
+
+direction_choices = get(handles.past_future_list,'String');
+direction_text = ['Temporal Direction: ' direction_choices{get(handles.past_future_list,'Value')}];
+
+partition_info = {system_partition_text, big_phi_partition_text, selected_concepts_text, direction_text};
+
+set(handles.partition_plot_info,'String',partition_info)
+
 existing_axes = findobj(handles.mip_plot_panel,'Parent',handles.mip_plot_panel);
 for k = 1:length(existing_axes)
    delete(existing_axes(k))
 end
-
-subset = handles.data.subset; subset_index = handles.data.subset_index;
-state_index = handles.data.state_index;
 
 N = length(subset);
 
@@ -440,10 +477,6 @@ for i = 1:length(w_phi_all)
         z = z + 1;
     end
 end  
-
-
-
-[partition1 partition1_index partition2 partition2_index] = get_partitions(handles);
 
 parts_phi_all = [handles.data.small_phi_M{state_index}{partition1_index}(:,1)' ...
                       handles.data.small_phi_M{state_index}{partition2_index}(:,1)'];
@@ -485,8 +518,6 @@ else
     all_concepts = [w_concept_dists_f'; p_concept_dists_f'];
 end
 
-highlight_indices = get(handles.purviews_list,'Value');
-
 % options for plot view
 
 % 3D & 2D Scatter - Variance
@@ -503,10 +534,21 @@ if strcmp(plot_choice,'3D & 2D Scatter - Variance')
 
     
     set(handles.partition_panel_slider,'Visible','off')
-    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), highlight_indices, handles.mip_plot_panel);
-    % guidata(gcf,handles)
+    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), highlight_indices, handles.mip_plot_panel, '2D3D');
     
-else
+elseif strcmp(plot_choice,'3D Scatter - Variance')
+
+    
+    set(handles.partition_panel_slider,'Visible','off')
+    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), highlight_indices, handles.mip_plot_panel, '3D');
+    
+elseif strcmp(plot_choice,'2D Scatter - Variance')
+
+    
+    set(handles.partition_panel_slider,'Visible','off')
+    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), highlight_indices, handles.mip_plot_panel, '2D');    
+    
+elseif strcmp(plot_choice,'Concept Bar Graphs')
     
     set(handles.partition_panel_slider,'Visible','on')
     part1_purviews = handles.data.purviews_M{state_index}{partition1_index};
@@ -524,12 +566,6 @@ else
         
     end
         
-    partition_index = 0;
-    for i = 1:length(partition1)-1
-        partition_index = partition_index + nchoosek(length(subset),i);
-    end
-    [~, additional] = intersect(nchoosek(subset,length(partition1)),partition1,'rows');
-    partition_index = partition_index + additional;
         
     %plot_REP(Big_phi, REP_cell,phi,MIP_cell, M, plot_panel)
     plot_partition_bar(all_concepts,size(w_concept_dists_p,2), w_phi_concepts, parts_phi_concepts,...
@@ -620,6 +656,8 @@ state_index = handles.data.state_index;
 
 select_MIP(handles, subset, state_index, subset_index)
 
+set(handles.partition_plot_refresh,'BackgroundColor','g')
+
 
 % --- Executes on button press in partition_plot_refresh.
 function partition_plot_refresh_Callback(hObject, eventdata, handles)
@@ -627,8 +665,8 @@ function partition_plot_refresh_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
 plot_partition(handles)
+set(handles.partition_plot_refresh,'BackgroundColor',[.9294 .9294 .9294])
 
 
 % --- Executes on button press in clear_purview_list.
@@ -638,7 +676,9 @@ function clear_purview_list_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 set(handles.purviews_list,'Value',[]);
-plot_partition(handles)
+% plot_partition(handles)
+
+set(handles.partition_plot_refresh,'BackgroundColor','g')
 
 
 % --- Executes on selection change in past_future_list.
@@ -649,7 +689,7 @@ function past_future_list_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns past_future_list contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from past_future_list
-
+set(handles.partition_plot_refresh,'BackgroundColor','g')
 
 % --- Executes during object creation, after setting all properties.
 function past_future_list_CreateFcn(hObject, eventdata, handles)
@@ -739,6 +779,8 @@ function partition_plot_menu_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns partition_plot_menu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from partition_plot_menu
+
+set(handles.partition_plot_refresh,'BackgroundColor','g')
 
 
 % --- Executes during object creation, after setting all properties.

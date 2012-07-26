@@ -49,17 +49,19 @@ N = length(x);
 epsilon = 10^-10;
 x_max = x(1);
 i_max = 1;
-for i=2: N
-    dif = x_max - x(i);
-    if abs(dif) < epsilon
-        if length(M_cell{i-1}) < length(M_cell{i})
+for i = 2:N
+    if x(i) ~= 0
+        dif = x_max - x(i);
+        if abs(dif) < epsilon
+            if length(M_cell{i-1}) < length(M_cell{i})
+                x_max = x(i);
+                i_max = i;
+            end
+        elseif dif < 0
             x_max = x(i);
             i_max = i;
+        else
         end
-    elseif dif < 0
-        x_max = x(i);
-        i_max = i;
-    else
     end
 end
 

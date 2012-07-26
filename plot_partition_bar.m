@@ -83,7 +83,7 @@ for i=1: r
     end
 end
 
-sy = ['Big Phi MIP=',num2str(Big_phi_MIP)];
+sy = ['Big Phi (partition) = ',num2str(Big_phi_MIP)];
     
     
 for i = 1:N
@@ -99,7 +99,7 @@ for i = 1:N
         
             whole_title = [mod_mat2str(whole_purviews{i}) ',  \phi=' num2str(phi_whole)];
 
-            if i
+            if i == nWholeConcepts
                 labelON = 1;
             else
                 labelON = 0;
@@ -117,7 +117,7 @@ for i = 1:N
         
             part_title = [mod_mat2str(parts_purviews{i}) ',  \phi=' num2str(phi_part)];
 
-            if mod(i,min(r,N)) == 0
+            if i == nPartConcepts
                 labelON = 1;
             else
                 labelON = 0;
