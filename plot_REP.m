@@ -144,7 +144,7 @@ for i = 1:N
             if i == N
 
                 uicontrol('Style', 'text',...
-                'String', {'Core Concept Distributions For Complex',sy},... %replace something with the text you want
+                'String', {['Core Concept Distributions For ' mod_mat2str(M)],sy},... %replace something with the text you want
                 'Units','normalized',...
                 'FontSize',16,...
                 'BackgroundColor','w',...
@@ -226,8 +226,8 @@ if labelON== 1
     set(gca,'XTickLabel',num2str(states,'%d')) % uncomment this to have a binary valued x-axis
     rotateXLabels( gca(), 90) % uncomment if binary values are used on the x-axis
 %     xlabel('State (Node Order: [1...N])','FontSize',14)
-    xlab = xlabel('State (Node Order: [1...N])','FontSize',14,'Units','pixels');
-    set(xlab,'Position',get(xlab,'Position') - [0 100 0])
+%     xlab = xlabel('State (Node Order: [1...N])','FontSize',14,'Units','pixels');
+%     set(xlab,'Position',get(xlab,'Position') - [0 100 0])
 
 else
     set(gca,'XTickLabel',[]) 

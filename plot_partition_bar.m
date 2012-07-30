@@ -1,10 +1,10 @@
 % function plot_partition_bar(Big_phi, REP_cell,phi,MIP_cell, M, plot_panel)
-function plot_partition_bar(concepts, nWholeConcepts, whole_phis, parts_phis, highlight_indices, plot_panel,...
+function plot_partition_bar(concepts, nWholeConcepts, whole_phis, parts_phis, selected_indices, plot_panel,...
                             whole_purviews, parts_purviews, Big_phi_MIP)
 
 
 nPartConcepts = length(parts_phis); 
-N = max(nWholeConcepts,nPartConcepts);
+
 
 % if op_figures
 %     figure(20+fig_st);
@@ -14,11 +14,17 @@ N = max(nWholeConcepts,nPartConcepts);
 %     ylabel('\phi','FontSize',20)
 % end
 
-whole_concepts = concepts(1:nWholeConcepts,:);
-parts_concepts = concepts(nWholeConcepts+1:end,:);
+if isempty(selected_indices)
+    whole_concepts = concepts(1:nWholeConcepts,:);
+    parts_concepts = concepts(nWholeConcepts+1:end,:);
+else    
+    whole_concepts = concepts(selected_indices(selected_indices <= nWholeConcepts),:);
+    parts_concepts = concepts(selected_indices(selected_indices > nWholeConcepts)-nWholeConcepts,:);
+end
 
-
-        
+nWholeConcepts = size(whole_concepts,1);
+nPartConcepts = size(parts_concepts,1);
+N = max(nWholeConcepts,nPartConcepts);        
 
 r = N;
 c = 2;
@@ -36,7 +42,11 @@ c = 2;
 % fig_size = [0, 0,  pw*c + 100, ph*r + mb+mt + 50]'; % size of figure window
 % pos_fig = [100,100,0,0]' + fig_size; % position of figure
 
-scaling = r/4;
+if r >= 4
+    scaling = r/4;
+else
+    scaling = 1;
+end
 
 
 if scaling > 1
@@ -56,7 +66,7 @@ if scaling > 1
     plot_h = .075/panel_height;
     plot_w = .4;
     
-    setappdata(plot_panel,'limit',top_start-(vert_marg + plot_h)*(r-1)+.03)
+%     setappdata(plot_panel,'limit',top_start-(vert_marg + plot_h)*(r-1)+.03)
     
 else
     

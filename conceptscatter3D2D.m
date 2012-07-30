@@ -1,23 +1,54 @@
-function [ax, height, extra_plots] = conceptscatter3D2D(x,nWholeConcepts, highlight_indices, parent_panel,...
-                                                view_option, dim_option)
+function [ax, height, extra_plots] = conceptscatter3D2D(x,nWholeConcepts, whole_purviews, part_purviews,...
+                                            highlight_indices, parent_panel, view_option, dim_option)
 % BASED ON GPLOTMATRIX
 
 
 
 num_dims = min(size(x,2),8);
 num_nodes = log2(size(x,2));
-concept_var = var(x);
-% concept_var_states = zeros(num_dims,1);
 
-% replot = ~isempty(mip_axes);
+% princomp(x)
 
-[~, concept_var_states] = sort(concept_var,'descend');
+if strcmp(dim_option,'Variance')
+    concept_value = var(x);
+    
+elseif strcmp(dim_option,'Mode')
+%     concept_value = max(x);
+    concept_value = sum(x,1);
+end
+
+[ignore_var state_ordering] = sort(concept_value,'descend');
+
+nPartsConcepts = size(x,1) - nWholeConcepts;
 
 whole = x(1:nWholeConcepts,:);
 part = x(nWholeConcepts+1:end,:);
 
 w_highlight_indices = highlight_indices(highlight_indices <= nWholeConcepts);
 p_highlight_indices = highlight_indices(highlight_indices > nWholeConcepts) - nWholeConcepts;
+
+w_nonhighlight_indices = setdiff(1:nWholeConcepts,w_highlight_indices);
+p_nonhighlight_indices = setdiff(1:nPartsConcepts,p_highlight_indices);
+
+whole_selected_labels = cell(length(w_highlight_indices),1);
+for i = 1:length(w_highlight_indices)
+    whole_selected_labels{i} = mod_mat2str(whole_purviews{w_highlight_indices(i)});
+end
+
+whole_nonselected_labels = cell(length(w_nonhighlight_indices),1);
+for i = 1:length(w_nonhighlight_indices)
+    whole_nonselected_labels{i} = mod_mat2str(whole_purviews{w_nonhighlight_indices(i)});
+end
+
+part_selected_labels = cell(length(p_highlight_indices),1);
+for i = 1:length(p_highlight_indices)
+    part_selected_labels{i} = mod_mat2str(part_purviews{p_highlight_indices(i)});
+end
+
+part_nonselected_labels = cell(length(p_highlight_indices),1);
+for i = 1:length(p_nonhighlight_indices)
+    part_nonselected_labels{i} = mod_mat2str(part_purviews{p_nonhighlight_indices(i)});
+end
 
 dims = size(x,2);
 
@@ -59,18 +90,19 @@ if any(strcmp(view_option,{'2D','2D3D'}))
 
             if (i <= num_dims)
 
-               set(ax{ax_index},'Visible','on')
-               state1 = concept_var_states(i);
-               state2 = concept_var_states(j);
+                set(ax{ax_index},'Visible','on')
+                state1 = state_ordering(i);
+                state2 = state_ordering(j);
 
 
                 plot(ax{ax_index},part(:,state2), ...
                     part(:,state1),'*b','Clipping','on');
+%                 text(part(p_nonhighlight_indices,state2),part(p_nonhighlight_indices,state1),part_nonselected_labels)
                 hold on;
 
 
-                plot(ax{ax_index},whole(:,state2),...
-                    whole(:,state1),'*g','Clipping','on')
+                plot(ax{ax_index},whole(w_nonhighlight_indices,state2),...
+                    whole(w_nonhighlight_indices,state1),'*g','Clipping','on')
                 hold on;
 
 
@@ -118,39 +150,41 @@ if any(strcmp(view_option,{'3D','2D3D'}))
         row_pos = ceil(rows/2) - .5;
         col_pos = (rows - row_pos);
         size_scale = row_pos + 1.25;
+        horiz_offset = 0;
     else
-        row_pos = ceil(rows/4) - .5;
+        row_pos = ceil(rows/8) - .5;
         col_pos = row_pos;
-        size_scale = 4*row_pos;
+        size_scale = 24*row_pos;
+        horiz_offset = .25;
     end
 
-    axPos = [row_pos*width+space col_pos*height+space ...
+    axPos = [row_pos*width+space-horiz_offset col_pos*height+space ...
             width*(1-space)*size_scale height*(1-space)*size_scale];
     axes3D = axes('Position',axPos, 'visible', 'on', 'Box','on','Parent',parent_panel,'DrawMode','fast');
 
     ax{ax_index} = axes3D;
 
 
-    scatter3(ax{ax_index},part(:,concept_var_states(1)),part(:,concept_var_states(2)),...
-        part(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','b','SizeData',75,'Clipping','on')
+    scatter3(ax{ax_index},part(:,state_ordering(1)),part(:,state_ordering(2)),...
+        part(:,state_ordering(3)),'Marker','*','MarkerEdgeColor','b','SizeData',75,'Clipping','on')
     hold on
 
-    scatter3(ax{ax_index},whole(:,concept_var_states(1)),whole(:,concept_var_states(2)),...
-        whole(:,concept_var_states(3)),'Marker','*','MarkerEdgeColor','g','SizeData',75,'Clipping','on')
+    scatter3(ax{ax_index},whole(:,state_ordering(1)),whole(:,state_ordering(2)),...
+        whole(:,state_ordering(3)),'Marker','*','MarkerEdgeColor','g','SizeData',75,'Clipping','on')
 
     hold on
 
-    scatter3(ax{ax_index},whole(w_highlight_indices,concept_var_states(1)),whole(w_highlight_indices,concept_var_states(2)),...
-        whole(w_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','r','SizeData',100,'Clipping','on')
+    scatter3(ax{ax_index},whole(w_highlight_indices,state_ordering(1)),whole(w_highlight_indices,state_ordering(2)),...
+        whole(w_highlight_indices,state_ordering(3)),'Marker','o','MarkerEdgeColor','r','SizeData',100,'Clipping','on')
     hold on
 
-    scatter3(ax{ax_index},part(p_highlight_indices,concept_var_states(1)),part(p_highlight_indices,concept_var_states(2)),...
-        part(p_highlight_indices,concept_var_states(3)),'Marker','o','MarkerEdgeColor','m','SizeData',100,'Clipping','on')
+    scatter3(ax{ax_index},part(p_highlight_indices,state_ordering(1)),part(p_highlight_indices,state_ordering(2)),...
+        part(p_highlight_indices,state_ordering(3)),'Marker','o','MarkerEdgeColor','m','SizeData',100,'Clipping','on')
     hold on
 
-    xlabel(ax{ax_index},dec2bin(concept_var_states(1)-1,num_nodes))
-    ylabel(ax{ax_index},dec2bin(concept_var_states(2)-1,num_nodes))
-    zlabel(ax{ax_index},dec2bin(concept_var_states(3)-1,num_nodes))
+    xlabel(ax{ax_index},dec2bin(state_ordering(1)-1,num_nodes))
+    ylabel(ax{ax_index},dec2bin(state_ordering(2)-1,num_nodes))
+    zlabel(ax{ax_index},dec2bin(state_ordering(3)-1,num_nodes))
 
 
     set(ax{ax_index},'xlimmode','manual','ylimmode','manual',...
@@ -170,6 +204,16 @@ if any(strcmp(view_option,{'3D','2D3D'}))
         hold on
         plot3(ax{ax_index},x_bound(choices(i,:)),y_bound(choices(i,:)),z_bound(choices(i,:)),'k','Clipping','on');
 
+    end
+    if strcmp(view_option,'3D')
+    %     text(part(p_nonhighlight_indices,state_ordering(1)),part(p_nonhighlight_indices,state_ordering(2)),...
+    %         part(p_nonhighlight_indices,state_ordering(3)),part_nonselected_labels)
+        text(part(p_highlight_indices,state_ordering(1))+.03,part(p_highlight_indices,state_ordering(2)),...
+            part(p_highlight_indices,state_ordering(3)),part_selected_labels)
+    %     text(whole(w_nonhighlight_indices,state_ordering(1)),whole(w_nonhighlight_indices,state_ordering(2)),...
+    %         whole(w_nonhighlight_indices,state_ordering(3)),whole_nonselected_labels)
+        text(whole(w_highlight_indices,state_ordering(1)),whole(w_highlight_indices,state_ordering(2)),...
+            whole(w_highlight_indices,state_ordering(3)),whole_selected_labels)
     end
 end
 % linkdata on

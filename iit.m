@@ -470,6 +470,11 @@ noise = str2double(get(handles.noise,'String'));
 
 connectivity_matrix = get(handles.connectivity_mat,'Data');
 
+explorer_handle = findall(0,'tag','iit_explorer');
+delete(explorer_handle)
+
+drawnow
+
 iit_run(tpm,connectivity_matrix,current_state,noise,options);
 
 
@@ -1093,7 +1098,6 @@ if (filename ~= 0)
             set(handles.num_nodes,'String',num2str(num_nodes))
             set(handles.tpm_type_menu,'Value',2); % state x node
             set(handles.TPM,'Data',tpm);
-
             updateTPMview(handles,'State X Node');
         end
     end
@@ -1118,9 +1122,7 @@ if (filename ~= 0)
     if exist('connectivity_mat')
 
             set(handles.connectivity_mat,'Data',connectivity_mat)
-            updateCurrentStateView(handles)
-%             updateTPMview(handles,tpm_choice)
-            updateConnectivityView(handles);
+
     end 
     
     if exist('options_tags') && exist('options_values')
@@ -1145,6 +1147,8 @@ if (filename ~= 0)
     
     net_definition_method_Callback(hObject, eventdata, handles);
         
-
+    updateCurrentStateView(handles)
+    updateConnectivityView(handles);
+    updateLogicTypesView(handles);
         
 end

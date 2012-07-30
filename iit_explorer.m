@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 25-Jul-2012 15:45:37
+% Last Modified by GUIDE v2.5 26-Jul-2012 16:23:24
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -61,7 +61,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 % UIWAIT makes iit_explorer wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+% uiwait(handles.iit_explorer);
 
 % Set initial View
 set(handles.Concepts,'Visible','Off')
@@ -127,7 +127,8 @@ function varargout = iit_explorer_OutputFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
-% varargout{1} = handles.output;
+
+varargout{1} = 'Explorer Closed.';
 
 
 % --- Executes on selection change in view_menu.
@@ -185,7 +186,7 @@ if strcmp(view,'Overview')
 
 % 	disp(handles.overview_scroll_panel)
     plot_REP(handles.data.Big_phi_M{state_index}(subset_index), IRR_REP, IRR_phi, IRR_MIP,...
-                                        handles.data.Complex{state_index}, handles.overview_axes_panel)
+                                        subset, handles.overview_axes_panel)
 
     % end    
 
@@ -403,6 +404,10 @@ MIP_string = [mod_mat2str(handles.data.complex_MIP_M{state_index}{subset_index})
 MIP_index = find(strcmp(MIP_string,partition_names));
 set(handles.partition_list,'Value',MIP_index)
 
+
+
+
+
 function plot_partition(handles)
 
 subset = handles.data.subset; subset_index = handles.data.subset_index;
@@ -414,7 +419,7 @@ partition_index = 0;
 for i = 1:length(partition1)-1
     partition_index = partition_index + nchoosek(length(subset),i);
 end
-[~, additional] = intersect(nchoosek(subset,length(partition1)),partition1,'rows');
+[ignore_var additional] = intersect(nchoosek(subset,length(partition1)),partition1,'rows');
 partition_index = partition_index + additional;
 
 system_partition_text = ['System: ' mod_mat2str(subset)];
@@ -518,6 +523,21 @@ else
     all_concepts = [w_concept_dists_f'; p_concept_dists_f'];
 end
 
+part1_purviews = handles.data.purviews_M{state_index}{partition1_index};
+part2_purviews = handles.data.purviews_M{state_index}{partition2_index};
+n_part_purviews = length(part1_purviews)+length(part2_purviews);
+part_purviews = cell(n_part_purviews,1);
+
+for i = 1:n_part_purviews
+
+    if i <= length(part1_purviews)
+        part_purviews{i} = part1_purviews{i};
+    else
+        part_purviews{i} = part2_purviews{i - length(part1_purviews)};
+    end
+
+end
+
 % options for plot view
 
 % 3D & 2D Scatter - Variance
@@ -529,45 +549,35 @@ end
 % reset panel position
 set(handles.mip_plot_panel,'Position',[0.14600231749710313,0.01160541586073501,0.8122827346465816,0.9052224371373307]);
 
+dim_choices = get(handles.state_selection_menu,'String');
+dim_choice = dim_choices{get(handles.state_selection_menu,'Value')};
+
 % display chosen plot view
-if strcmp(plot_choice,'3D & 2D Scatter - Variance')
+if strcmp(plot_choice,'3D & 2D Scatter')
 
     
     set(handles.partition_panel_slider,'Visible','off')
-    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), highlight_indices, handles.mip_plot_panel, '2D3D');
+    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), handles.data.purviews_M{state_index}{subset_index},...
+            part_purviews, highlight_indices, handles.mip_plot_panel, '2D3D', dim_choice);
     
-elseif strcmp(plot_choice,'3D Scatter - Variance')
+elseif strcmp(plot_choice,'3D Scatter')
 
     
     set(handles.partition_panel_slider,'Visible','off')
-    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), highlight_indices, handles.mip_plot_panel, '3D');
+    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), handles.data.purviews_M{state_index}{subset_index},...
+            part_purviews, highlight_indices, handles.mip_plot_panel, '3D',dim_choice);
     
-elseif strcmp(plot_choice,'2D Scatter - Variance')
+elseif strcmp(plot_choice,'2D Scatter')
 
     
     set(handles.partition_panel_slider,'Visible','off')
-    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), highlight_indices, handles.mip_plot_panel, '2D');    
+    conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), handles.data.purviews_M{state_index}{subset_index},...
+            part_purviews, highlight_indices, handles.mip_plot_panel, '2D',dim_choice);    
     
 elseif strcmp(plot_choice,'Concept Bar Graphs')
     
     set(handles.partition_panel_slider,'Visible','on')
-    part1_purviews = handles.data.purviews_M{state_index}{partition1_index};
-    part2_purviews = handles.data.purviews_M{state_index}{partition2_index};
-    n_part_purviews = length(part1_purviews)+length(part2_purviews);
-    part_purviews = cell(n_part_purviews,1);
-    
-    for i = 1:n_part_purviews
         
-        if i <= length(part1_purviews)
-            part_purviews{i} = part1_purviews{i};
-        else
-            part_purviews{i} = part2_purviews{i - length(part1_purviews)};
-        end
-        
-    end
-        
-        
-    %plot_REP(Big_phi, REP_cell,phi,MIP_cell, M, plot_panel)
     plot_partition_bar(all_concepts,size(w_concept_dists_p,2), w_phi_concepts, parts_phi_concepts,...
         highlight_indices, handles.mip_plot_panel, handles.data.purviews_M{state_index}{subset_index},...
             part_purviews, handles.data.Big_phi_MIP_all_M{state_index}{subset_index}(partition_index,1));
@@ -782,6 +792,12 @@ function partition_plot_menu_Callback(hObject, eventdata, handles)
 
 set(handles.partition_plot_refresh,'BackgroundColor','g')
 
+if any(get(hObject,'Value') == [1 2 3])
+    set(handles.state_selection_menu,'Visible','on')
+else
+    set(handles.state_selection_menu,'Visible','off')
+end
+
 
 % --- Executes during object creation, after setting all properties.
 function partition_plot_menu_CreateFcn(hObject, eventdata, handles)
@@ -800,7 +816,7 @@ function update_purviews_list(handles)
 
 subset_index = handles.data.subset_index;
 state_index = handles.data.state_index;
-[~, partition1_index ~, partition2_index] = get_partitions(handles);
+[ignore_var partition1_index ignore_var partition2_index] = get_partitions(handles);
 
 num_concepts_whole = length(handles.data.purviews_M{state_index}{subset_index,1});
 num_concepts_part1 = length(handles.data.purviews_M{state_index}{partition1_index,1});
@@ -849,4 +865,28 @@ function partition_panel_slider_CreateFcn(hObject, eventdata, handles)
 % Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on selection change in state_selection_menu.
+function state_selection_menu_Callback(hObject, eventdata, handles)
+% hObject    handle to state_selection_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns state_selection_menu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from state_selection_menu
+set(handles.partition_plot_refresh,'BackgroundColor','g')
+
+
+% --- Executes during object creation, after setting all properties.
+function state_selection_menu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to state_selection_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
