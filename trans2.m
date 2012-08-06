@@ -13,8 +13,8 @@ function [binary] = trans2(value,length)
 % toc
 % 
 % tic
-binary = zeros(1,length);
-for i = length:1
+binary = zeros(length,1);
+for i = 1:length
     binary(i) = value - 2 * floor(value/2);
     value = floor(value/2);
 end

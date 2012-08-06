@@ -54,11 +54,11 @@ if op_fb == 1
     %% backward computation
     % p: 2^N by N
     prob = zeros(2^N0_b,1); % output
-    for i=1: 2^N0_b % states of x0 inside the partition
+    for i = 1:2^N0_b % states of x0 inside the partition
         prob(i) = 1;
         x0_bs = b_table{i,N0_b};
         x0_i1 = sum(two_pow(x0_b).*x0_bs);
-        for k=1: N1_b %% index of x1 neurons
+        for k = 1:N1_b %% index of x1 neurons
             x1_s = x1(x1_b(k)); % state of the x1 neuron
             p_k = 0;
             for j=1: 2^N0_r % summation over the rest of x0 (outside the partition)

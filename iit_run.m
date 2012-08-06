@@ -35,7 +35,7 @@ output_data.noise = noise;
 output_data.options = options;
 output_data.num_nodes = num_nodes;
 
-
+full_system = 1:num_nodes;
 num_subsets = 2^num_nodes;
 
 % binary table and states list
@@ -43,7 +43,7 @@ num_subsets = 2^num_nodes;
 % b_table for their ordering
 b_table = cell(num_subsets,num_nodes);
 states = zeros(num_nodes,num_subsets);
-for i = 1:num_nodes
+for i = full_system
     for j = 1:2^i
         b_table{j,i} = trans2(j-1,i); % CONSIDER FLIPPING THIS LR
         if i == num_nodes
@@ -99,7 +99,7 @@ phi_M_st = cell(state_max,1);
 concept_MIP_M_st = cell(state_max,1);
 complex_MIP_M_st = cell(state_max,1);
 Big_phi_MIP_all_M_st = cell(state_max,1);
-complex_MIP_all_M_st = cell(state_maxs,1);
+complex_MIP_all_M_st = cell(state_max,1);
 purviews_M_st = cell(state_max,1);
 
 
@@ -108,30 +108,34 @@ for z = 1:state_max
     
     this_state = states(:,z);
     
-    % reinit backward rep and forward reps for each state
+    % init backward rep and forward reps for each state
     BRs = cell(num_subsets); % backward repertoire
     FRs = cell(num_subsets); % forward repertoire
 
     
     fprintf(['State: ' num2str(this_state') '\n'])
-%     fprintf('this_state=%s\n',mat2str(this_state));
+   
+    % is it possible to reach this state
+    check_prob = partial_prob_comp(full_system,full_system,this_state,tpm,b_table,1); % last argument is op_fb = 1;
+    state_check1 = sum(check_prob);
     
-    % partial_prob_comp(partition, partition, state, prob_matrix, binary
-    % table, op_fb
-    check_prob = partial_prob_comp(1:num_nodes,1:num_nodes,this_state,tpm,b_table,1); % last argument is op_fb = 1;
-    state_check = sum(check_prob);
-    if state_check == 0
+%     tic
+%     state_check2 = all(tpm(logical(this_state),:) > 0) & all(tpm(pick_rest(full_system,full_system(this_state)),:) < 1)
+%     toc
+    
+%     disp (state_check1 == state_check2)
+    if state_check1 == 0
         fprintf('\tThis state cannot be realized...\n')
         Big_phi_M_st{z} = NaN;
         Big_phi_MIP_st{z} = NaN;
     else
         if op_complex == 0 % only consider whole system
             if op_fb == 2
-                options(1) = 0; [Big_phi_f phi_f prob_cell_f] = big_phi_comp(1:num_nodes,this_state,tpm,b_table,options);
-                options(1) = 1; [Big_phi_b phi_b prob_cell_b] = big_phi_comp(1:num_nodes,this_state,tpm,b_table,options);
+                options(1) = 0; [Big_phi_f phi_f prob_cell_f] = big_phi_comp(full_system,this_state,tpm,b_table,options);
+                options(1) = 1; [Big_phi_b phi_b prob_cell_b] = big_phi_comp(full_system,this_state,tpm,b_table,options);
                 Big_phi = Big_phi_f + Big_phi_b;
             elseif op_fb == 3 % THIS IS THE ONLY ONE WE DO NOW? BOTH FORWARD AND BACKWARD SIMULTANEOUSLY
-                M = 1:num_nodes;
+                M = full_system;
                 if op_context == 0
 %                     [BRs FRs] = comp_pers(this_state,tpm,b_table,options);
                     [Big_phi phi prob_cell MIPs M_IRR] = big_phi_comp_fb(M,this_state,tpm,b_table,options);
@@ -147,7 +151,7 @@ for z = 1:state_max
                     [Big_phi phi prob_cell MIP prob_cell2] = big_phi_comp_fb(M,this_state,tpm,b_table,options);
                 end
             else
-                [Big_phi phi prob_cell] = big_phi_comp(1:num_nodes,this_state,tpm,b_table,options);
+                [Big_phi phi prob_cell] = big_phi_comp(full_system,this_state,tpm,b_table,options);
             end
             Big_phi_st(z) = Big_phi;
             

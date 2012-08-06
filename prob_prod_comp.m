@@ -6,7 +6,7 @@ function prob_prod = prob_prod_comp(prob1,prob2,M,x0_p1,op_fb)
 % prob2 = distribution over complement of subset x0_p1
 % M = the "whole" system
 % x0_p1 = one of the partitions
-% op_fb = a currently unnecessary 
+% op_fb = currently unnecessary 
 
 % disp('PROB1');
 % disp(prob1);

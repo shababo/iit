@@ -44,7 +44,7 @@ global grain, global noise;
 grain = 100;
 noise = 0.0; % 0 <= noise <= .5, this noise is applied to all nodes on their output essentially adding uncertaintity
 global BRs, global FRs
-
+global b_table;
 
 fprintf('Noise Level = %f\n',noise);
 
@@ -56,10 +56,6 @@ save options options
 %% define the connectivty of the network
 N = 4; % Number of elements in the network %!!!!!!!!!!!! CAN WE MAKE THIS DEPENDENT?
 Na = 3; % Number of afferent connections
-
-BRs = cell(2^N,2^N); % backward repertoire
-FRs = cell(2^N,2^N); % forward repertoire
-
 
 % current state
 if op_ave == 0
@@ -471,6 +467,10 @@ Big_phi_st = zeros(2^N,1);
 Big_phi_MIP_st = zeros(2^N,1);
 
 for z=1: z_max
+    
+    BRs = cell(2^N,2^N); % backward repertoire
+    FRs = cell(2^N,2^N); % forward repertoire
+
     if op_ave == 0
         x1 = current_state;
     else
@@ -519,7 +519,7 @@ for z=1: z_max
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         else % find the complex
             [Big_phi_MIP MIP Big_phi_M IRR_phi IRR_REP IRR_MIP M_IRR prob_M phi_M MIP_M] ...
-                = big_phi_complex(x1,p,b_table,options);
+                = big_phi_complex(x1,p,options);
             
             if op_fb == 2
                 % subindex b means backward and f means forward

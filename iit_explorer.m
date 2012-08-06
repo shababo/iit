@@ -83,7 +83,7 @@ handles.mip_axes = [];
 guidata(hObject,handles);
 
 num_states = 2^handles.data.num_nodes;
-all_states = ~isempty(handles.data.Big_phi_M{2});
+all_states = length(handles.data.Big_phi_M) > 1;
 
 % setup state listbox
 if all_states

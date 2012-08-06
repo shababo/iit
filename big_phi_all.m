@@ -57,7 +57,7 @@ M_IRR_M = cell(2^N-1,1);
 
 %%
 
-for M_i = 1: 2^N-1 % for all proper subsets of the system
+for M_i = 1: 2^N-1 % for all non empty subsets of the system
     M = M_cell{M_i}; % get the subset
     if op_console
         fprintf('--------------------------------------------------------------\n\n')
@@ -76,7 +76,7 @@ for M_i = 1: 2^N-1 % for all proper subsets of the system
     end
     Big_phi_M(M_i) = Big_phi; % Big_phi for each subset
     phi_M{M_i} = phi; % Set of small_phis for each purview of each subset
-    M_IRR_M{M_i} = M_IRR; % what set it looks over??
+    M_IRR_M{M_i} = M_IRR; % numerators of purviews with non-zero/positive phi
     
     % THE POINTS IN CONCEPT SPACE
     % ARRAY prob_M

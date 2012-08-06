@@ -22,7 +22,6 @@ function [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex
 % MIP_M
 
 global b_table
-global output_data
 
 %% options
 op_fb = options(1); % 0: forward repertoire, 1: backward repertoire, 2: both, 3: simultaneous

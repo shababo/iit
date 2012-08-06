@@ -1,4 +1,4 @@
-function output = logic_gates(input,logic_type,noise)
+function output = logic_gates(input,logic_type,in_noise)
 % LOGIC_GATES the probability an element will turn on given the inputs
 %
 % OUTPUT = logic_gates(INPUT, LOGIC_TYPE)
@@ -8,6 +8,12 @@ function output = logic_gates(input,logic_type,noise)
 % the element of interest will be on
 
 % 0 to .5
+global noise;
+
+if nargin == 3
+    noise = in_noise;
+end
+
 
 % AND
 if logic_type == 1
