@@ -57,7 +57,7 @@ end
 M_p = C_x0; % power set of M
 
 MIP = cell(2^N-1,1); % MIP in the past, the present, and the future <--?
-phi_all_values = zeros(2^N-1,3); % small phis, for each purview, overall, backward, and forward
+phi_all_values = zeros(2^N-1,3); % small phis (for each purview) overall, backward, and forward
 
 prob = cell(2^N-1,1); % transition repertoire
 prob_prod = cell(2^N-1,1); % partitioned transition repertoire
@@ -78,16 +78,15 @@ parfor ci=1: 2^N-1  % loop over purview numerators
 %         if op_console
 %             fprintf('C=%s\n',mod_mat2str(x0));
 %         end
-        if op_context == 0
-            [phi_all_values(ci,:) prob{ci} prob_prod{ci} MIP{ci}] ...
+        [phi_all_values(ci,:) prob{ci} prob_prod{ci} MIP{ci}] ...
             =  phi_comp_ex(options,M,x0,x0_s,p,M_p,J);
-        else
-            [phi_all_values(ci,:) prob{ci} prob_prod{ci} MIP{ci}] ...
-                =  phi_comp_ex(options,M,x0,x0_s,p,M_p);
-        end
+
     else
         phi_all_values(ci,:) = [0 0 0];
-        prob{ci} = []; prob_prod{ci} = []; MIP{ci} = []; % should we change these to uniform, full sys... etc
+        uniform_dist = ones(1,2^N)/2^N;
+        prob{ci} = uniform_dist; 
+        prob_prod{ci} = uniform_dist; 
+        MIP{ci} = []; % should we change these to uniform, full sys... etc
     end    
 end
 

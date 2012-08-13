@@ -38,36 +38,36 @@ op_min = options(9);
 
 N = size(p,2); % number of elements in the whole system
 
-if op_fb == 2
-    %forward computation
-    options(1) = 0;
-    [Big_phi_M_f phi_M_f prob_M_f] = big_phi_all(x0,p,b_table,options);
-    % backward computation
-    options(1) = 1;
-    [Big_phi_M_b phi_M_b prob_M_b M_cell] = big_phi_all(x0,p,b_table,options);
-    % sum up the forward and backward phi
-    Big_phi_M = Big_phi_M_f + Big_phi_M_b;
-    % complex search
-    [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,N);
-    % irreducible points
-    [IRR_REP_f IRR_phi_f M_IRR_f] = IRR_points(prob_M_f,phi_M_f,Complex,M_i_max,op_fb);
-    [IRR_REP_b IRR_phi_b M_IRR_b] = IRR_points(prob_M_b,phi_M_b,Complex,M_i_max,op_fb);
-    
-    % store both the forward and backward results
-    IRR_REP = cell(2,1);
-    IRR_phi = cell(2,1);
-    M_IRR = cell(2,1);
-    IRR_REP{1} = IRR_REP_f;
-    IRR_REP{2} = IRR_REP_b;
-    IRR_phi{1} = IRR_phi_f;
-    IRR_phi{2} = IRR_phi_b;
-    M_IRR{1} = M_IRR_f;
-    M_IRR{2} = M_IRR_b;
-    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% THE CURRENT SETTINGS TAKE US HERE    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-elseif op_fb == 0 || op_fb == 1 || op_fb == 3
+% if op_fb == 2
+%     %forward computation
+%     options(1) = 0;
+%     [Big_phi_M_f phi_M_f prob_M_f] = big_phi_all(x0,p,b_table,options);
+%     % backward computation
+%     options(1) = 1;
+%     [Big_phi_M_b phi_M_b prob_M_b M_cell] = big_phi_all(x0,p,b_table,options);
+%     % sum up the forward and backward phi
+%     Big_phi_M = Big_phi_M_f + Big_phi_M_b;
+%     % complex search
+%     [Big_phi_MIP MIP Complex M_i_max] = complex_search(Big_phi_M,M_cell,N);
+%     % irreducible points
+%     [IRR_REP_f IRR_phi_f M_IRR_f] = IRR_points(prob_M_f,phi_M_f,Complex,M_i_max,op_fb);
+%     [IRR_REP_b IRR_phi_b M_IRR_b] = IRR_points(prob_M_b,phi_M_b,Complex,M_i_max,op_fb);
+%     
+%     % store both the forward and backward results
+%     IRR_REP = cell(2,1);
+%     IRR_phi = cell(2,1);
+%     M_IRR = cell(2,1);
+%     IRR_REP{1} = IRR_REP_f;
+%     IRR_REP{2} = IRR_REP_b;
+%     IRR_phi{1} = IRR_phi_f;
+%     IRR_phi{2} = IRR_phi_b;
+%     M_IRR{1} = M_IRR_f;
+%     M_IRR{2} = M_IRR_b;
+%     
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % THE CURRENT SETTINGS TAKE US HERE    
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+% elseif op_fb == 0 || op_fb == 1 || op_fb == 3
     % 0: forward or 1: backward computation or 3: simultaneous forward and
     % backward computation
     [Big_phi_M phi_M prob_M M_cell concept_MIP_M M_IRR_M] = big_phi_all(x0,p,options);
@@ -78,7 +78,7 @@ elseif op_fb == 0 || op_fb == 1 || op_fb == 3
 %     fprintf('Sum of small_phis = %f\n',sum(IRR_phi));
 %     fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
 %     plot_REP(Big_phi_M(M_i_max), IRR_REP,IRR_phi,IRR_MIP, 1, Complex, options)
-end
+% end
 
 
 %% plot irreducible points in the complex

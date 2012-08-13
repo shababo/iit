@@ -10,7 +10,7 @@ if isempty(C)
     return
 end
 
-opt_EMD = 1;    %1: Use EMD to compute distance between distribution,
+opt_EMD = 0;    %1: Use EMD to compute distance between distribution,
                 %0: Use the interdistance between distributions
 opt_fi_count = 0;   %1: the difference in phi counts for the intra-distance
 

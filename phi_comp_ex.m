@@ -15,105 +15,64 @@ op_big_phi = options(11);
 N = length(M);
 M_p{2^N} = []; % add empty set
 
-% THIS OPTION IS NOT MAINTAINED IN GUI VERSION
-if op_min == 0 % take sum of forward and backward
-    phi_MIP = zeros(2^N-1,2^N-1);
-    prob_cand = cell(2^N-1,2^N-1);
-    prob_prod_MIP_cand = cell(2^N-1,2^N-1);
-    MIP_cand = cell(2^N-1,2^N-1);
-    
-    if op_empty == 0
-        i_max = 2^N-1;
-    else
-        i_max = 2^N;
-    end
-    
-    for i = 1:i_max
-        xp = M_p{i};
-        for j=1: i_max
-            xf = M_p{j};
-            N_p = length(xp);
-            N_f = length(xf);
-            if N_p ~= 0 || N_f ~= 0
-                if op_context == 0 % conservative
-                    [phi_MIP(i,j) prob_cand{i,j} prob_prod_MIP_cand{i,j} MIP_cand{i,j}] ...
-                        = phi_comp_bf(options,M,x0,xp,xf,x0_s,p);
-                else % progressive
-                    [phi_MIP(i,j) prob_cand{i,j} prob_prod_MIP_cand{i,j} MIP_cand{i,j}] ...
-                        = phi_comp_bf(options,M,x0,xp,xf,x0_s,p);
-                end
-            end
-        end
-    end
-    % exclusion principle
-    [phi i j] = max2(phi_MIP,M_p);
-    xp = M_p{i}; % perspective of the past
-    xf = M_p{j}; % perpective of the future
-    MIP = MIP_cand{i,j};
-    prob = prob_cand{i,j};
-    prob_prod_MIP = prob_prod_MIP_cand{i,j};
-    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% THE CURRENT SETTINGS TAKE US HERE    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-else % take minimum of forward and backward
-    
-    phi_MIP = zeros(2^N-1,2);
-    prob_cand = cell(2^N-1,1);
-    prob_prod_MIP_cand = cell(2^N-1,1);
-    MIP_cand = cell(2^N-1,1);
-    
-    for i=1: 2^N-1
-        %Larissa smart purviews: Only test those connections that actually exist
-        x = M_p{i};
-        if nnz(sum(J(x0,x),1) == 0) > 0 % some x is not input of x0 (numerator) --> no phiBR
-            if nnz(sum(J(x,x0),2) == 0) == 0 % but x is output
-                [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-                    = phi_comp_bORf(options,x0,x,p,2,x0_s); 
-            else
-                uniform_dist = ones(1,2^N)/2^N;
-                prob_cand{i} = {uniform_dist; uniform_dist};
-                prob_prod_MIP_cand{i} = cell(2,1);
-                MIP_cand{i} = cell(2,2,2);
-            end
-        else
-            if nnz(sum(J(x,x0),2) == 0) > 0 % x is not output, but x is input
-                [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-                    = phi_comp_bORf(options,x0,x,p,1,x0_s); 
-            else % x is both
-                [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-                    = phi_comp_bf(options,M,x0,x,x,x0_s,p); 
-            end 
-        end    
-    end
-    
-    % exlusion principle
-    max_phi_MIP_bf = zeros(2,1); % backward and forward phi
-    MIP = cell(2,2,2);
-    prob = cell(2,1);
-    prob_prod_MIP = cell(2,1);
-    for bf = 1:2
-        [max_phi_MIP_bf(bf) j_max] = max_ex(phi_MIP(:,bf),M_p);
-        MIP(:,:,bf) = MIP_cand{j_max}(:,:,bf);
-        prob{bf} = prob_cand{j_max}{bf};
-        prob_prod_MIP{bf} = prob_prod_MIP_cand{j_max}{bf};
-        if bf == 1
-            xp = M_p{j_max};
-        else
-            xf = M_p{j_max};
-        end
-    end
-    phi = [0 max_phi_MIP_bf']; % phi = [overall backwards forwards]
-    
-    if (op_big_phi == 1 || op_big_phi == 2)
-       phi(1) = max_phi_MIP_bf(1);
 
-    else
-       phi(1) = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
-    end
     
-%     phi(find(phi < 10e-4)) = 0;
+phi_MIP = zeros(2^N-1,2);
+prob_cand = cell(2^N-1,1);
+prob_prod_MIP_cand = cell(2^N-1,1);
+MIP_cand = cell(2^N-1,1);
+
+for i=1: 2^N-1
+    %Larissa smart purviews: Only test those connections that actually exist
+    x = M_p{i};
+    if nnz(sum(J(x0,x),1) == 0) > 0 % some x is not input of x0 (numerator) --> no phiBR
+        if nnz(sum(J(x,x0),2) == 0) == 0 % but x is output
+            [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
+                = phi_comp_bORf(options,x0,x,p,2,x0_s); 
+        else
+            uniform_dist = ones(1,2^N)/2^N;
+            prob_cand{i} = {uniform_dist; uniform_dist};
+            prob_prod_MIP_cand{i} = cell(2,1);
+            MIP_cand{i} = cell(2,2,2);
+        end
+    else
+        if nnz(sum(J(x,x0),2) == 0) > 0 % x is not output, but x is input
+            [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
+                = phi_comp_bORf(options,x0,x,p,1,x0_s); 
+        else % x is both
+            [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
+                = phi_comp_bf(options,M,x0,x,x,x0_s,p); 
+        end 
+    end    
 end
+
+% exlusion principle
+max_phi_MIP_bf = zeros(2,1); % backward and forward phi
+MIP = cell(2,2,2);
+prob = cell(2,1);
+prob_prod_MIP = cell(2,1);
+for bf = 1:2
+    [max_phi_MIP_bf(bf) j_max] = max_ex(phi_MIP(:,bf),M_p);
+    MIP(:,:,bf) = MIP_cand{j_max}(:,:,bf);
+    prob{bf} = prob_cand{j_max}{bf};
+    prob_prod_MIP{bf} = prob_prod_MIP_cand{j_max}{bf};
+    if bf == 1
+        xp = M_p{j_max};
+    else
+        xf = M_p{j_max};
+    end
+end
+phi = [0 max_phi_MIP_bf']; % phi = [overall backwards forwards]
+
+if (op_big_phi == 1 || op_big_phi == 2)
+   phi(1) = max_phi_MIP_bf(1);
+
+else
+   phi(1) = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
+end
+
+%     phi(find(phi < 10e-4)) = 0;
+
 
 %% imposing maxent on units outside of perspectives
 if op_context == 0

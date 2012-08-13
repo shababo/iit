@@ -1,10 +1,10 @@
-function prob_prod = prob_prod_comp(prob1,prob2,M,x0_p1,op_fb)
+function prob_prod = prob_prod_comp(prob1,prob2,whole_set,x0_p1,op_fb)
 
 % COMPUTES THE DISTRIBUTION OVER THE STATES OF THE WHOLE SET GIVEN THE DISTRIBUTIONS OF
 % THE STATES OF THE SUBSETS
 % prob1 = distribution over subset x0_p1
 % prob2 = distribution over complement of subset x0_p1
-% M = the "whole" system
+% whole_set = the "whole" system
 % x0_p1 = one of the partitions
 % op_fb = currently unnecessary 
 
@@ -12,13 +12,13 @@ function prob_prod = prob_prod_comp(prob1,prob2,M,x0_p1,op_fb)
 % disp(prob1);
 % disp('PROB2');
 % disp(prob2);
-% disp('M');
-% disp(M);
+% disp('whole_set');
+% disp(whole_set);
 % disp('x0_p1');
 % disp(x0_p1);
 
 
-N = length(M);
+N = length(whole_set);
 
 if nargin < 5
     op_fb = 0;
@@ -35,7 +35,7 @@ else
     x0_p1_or = x0_p1;
     N_vec = 1:N;
     for i= 1:N1
-        x0_p1(i) = N_vec(M==x0_p1_or(i)); % re-index of x0_p1 in terms of M
+        x0_p1(i) = N_vec(whole_set==x0_p1_or(i)); % re-index of x0_p1 in terms of whole_set
     end
     x0_p2 = 1:N;
     x0_p2(x0_p1) = [];

@@ -12,7 +12,7 @@ op_min = options(9);
 op_normalize = options(14);
 op_small_phi = options(16);
 
-global BRs, global FRs, global b_table
+global BRs, global FRs
 
 
 N = length(x);
@@ -20,19 +20,19 @@ N0 = length(x0);
 %% unpartitioned transition repertoire
 % prob_w_old = Rs{convi(x0),convi(x)};
 
-    current = convi(x0); other = convi(x);
-    
-    if (bf == 1)
-        if isempty(BRs{current,other})
-            BRs{current,other} = comp_pers_single(current,other,x0_s,p,bf);
-        end
-        prob_w = BRs{current,other};
-    elseif (bf == 2)
-        if isempty(FRs{current,other})
-            FRs{current,other} = comp_pers_single(current,other,x0_s,p,bf);
-        end
-        prob_w = FRs{current,other};
+current = convi(x0); other = convi(x);
+
+if (bf == 1)
+    if isempty(BRs{current,other})
+        BRs{current,other} = comp_pers_single(current,other,x0_s,p,bf);
     end
+    prob_w = BRs{current,other};
+elseif (bf == 2)
+    if isempty(FRs{current,other})
+        FRs{current,other} = comp_pers_single(current,other,x0_s,p,bf);
+    end
+    prob_w = FRs{current,other};
+end
     
 %     disp('CHECK NEW COMPUTATION:');
 %     disp('prob_w_old:')
@@ -43,7 +43,7 @@ N0 = length(x0);
 
     
 prob = cell(2,1);
-prob{bf} = prob_w;
+prob{bf} = prob_w(:);
 uniform_dist = ones(1,length(prob_w))/length(prob_w);
 if bf == 1
     prob{2} = uniform_dist;
@@ -98,7 +98,19 @@ for i=1: N_b % past or future
                 prob_p2 = FRs{current_2,other_2};
             end
             
-            prob_p = prob_prod_comp(prob_p1,prob_p2,x,x_1,0);
+            prob_p = prob_prod_comp(prob_p1(:),prob_p2(:),x,x_1,0);
+
+%             if isempty(prob_p1)
+%                 prob_p_test = prob_p2(:);
+%             elseif isempty(prob_p2)
+%                 prob_p_test = prob_p1(:);
+%             else
+% 
+%                 prob_p_test = bsxfun(@times,prob_p1,prob_p2);
+%                 prob_p_test = prob_p_test(:);
+%             end
+                
+
             if (op_small_phi == 0)
                 phi = KLD(prob{bf},prob_p);
             elseif (op_small_phi == 1)
@@ -116,7 +128,7 @@ for i=1: N_b % past or future
         phi_cand(i,j,bf,1) = phi;
         phi_cand(i,j,bf,2) = phi/Norm;
 
-            % fprintf('phi=%f phi_norm=%f %s-%s -%s\n',phi,phi/Norm,mod_mat2str(xp_1),mod_mat2str(x0_1),mod_mat2str(xf_1));
+%             fprintf('phi=%f phi_norm=%f %s-%s -%s\n',phi,phi/Norm,mod_mat2str(xp_1),mod_mat2str(x0_1),mod_mat2str(xf_1));
     end
 end
 

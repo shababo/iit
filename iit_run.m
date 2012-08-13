@@ -1,4 +1,4 @@
-function iit_run(tpm, in_J, current_state, in_noise, options)
+function iit_run(tpm, in_J, current_state, in_noise, in_options, in_nodes)
 % IIT_RUN Computes concept, small and big phi, and partition information
 % for all subsets of a system (exluding the empty set) over a binary network.
 %
@@ -15,19 +15,34 @@ function iit_run(tpm, in_J, current_state, in_noise, options)
 %
 %   see also set_options
 
-tic
+% tic
 
 fprintf('\nRunning...\n\n')
 
 % get num_nodes, the number of nodes in the whole system
 num_nodes = size(tpm,2);
 
-global grain, global noise, global BRs, global FRs, global J, global b_table
+% global inputs
+global grain noise J 
+% global 
+global BRs FRs b_table options
+global BRs_check FRs_check
+% output
 global output_data
+
+global nodes
+nodes = in_nodes;
+
+global func_time inline_time
+func_time = 0;
+inline_time = 0;
 
 grain = 50;
 noise = in_noise;
 J = in_J;
+options = in_options;
+% options(10) = 1;
+
 output_data.tpm = tpm;
 output_data.J = J;
 output_data.current_state = current_state;
@@ -51,6 +66,8 @@ for i = full_system
         end
     end
 end
+
+
 
 % determine if we are computing over all states or just one
 op_ave = options(18);
@@ -84,10 +101,6 @@ end
 
 % find main complex (do system partitions)
 op_complex = options(15);
-% forward-backward option, 07.31.2012 - only use option 3 - do both
-op_fb = options(1);
-% conservative or progressive - only ever use conservative
-op_context = options(6);
 
 % init cell arrays for results
 Big_phi_M_st = cell(state_max,1);
@@ -111,7 +124,8 @@ for z = 1:state_max
     % init backward rep and forward reps for each state
     BRs = cell(num_subsets); % backward repertoire
     FRs = cell(num_subsets); % forward repertoire
-
+    
+    [BRs_check FRs_check] = comp_pers(this_state,tpm,b_table,options);
     
     fprintf(['State: ' num2str(this_state') '\n'])
    
@@ -124,78 +138,69 @@ for z = 1:state_max
 %     toc
     
 %     disp (state_check1 == state_check2)
+
     if state_check1 == 0
+        
         fprintf('\tThis state cannot be realized...\n')
+        
         Big_phi_M_st{z} = NaN;
         Big_phi_MIP_st{z} = NaN;
+        
     else
-        if op_complex == 0 % only consider whole system
-            if op_fb == 2
-                options(1) = 0; [Big_phi_f phi_f prob_cell_f] = big_phi_comp(full_system,this_state,tpm,b_table,options);
-                options(1) = 1; [Big_phi_b phi_b prob_cell_b] = big_phi_comp(full_system,this_state,tpm,b_table,options);
-                Big_phi = Big_phi_f + Big_phi_b;
-            elseif op_fb == 3 % THIS IS THE ONLY ONE WE DO NOW? BOTH FORWARD AND BACKWARD SIMULTANEOUSLY
-                M = full_system;
-                if op_context == 0
-%                     [BRs FRs] = comp_pers(this_state,tpm,b_table,options);
-                    [Big_phi phi prob_cell MIPs M_IRR] = big_phi_comp_fb(M,this_state,tpm,b_table,options);
-                    % irreducible points
-                    [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_cell,phi,MIPs,M, 0,op_fb);
-                    fprintf('\n')
-                    fprintf('---------------------------------------------------------------------\n\n')
-                    fprintf('Big_phi = %f\n', Big_phi);
-                    fprintf('Sum of small_phis = %f\n',sum(phi));
-                    fprintf('\nCore Concepts For Complex (Purview, MIP(past & future), Small phi):\n\n');
-                    plot_REP(Big_phi, IRR_REP,IRR_phi,IRR_MIP, 1, M, options)
-                else
-                    [Big_phi phi prob_cell MIP prob_cell2] = big_phi_comp_fb(M,this_state,tpm,b_table,options);
-                end
-            else
-                [Big_phi phi prob_cell] = big_phi_comp(full_system,this_state,tpm,b_table,options);
-            end
-            Big_phi_st(z) = Big_phi;
+        
+        fprintf('\tComputing state...\n')
+        
+        % only consider whole system
+        % THIS OPTION NEEDS TO BE WORKED OUT!
+        if op_complex == 0 
+
+            M = full_system;
+%             [BRs FRs] = comp_pers(this_state,tpm,b_table,options);
+            [Big_phi phi prob_cell MIPs M_IRR] = big_phi_comp_fb(M,this_state,tpm,b_table,options);
+            % irreducible points
+%             [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_cell,phi,MIPs,M, 0,op_fb);
+%             plot_REP(Big_phi, IRR_REP,IRR_phi,IRR_MIP, 1, M, options)
+
+
+            Big_phi_M_st{z} = Big_phi;
+            
+            % TODO: WE NEED TO HANDLE MIP IN THIS CASE EVEN WE DON'T FIND
+            % THE COMPLEX
+            
+        % find the complex    
+        elseif op_complex == 1 
             
             
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % THE CURRENT SETTINGS TAKE US HERE    
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        else % find the complex
-            fprintf('\tComputing state...\n')
-            [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell Big_phi_MIP_all_M complex_MIP_M_all purviews_M] ...
-                = big_phi_complex(this_state,tpm,options);
+%             [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M...
+%                 concept_MIP_M complex_MIP_M M_cell Big_phi_MIP_all_M complex_MIP_M_all purviews_M] ...
+%                 = big_phi_complex(this_state,tpm);
+%             
+%             
+%             [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell Big_phi_MIP_all_M complex_MIP_M_all M_IRR_M]
             
-            if op_fb == 2
-%                 % subindex b means backward and f means forward
-%                 IRR_phi_b = IRR_phi{1};
-%                 IRR_phi_f = IRR_phi{2};
-%                 IRR_REP_b = IRR_REP{1};
-%                 IRR_REP_f = IRR_REP{2};
-%                 M_IRR_b = M_IRR{1};
-%                 M_IRR_f = M_IRR{2};
-%                 % state dependent big phi and big phi MIP
-%                 Big_phi_st(z) = sum(IRR_phi_b)+sum(IRR_phi_f);
+            [Big_phi_M phi_M prob_M M_cell concept_MIP_M purviews_M] = big_phi_all(this_state,tpm,options);
+            % complex search
+            [Big_phi_MIP MIP Complex M_i_max  Big_phi_MIP_M complex_MIP_M Big_phi_MIP_all_M complex_MIP_M_all] = ...
+                complex_search(Big_phi_M,M_cell, purviews_M, num_nodes,prob_M,phi_M,options);
             
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % THE CURRENT SETTINGS TAKE US HERE    
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            else
-                Big_phi_M_st{z} = Big_phi_M;
-                Big_phi_MIP_st{z} = Big_phi_MIP_M;
-                MIP_st{z} = MIP;
-                Complex_st{z} = Complex;
-                prob_M_st{z} = prob_M;
-                phi_M_st{z} = phi_M;
-                concept_MIP_M_st{z} = concept_MIP_M;
-                complex_MIP_M_st{z} = complex_MIP_M;
-                Big_phi_MIP_all_M_st{z} = Big_phi_MIP_all_M;
-                complex_MIP_all_M_st{z} = complex_MIP_M_all;
-                purviews_M_st{z} = purviews_M;
+            
+
+            Big_phi_M_st{z} = Big_phi_M;
+            Big_phi_MIP_st{z} = Big_phi_MIP_M;
+            MIP_st{z} = MIP;
+            Complex_st{z} = Complex;
+            prob_M_st{z} = prob_M;
+            phi_M_st{z} = phi_M;
+            concept_MIP_M_st{z} = concept_MIP_M;
+            complex_MIP_M_st{z} = complex_MIP_M;
+            Big_phi_MIP_all_M_st{z} = Big_phi_MIP_all_M;
+            complex_MIP_all_M_st{z} = complex_MIP_M_all;
+            purviews_M_st{z} = purviews_M;
                 
-            end
+
         end
     end
-    
-    % pause;
+
 end
 
 % load up output_data struct
@@ -229,7 +234,13 @@ if isOpen > 0 && op_close == 1
     matlabpool close;
 end
 
-toc
+% toc
+
+
+disp('FUNCTION TIME:')
+disp(func_time)
+disp('INLINE TIME:')
+disp(inline_time)
 
 fprintf('Loading GUI... \n');
 

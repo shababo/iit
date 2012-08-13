@@ -11,7 +11,7 @@ if isempty(C) || isempty(D)
     return
 end
 
-opt_EMD = 1;    %1: Use EMD to compute distance between distribution,
+opt_EMD = 0;    %1: Use EMD to compute distance between distribution,
                 %0: Use the interdistance between distributions
 
 opt_weighted = 1; % 0: not weighted 1: we rescale the sum of the weights to 1 2: Rescaled and take square root  

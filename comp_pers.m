@@ -34,7 +34,7 @@ for i=1: 2^N % for each subset
     end
     
     % does this need to be here because they aren't distributed arrays?
-    % ugh, also this for loop is TOTALLY unnecessary!
+    % also this for loop is TOTALLY unnecessary!
 %     BRs{i,:} = p_b_cell{:};
 %     FRs{i,:} = p_b_cell{:};
     for j=1: 2^N

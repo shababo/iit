@@ -430,7 +430,7 @@ tpm = get(handles.TPM,'Data');
 num_states = size(tpm,1);
 num_nodes = str2double(get(handles.num_nodes,'String'));
 
-if strcmp(tpm_choice,'State X State')
+if size(tpm,2) == num_states
     
     
     new_tpm = zeros(num_states,num_nodes);
@@ -470,12 +470,41 @@ noise = str2double(get(handles.noise,'String'));
 
 connectivity_matrix = get(handles.connectivity_mat,'Data');
 
+% setup node strucs and cpts for each node
+%inputs = struct('num',{1 2},'name',{'A_p' 'B_p'},'num_states',{2 2},'state_names',{{'0' '1'}},'logic_type',{2 3})
+logic_types = get(handles.logic_types,'Data');
+% init struct array
+nodes(2*num_nodes) = struct('num',2*num_nodes,'name',[num2str(num_nodes) '_c'],'num_states',2,...
+                            'state_names',{{'0' '1'}},'logic_type',logic_types(num_nodes),'cpt',[]);
+                        
+% make past node structs                        
+for i = 1:num_nodes
+    
+    nodes(i) = struct('num',i,'name',[num2str(i) '_p'],'num_states',2,...
+                            'state_names',{{'0' '1'}},'logic_type',logic_types(i),'cpt',[]);
+    
+end
+
+% make current node structs and their tpms
+for i = 1:num_nodes
+    
+    nodes(num_nodes + i) = struct('num',num_nodes + i,'name',[num2str(i) '_p'],'num_states',2,...
+                            'state_names',{{'0' '1'}},'logic_type',logic_types(i),'cpt',[]);
+
+	input_nodes = 1:num_nodes;
+    input_nodes = input_nodes(logical(connectivity_matrix(i,:)));
+    input_nodes = nodes(input_nodes);
+    nodes(num_nodes + i).cpt = cpt_factory(nodes(num_nodes + i),input_nodes,2*num_nodes,noise);
+    
+end
+
+assignin('base','nodes',nodes)
 explorer_handle = findall(0,'tag','iit_explorer');
 delete(explorer_handle)
 
 drawnow
 
-iit_run(tpm,connectivity_matrix,current_state,noise,options);
+iit_run(tpm,connectivity_matrix,current_state,noise,options,nodes);
 
 
 
@@ -714,8 +743,10 @@ if (filename ~= 0)
     end
     
     tpm_def = 1;
-    set(handles.net_definition,'Value',tpm_def);
-    net_definition_method_Callback(hObject, eventdata, handles);
+    set(handles.net_definition_method,'Value',tpm_def);
+    net_definition_method_Callback(handles.net_definition, eventdata, handles);
+    set(handles.num_nodes,'String',num_nodes)
+    num_nodes_Callback(handles.num_nodes,eventdata,handles)
     
 end
     
@@ -919,7 +950,7 @@ if (filename ~= 0)
     end
     
     logical_def = 1;
-    set(handles.net_definition,'Value',logical_def);
+    set(handles.net_definition_method,'Value',logical_def);
     net_definition_method_Callback(hObject, eventdata, handles);
     
 end
@@ -1012,6 +1043,7 @@ if(get(handles.tpm_type_menu,'Value') == 1)
      
     stateXnode_view = 2;
     set(handles.tpm_type_menu,'Value',stateXnode_view);
+    
 end
 
 function updateLogicTypesView(handles)
@@ -1126,16 +1158,16 @@ if (filename ~= 0)
     end 
     
     if exist('options_tags') && exist('options_values')
-        
+                
         options_handles = findobj('Style','popupmenu','Parent',handles.Options);
         
         for i = 1:length(options_handles)
             
             tag = get(options_handles(i),'Tag');
-            [found, index] = ismember('options_tags', tag);
+            [found, index] = ismember('options_tags', tag)
             
             if found
-                set(options_handles(index),'Value',options_values(index))
+                set(options_handles(i),'Value',options_values(index))
             end
 
         end
