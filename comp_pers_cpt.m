@@ -1,11 +1,82 @@
-function rep = comp_pers_cpt(numerator_nodes,denom_nodes,numerator_state,bf_option)
+function denom_conditional_joint = comp_pers_cpt(num_nodes_indices,denom_nodes_indices,numerator_state,bf_option)
 
 %  compute BRs and FRs for a single perspective but given some fixed
 %  current state
 
+if isempty(denom_nodes_indices)
+    denom_conditional_joint = [];
+    return
+% elseif isempty(num_nodes_indices)
+% %     num_sys_nodes = denom_nodes_indices(1).num_sys_nodes;
+% %     denom_conditional_joint_size = ones(1,2*num_sys_nodes);
+% %     denom_conditional_joint_size(1:num_sys_nodes == denom_nodes_indices
+%     denom_conditional_joint = [];
+%     return
+end
+
 global nodes
 
+numerator_nodes = nodes(num_nodes_indices);
+num_sys_nodes = nodes(1).num_sys_nodes;
+denom_nodes_shift = denom_nodes_indices + num_sys_nodes;
+denom_nodes = nodes(denom_nodes_shift);
 
+
+if strcmp(bf_option,'backward')
+    
+    
+% P(denom_nodes_f | num_nodes_c = numerator_state) = P(denom_nodes_c | num_nodes_p = numerator_state)
+elseif strcmp(bf_option,'forward')
+    
+    % we do the first iteration outside the for main foor loop so we can
+    % initialize the joint
+    denom_conditional_joint = denom_nodes(1).cpt;
+    
+    conditioning_indices = cell(1,2*num_sys_nodes);
+    for i = 1:2*num_sys_nodes
+        conditioning_indices{i} = ':';
+    end
+    
+    % marginalize over nodes not in numerator, these nodes are outside the
+    % system for this iteration or they are outside a partition - either
+    % way we apply maxent prior/marginalization
+    for j = 1:num_sys_nodes
+        
+        if ~any(j == num_nodes_indices) && any(j == denom_nodes(1).input_nodes)
+            denom_conditional_joint = ...
+                sum(denom_conditional_joint,j)./size(denom_conditional_joint,j);
+        elseif any(j == num_nodes_indices)
+            conditioning_indices{j} = numerator_state(j) + 1;
+        end
+        
+    end
+    
+    for num_i = 2:length(denom_nodes)
+        
+        next_denom_node_distribution = denom_nodes(num_i).cpt;
+        
+        % marginalize over nodes not in denom, these nodes are outside the
+        % system for this iteration or they are outside a partition - either
+        % way we apply maxent prior/marginalization
+        for j = 1:num_sys_nodes
+
+            if ~any(j == num_nodes_indices) && any(j == denom_nodes(num_i).input_nodes)
+                next_denom_node_distribution = ...
+                    sum(next_denom_node_distribution,j)./size(next_denom_node_distribution,j);
+            end
+        end
+        
+        % the magic
+        denom_conditional_joint = bsxfun(@times,denom_conditional_joint,next_denom_node_distribution);
+    end
+    
+    
+    % can we pick these out before hand, or no?
+    denom_conditional_joint = denom_conditional_joint(conditioning_indices{:});
+    permute_order = [num_sys_nodes+1:2*num_sys_nodes 1:num_sys_nodes];
+    denom_conditional_joint = permute(denom_conditional_joint,permute_order);
+
+end
 
 
 

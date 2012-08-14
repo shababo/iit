@@ -33,9 +33,11 @@ global output_data
 global nodes
 nodes = in_nodes;
 
-global func_time inline_time
+global func_time inline_time cpt_time tpm_time
 func_time = 0;
 inline_time = 0;
+cpt_time = 0;
+tpm_time = 0;
 
 grain = 50;
 noise = in_noise;
@@ -241,6 +243,10 @@ disp('FUNCTION TIME:')
 disp(func_time)
 disp('INLINE TIME:')
 disp(inline_time)
+disp('CPT TIME:')
+disp(cpt_time)
+disp('TPM TIME:')
+disp(tpm_time)
 
 fprintf('Loading GUI... \n');
 

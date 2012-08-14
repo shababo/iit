@@ -475,13 +475,15 @@ connectivity_matrix = get(handles.connectivity_mat,'Data');
 logic_types = get(handles.logic_types,'Data');
 % init struct array
 nodes(2*num_nodes) = struct('num',2*num_nodes,'name',[num2str(num_nodes) '_c'],'num_states',2,...
-                            'state_names',{{'0' '1'}},'logic_type',logic_types(num_nodes),'cpt',[]);
+                            'state_names',{{'0' '1'}},'logic_type',logic_types(num_nodes),'cpt',[],...
+                            'num_sys_nodes',num_nodes,'input_nodes',[]);
                         
 % make past node structs                        
 for i = 1:num_nodes
     
     nodes(i) = struct('num',i,'name',[num2str(i) '_p'],'num_states',2,...
-                            'state_names',{{'0' '1'}},'logic_type',logic_types(i),'cpt',[]);
+                            'state_names',{{'0' '1'}},'logic_type',logic_types(i),'cpt',[],...
+                            'num_sys_nodes',num_nodes,'input_nodes',[]);
     
 end
 
@@ -489,10 +491,13 @@ end
 for i = 1:num_nodes
     
     nodes(num_nodes + i) = struct('num',num_nodes + i,'name',[num2str(i) '_p'],'num_states',2,...
-                            'state_names',{{'0' '1'}},'logic_type',logic_types(i),'cpt',[]);
+                            'state_names',{{'0' '1'}},'logic_type',logic_types(i),'cpt',[],...
+                            'num_sys_nodes',num_nodes,'input_nodes',[]);
 
 	input_nodes = 1:num_nodes;
     input_nodes = input_nodes(logical(connectivity_matrix(i,:)));
+    nodes(num_nodes + i).input_nodes = input_nodes;
+    
     input_nodes = nodes(input_nodes);
     nodes(num_nodes + i).cpt = cpt_factory(nodes(num_nodes + i),input_nodes,2*num_nodes,noise);
     

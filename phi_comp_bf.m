@@ -27,6 +27,7 @@ op_small_phi = options(16);
 global BRs, global FRs, global b_table
 global BRs_check, global FRs_check
 global func_time, global inline_time
+global cpt_time tpm_time
 
 N = max(M);
 Np = length(xp);
@@ -42,7 +43,7 @@ current = convi(x0); past = convi(xp); future = convi(xf);
 
 if isempty(BRs{current,past})
 %     BRs{current,past} = comp_pers_single(x0,xp,x0_s,p,1);
-    BRs{current,past} = comp_pers_cpt(x0,xp,x0_s,p,1);
+    BRs{current,past} = comp_pers_single(x0,xp,x0_s,p,1);
     if ~all(BRs{current,past}(:) == BRs_check{current,past}(:))
         disp('BR CHECK:')
         disp(x0)
@@ -55,8 +56,26 @@ end
 prob_bw = BRs{current,past};
 
 if isempty(FRs{current,future})
-    FRs{current,future} = comp_pers_single(x0,xp,x0_s,p,2);
-    if ~all(FRs{current,future}(:) == FRs_check{current,future}(:))
+%     disp(x0)
+%     disp(xp)
+%     disp('in function')
+% disp('new')
+tic
+    FRs{current,future} = comp_pers_cpt(x0,xp,x0_s,'forward');
+cpt_time = cpt_time + toc;
+% disp('old')
+tic
+    FRs_check{current,future} = comp_pers_single(x0,xp,x0_s,p,2);
+tpm_time = tpm_time + toc;
+    
+%     disp('new result:')
+%     disp(size(FRs{current,future}))
+% %     disp(FRs{current,future}(:))
+%     disp('check result:')
+%     disp(size(FRs_check{current,future}))
+%     disp(FRs_check{current,future})
+
+    if ~all(FRs{current,future} == FRs_check{current,future})
         disp('FR CHECK:')
         disp(x0)
         disp(xp)
@@ -157,12 +176,20 @@ for i=1: Np_b % past or future
                 else
 
                     if isempty(FRs{current_1,other_1})
-                        FRs{current_1,other_1} = comp_pers_single(x0_1,xp_1,x0_s,p,bf);
-                        if ~all(FRs{current_1,other_1}(:) == FRs_check{current_1,other_1}(:))
+                        tic
+                        FRs{current_1,other_1} = comp_pers_cpt(x0_1,xp_1,x0_s,'forward');
+                        cpt_time = cpt_time + toc;
+                        tic
+                        FRs_check{current_1,other_1} = comp_pers_single(x0_1,xp_1,x0_s,p,2);
+                        tpm_time = tpm_time + toc;
+    
+                        if ~all(FRs{current_1,other_1} == FRs_check{current_1,other_1})
                             disp('FR CHECK:')
                             disp(x0_1)
                             disp(xp_1)
+                            disp('new result')
                             disp(FRs{current_1,other_1})
+                            disp('old result')
                             disp(FRs_check{current_1,other_1})
                             disp(FRs{current_1,other_1}(:) == FRs_check{current_1,other_1}(:))
                         end
@@ -170,8 +197,14 @@ for i=1: Np_b % past or future
                     prob_p1 = FRs{current_1,other_1};
 
                     if isempty(FRs{current_2,other_2})
-                        FRs{current_2,other_2} = comp_pers_single(x0_2,xp_2,x0_s,p,bf);
-                        if ~all(FRs{current_2,other_2}(:) == FRs_check{current_2,other_2}(:))    
+                        tic
+                        FRs{current_2,other_2} = comp_pers_cpt(x0_2,xp_2,x0_s,'forward');
+                        cpt_time = cpt_time + toc;
+                        tic
+                        FRs_check{current_2,other_2} = comp_pers_single(x0_2,xp_2,x0_s,p,2);
+                        tpm_time = tpm_time + toc;
+    
+                        if ~all(FRs{current_2,other_2} == FRs_check{current_2,other_2})    
                             disp('FR CHECK:')
                             disp(x0_2)
                             disp(xp_2)
