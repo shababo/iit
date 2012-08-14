@@ -43,7 +43,7 @@ current = convi(x0); past = convi(xp); future = convi(xf);
 
 if isempty(BRs{current,past})
 %     BRs{current,past} = comp_pers_single(x0,xp,x0_s,p,1);
-    BRs{current,past} = comp_pers_single(x0,xp,x0_s,p,1);
+    BRs{current,past} = comp_pers_cpt(x0,xp,x0_s,'backward');
     if ~all(BRs{current,past}(:) == BRs_check{current,past}(:))
         disp('BR CHECK:')
         disp(x0)
@@ -148,7 +148,7 @@ for i=1: Np_b % past or future
 
                 if bf == 1
                     if isempty(BRs{current_1,other_1})
-                        BRs{current_1,other_1} = comp_pers_single(x0_1,xp_1,x0_s,p,bf);
+                        BRs{current_1,other_1} = comp_pers_cpt(x0_1,xp_1,x0_s,'backward');
                             if ~all(BRs{current_1,other_1}(:) == BRs_check{current_1,other_1}(:))
                             disp('BR CHECK:')
                             disp(x0_1)
@@ -161,7 +161,7 @@ for i=1: Np_b % past or future
                     prob_p1 = BRs{current_1,other_1};
 
                     if isempty(BRs{current_2,other_2})
-                        BRs{current_2,other_2} = comp_pers_single(x0_2,xp_2,x0_s,p,bf);
+                        BRs{current_2,other_2} = comp_pers_cpt(x0_2,xp_2,x0_s,'backward');
                         if ~all(BRs{current_2,other_2}(:) == BRs_check{current_2,other_2}(:))
                             disp('BR CHECK:')
                             disp(x0_2)

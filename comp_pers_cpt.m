@@ -1,10 +1,10 @@
-function denom_conditional_joint = comp_pers_cpt(num_nodes_indices,denom_nodes_indices,numerator_state,bf_option)
+function perspective = comp_pers_cpt(num_nodes_indices,denom_nodes_indices,numerator_state,bf_option)
 
 %  compute BRs and FRs for a single perspective but given some fixed
 %  current state
 
 if isempty(denom_nodes_indices)
-    denom_conditional_joint = [];
+    perspective = [];
     return
 % elseif isempty(num_nodes_indices)
 % %     num_sys_nodes = denom_nodes_indices(1).num_sys_nodes;
@@ -16,18 +16,95 @@ end
 
 global nodes
 
-numerator_nodes = nodes(num_nodes_indices);
 num_sys_nodes = nodes(1).num_sys_nodes;
-denom_nodes_shift = denom_nodes_indices + num_sys_nodes;
-denom_nodes = nodes(denom_nodes_shift);
-
 
 if strcmp(bf_option,'backward')
+    
+    denom_nodes = nodes(denom_nodes_indices);
+    num_nodes_shift = num_nodes_indices + num_sys_nodes;
+    numerator_nodes = nodes(num_nodes_shift);
+    
+    % no nodes in numerator means maxent over denom
+    if isempty(num_nodes_indices)
+        
+        perspective_dim_sizes = ones(1,num_sys_nodes);
+        perspective_dim_sizes(denom_nodes_indices) = [denom_nodes.num_states];
+        perspective = ones(perspective_dim_sizes)./prod(perspective_dim_sizes);
+        return
+        
+    end
+    
+    % setup cell array for conditioning
+    conditioning_indices = cell(1,2*num_sys_nodes);
+    for i = 1:2*num_sys_nodes
+        conditioning_indices{i} = ':';
+    end
+    
+    % we do the first iteration outside the for main foor loop so we can
+    % initialize the joint
+    this_node_conditioning_indices = conditioning_indices;
+    this_node_conditioning_indices{numerator_nodes(1).num} = numerator_state(numerator_nodes(1).num - num_sys_nodes) + 1;
+    numerator_conditional_joint = numerator_nodes(1).cpt(this_node_conditioning_indices{:});
+    
+    prob_current_state = sum(numerator_conditional_joint(:));
+    
+    % marginalize over nodes not in denominator, these nodes are outside the
+    % system for this iteration or they are outside a partition - either
+    % way we apply maxent prior + marginalization
+    for j = 1:num_sys_nodes
+        
+        if ~any(j == denom_nodes_indices) && any(j == numerator_nodes(1).input_nodes)
+            numerator_conditional_joint = ...
+                sum(numerator_conditional_joint,j)./size(numerator_conditional_joint,j);
+        end
+        
+    end
+    
+    for i = 2:length(num_nodes_indices)
+        
+        this_node_conditioning_indices = conditioning_indices;
+        this_node_conditioning_indices{numerator_nodes(i).num} = numerator_state(numerator_nodes(i).num - num_sys_nodes) + 1;
+        next_num_node_distribution = numerator_nodes(i).cpt(this_node_conditioning_indices{:});
+        
+        prob_current_state = prob_current_state * sum(next_num_node_distribution(:));
+
+        % marginalize over nodes not in denom, these nodes are outside the
+        % system for this iteration or they are outside a partition - either
+        % way we apply maxent prior/marginalization
+        for j = 1:num_sys_nodes
+
+            if ~any(j == denom_nodes_indices) && any(j == numerator_nodes(i).input_nodes)
+                next_num_node_distribution = ...
+                    sum(next_num_node_distribution,j)./size(next_num_node_distribution,j);
+            end
+        end
+        
+        % the magic
+        numerator_conditional_joint = bsxfun(@times,numerator_conditional_joint,next_num_node_distribution);
+    end
+    
+    % conditioning on fixed nodes
+%     perspective = numerator_conditional_joint .* (1/prod([denom_nodes.num_states])) ./ prob_current_state;
+    perspective = numerator_conditional_joint ./ sum(numerator_conditional_joint(:));
+    
     
     
 % P(denom_nodes_f | num_nodes_c = numerator_state) = P(denom_nodes_c | num_nodes_p = numerator_state)
 elseif strcmp(bf_option,'forward')
     
+    denom_nodes_shift = denom_nodes_indices + num_sys_nodes;
+    denom_nodes = nodes(denom_nodes_shift);
+    
+% % % %     % no nodes in numerator means maxent over denom
+% % % %     if isempty(num_nodes_indices)
+% % % %         
+% % % %         perspective_dim_sizes = ones(1,num_sys_nodes);
+% % % %         perspective_dim_sizes(denom_nodes_indices) = [denom_nodes.num_states];
+% % % %         perspective = ones(perspective_dim_sizes)./prod(perspective_dim_sizes);
+% % % %         return
+% % % %         
+% % % %     end
+% % % %     
     % we do the first iteration outside the for main foor loop so we can
     % initialize the joint
     denom_conditional_joint = denom_nodes(1).cpt;
@@ -51,16 +128,16 @@ elseif strcmp(bf_option,'forward')
         
     end
     
-    for num_i = 2:length(denom_nodes)
+    for i = 2:length(denom_nodes)
         
-        next_denom_node_distribution = denom_nodes(num_i).cpt;
+        next_denom_node_distribution = denom_nodes(i).cpt;
         
         % marginalize over nodes not in denom, these nodes are outside the
         % system for this iteration or they are outside a partition - either
         % way we apply maxent prior/marginalization
         for j = 1:num_sys_nodes
 
-            if ~any(j == num_nodes_indices) && any(j == denom_nodes(num_i).input_nodes)
+            if ~any(j == num_nodes_indices) && any(j == denom_nodes(i).input_nodes)
                 next_denom_node_distribution = ...
                     sum(next_denom_node_distribution,j)./size(next_denom_node_distribution,j);
             end
@@ -71,59 +148,9 @@ elseif strcmp(bf_option,'forward')
     end
     
     
-    % can we pick these out before hand, or no?
+    % conditioning on fixed nodes
     denom_conditional_joint = denom_conditional_joint(conditioning_indices{:});
     permute_order = [num_sys_nodes+1:2*num_sys_nodes 1:num_sys_nodes];
-    denom_conditional_joint = permute(denom_conditional_joint,permute_order);
+    perspective = permute(denom_conditional_joint,permute_order);
 
 end
-
-
-
-
-
-
-
-% N = size(p,2);
-% 
-% % x0 = find(b_table{current,N} == 1);
-% x0 = current;
-% 
-% % x0 = M_pb{current}; % current subset
-% x0_out = pick_rest(1:N,x0); % complement
-% x0_si = x0_s(x0); % get the current state of the current subset
-% 
-% if (bf_option == 1) % backwards
-% %     xp = M_pb{past}; % past
-% %     xp = find(b_table{other,N} == 1);
-%     xp = other;
-%     xp_out = pick_rest(1:N,xp);
-%     rep = partial_prob_cons(xp,[],xp_out,x0,x0_si,p,b_table,1); % all out except for xp
-%     
-%     if ~isempty(xp)
-%         matrix_size = ones(1,N);
-%         matrix_size(xp) = 2;
-%         rep = reshape(rep,matrix_size);
-%     end
-%     
-%     
-% end
-% 
-% if (bf_option == 2) % forwards
-% %     xf = M_pb{future}; % future
-% %     xf = find(b_table{other,N} == 1);
-%     xf = other;
-%     rep = partial_prob_cons(x0,[],x0_out,xf,x0_si,p,b_table,0); % all out except for x0
-%     
-%     if ~isempty(xf)
-%         matrix_size = ones(1,N);
-%         matrix_size(xf) = 2;
-%         rep = reshape(rep,matrix_size);
-%     end
-% end
-% 
-% 
-% 
-%     
-% 
-% end
