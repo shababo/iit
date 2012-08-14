@@ -15,7 +15,7 @@ function iit_run(tpm, in_J, current_state, in_noise, in_options, in_nodes)
 %
 %   see also set_options
 
-% tic
+tic
 
 fprintf('\nRunning...\n\n')
 
@@ -127,7 +127,7 @@ for z = 1:state_max
     BRs = cell(num_subsets); % backward repertoire
     FRs = cell(num_subsets); % forward repertoire
     
-    [BRs_check FRs_check] = comp_pers(this_state,tpm,b_table,options);
+%     [BRs_check FRs_check] = comp_pers(this_state,tpm,b_table,options);
     
     fprintf(['State: ' num2str(this_state') '\n'])
    
@@ -236,17 +236,17 @@ if isOpen > 0 && op_close == 1
     matlabpool close;
 end
 
-% toc
+toc
 
 
-disp('FUNCTION TIME:')
-disp(func_time)
-disp('INLINE TIME:')
-disp(inline_time)
-disp('CPT TIME:')
-disp(cpt_time)
-disp('TPM TIME:')
-disp(tpm_time)
+% disp('FUNCTION TIME:')
+% disp(func_time)
+% disp('INLINE TIME:')
+% disp(inline_time)
+% disp('CPT TIME:')
+% disp(cpt_time)
+% disp('TPM TIME:')
+% disp(tpm_time)
 
 fprintf('Loading GUI... \n');
 
