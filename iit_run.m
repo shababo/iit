@@ -38,6 +38,7 @@ tpm_time = 0;
 network.J = in_J;
 network.options = in_options;
 network.nodes = in_nodes;
+network.tpm = tpm;
 % options(10) = 1;
 
 output_data.tpm = tpm;
@@ -47,32 +48,33 @@ output_data.noise = in_noise;
 output_data.options = network.options;
 output_data.num_nodes = num_nodes;
 
-full_system = 1:num_nodes;
-num_subsets = 2^num_nodes;
+network.full_system = 1:num_nodes;
+network.num_subsets = prod([network.nodes.num_states]);
 
 % binary table and states list
-% from now on, all loops over subsets/bipartitions will use
-% b_table for their ordering
-b_table = cell(num_subsets,num_nodes);
-states = zeros(num_nodes,num_subsets);
+% need to rethink use of b_table when allowing for more than binary nodes
+network.b_table = cell(network.num_subsets,network.num_nodes);
+network.states = zeros(network.num_nodes,network.num_subsets);
 for i = full_system
     for j = 1:2^i
-        b_table{j,i} = trans2(j-1,i); % CONSIDER FLIPPING THIS LR
-        if i == num_nodes
-            states(:,j) = trans2(j-1,i);
+        network.b_table{j,i} = trans2(j-1,i); % CONSIDER FLIPPING THIS LR
+        if i == network.num_nodes
+            network.states(:,j) = trans2(j-1,i);
         end
     end
 end
 
 
 
+
+
 % determine if we are computing over all states or just one
-op_ave = options(18);
+op_ave = network.options(18);
 if op_ave == 0
     state_max = 1;
-    states(:,1) = current_state;
+    network.states(:,1) = current_state;
 else
-    state_max = num_subsets;
+    state_max = network.num_subsets;
 end
 
 % we should deal with different arguments not being included
@@ -83,21 +85,21 @@ end
 % end
 
 
-output_data.states = states;
+output_data.states = network.states;
 
 % parallel computing
 if matlabpool('size')
     matlabpool close force;
 end
 
-op_parallel = options(19);
+op_parallel = network.options(19);
 
 if op_parallel
     matlabpool;
 end
 
 % find main complex (do system partitions)
-op_complex = options(15);
+op_complex = network.options(15);
 
 % init cell arrays for results
 Big_phi_M_st = cell(state_max,1);
@@ -116,18 +118,18 @@ purviews_M_st = cell(state_max,1);
 % for each state
 for z = 1:state_max
     
-    this_state = states(:,z);
+    this_state = network.states(:,z);
     
     % init backward rep and forward reps for each state
-    BRs = cell(num_subsets); % backward repertoire
-    FRs = cell(num_subsets); % forward repertoire
+    network.BRs = cell(num_subsets); % backward repertoire
+    network.FRs = cell(num_subsets); % forward repertoire
     
 %     [BRs_check2 FRs_check2] = comp_pers(this_state,tpm,b_table,options);
     
     fprintf(['State: ' num2str(this_state') '\n'])
    
     % is it possible to reach this state
-    check_prob = partial_prob_comp(full_system,full_system,this_state,tpm,b_table,1); % last argument is op_fb = 1;
+    check_prob = partial_prob_comp(network.full_system,network.full_system,this_state,tpm,network.b_table,1); % last argument is op_fb = 1;
     state_check1 = sum(check_prob);
     
 %     tic
@@ -143,6 +145,8 @@ for z = 1:state_max
         Big_phi_M_st{z} = NaN;
         Big_phi_MIP_st{z} = NaN;
         
+        % SET OTHERS
+        
     else
         
         fprintf('\tComputing state...\n')
@@ -151,9 +155,9 @@ for z = 1:state_max
         % THIS OPTION NEEDS TO BE WORKED OUT!
         if op_complex == 0 
 
-            M = full_system;
 %             [BRs FRs] = comp_pers(this_state,tpm,b_table,options);
-            [Big_phi phi prob_cell MIPs M_IRR] = big_phi_comp_fb(M,this_state,tpm,b_table,options);
+%             (network.full_system,this_state,tpm,network.b_table,network.options)
+            [Big_phi phi prob_cell MIPs M_IRR] = big_phi_comp_fb(network.full_system,this_state,network);
             % irreducible points
 %             [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_cell,phi,MIPs,M, 0,op_fb);
 %             plot_REP(Big_phi, IRR_REP,IRR_phi,IRR_MIP, 1, M, options)
@@ -174,11 +178,12 @@ for z = 1:state_max
 %             
 %             
 %             [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell Big_phi_MIP_all_M complex_MIP_M_all M_IRR_M]
-            
-            [Big_phi_M phi_M prob_M M_cell concept_MIP_M purviews_M] = big_phi_all(this_state,tpm,options);
+%             big_phi_all(this_state,tpm,options)
+            [Big_phi_M phi_M prob_M M_cell concept_MIP_M purviews_M] = big_phi_all(network, this_state);
+                                                                
             % complex search
             [Big_phi_MIP MIP Complex M_i_max  Big_phi_MIP_M complex_MIP_M Big_phi_MIP_all_M complex_MIP_M_all] = ...
-                complex_search(Big_phi_M,M_cell, purviews_M, num_nodes,prob_M,phi_M,options);
+                complex_search(Big_phi_M,M_cell, purviews_M, network.num_nodes,prob_M,phi_M,network.options);
             
             
 

@@ -1,4 +1,4 @@
-function [Big_phi_M phi_M prob_M M_cell MIP_M M_IRR_M] = big_phi_all(x0_s,p,options)
+function [Big_phi_M phi_M prob_M M_cell MIP_M M_IRR_M] = big_phi_all(network,network_state)
 % [Big_phi_M phi_M prob_M M_cell MIP_M] = big_phi_all(x0_s,p,b_table,options)
 % this is a test.
 %
@@ -13,12 +13,10 @@ function [Big_phi_M phi_M prob_M M_cell MIP_M M_IRR_M] = big_phi_all(x0_s,p,opti
 % op: the way how small phi is computed (0: difference of entropy, 1: KLD)
 % op_disp: (1: display the results, 0: not)
 
-op_fb = options(1);
-op_context = options(6);
 op_console = options(10);
 
 
-global b_table
+% global b_table
 % global BRs, global FRs
 
 N = log2(size(p,1)); % number of elements in the whole system
