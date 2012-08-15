@@ -21,3 +21,8 @@ for i = 1:prod([inputs.num_states])
     index_cell = num2cell(index_vec);
     cpt(index_cell{:}) = prob_this_node_on;
 end
+
+% disp(this_node.num)
+% disp(size(cpt))
+% disp(this_node.input_nodes)
+% disp(cpt)

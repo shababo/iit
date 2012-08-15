@@ -13,23 +13,47 @@ op_normalize = options(14);
 op_small_phi = options(16);
 
 global BRs, global FRs
-
+global BRs_check FRs_check
+global BRs_check2 FRs_check2
+eps = 1e-10;
 
 N = length(x);
 N0 = length(x0);
 %% unpartitioned transition repertoire
 % prob_w_old = Rs{convi(x0),convi(x)};
 
-current = convi(x0); other = convi(x);
+% current = convi(x0); other = convi(x);
+current = sum(2.^(x0-1))+1; other = sum(2.^(x-1))+1;
 
 if (bf == 1)
     if isempty(BRs{current,other})
-        BRs{current,other} = comp_pers_single(current,other,x0_s,p,bf);
+        BRs{current,other} = comp_pers_cpt(x0,x,x0_s,'backward');
+            BRs_check{current,other} = comp_pers_single(x0,x,x0_s,p,1);
+
+    if ~all(abs(BRs{current,other} - BRs_check{current,other}) <= eps)
+        disp('BR CHECK:')
+        disp(x0)
+        disp(x)
+        disp(BRs{current,other})
+        disp(BRs_check{current,other})
+        disp(BRs{current,other}(:) == BRs_check{current,other}(:))
+    end
     end
     prob_w = BRs{current,other};
 elseif (bf == 2)
     if isempty(FRs{current,other})
-        FRs{current,other} = comp_pers_single(current,other,x0_s,p,bf);
+        FRs{current,other} = comp_pers_cpt(x0,x,x0_s,'forward');
+                FRs_check{current,other} = comp_pers_single(x0,x,x0_s,p,2);
+
+    if ~all(abs(FRs{current,other} - FRs_check{current,other}) <= eps)
+        disp('FR CHECKx:')
+        disp(x0)
+        disp(x)
+        disp(FRs{current,other})
+        disp(FRs_check{current,other})
+        disp(FRs_check2{current,other})
+        disp(FRs{current,other}(:) == FRs_check{current,other}(:))
+    end
     end
     prob_w = FRs{current,other};
 end
@@ -72,34 +96,89 @@ for i=1: N_b % past or future
         Norm = Normalization(x_1,x_2,x0_1,x0_2);
 
         if Norm ~= 0
-            current_1 = convi(x0_1); current_2 = convi(x0_2);
-            other_1 = convi(x_1); other_2 = convi(x_2);
+%             current_1 = convi(x0_1); current_2 = convi(x0_2);
+%             other_1 = convi(x_1); other_2 = convi(x_2);
+            current_1 = sum(2.^(x0_1-1))+1;
+            current_2 = sum(2.^(x0_2-1))+1;
+            other_1 = sum(2.^(x_1-1))+1;
+            other_2 = sum(2.^(x_2-1))+1;
             
             if (bf == 1)
                 if isempty(BRs{current_1,other_1})
-                    BRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,bf);
+                    BRs{current_1,other_1} = comp_pers_cpt(x0_1,x_1,x0_s,'backward');
+                            BRs_check{current_1,other_1} = comp_pers_single(x0_1,x_1,x0_s,p,1);
+
+    if ~all(abs(BRs{current_1,other_1} - BRs_check{current_1,other_1}) <= eps)
+        disp('BR CHECK:')
+        disp(x0_1)
+        disp(x_1)
+        disp(BRs{current_1,other_1})
+        disp(BRs_check{current_1,other_1})
+        disp(BRs{current_1,other_1}(:) == BRs_check{current_1,other_1}(:))
+    end
                 end
                 prob_p1 = BRs{current_1,other_1};
                 
                 if isempty(BRs{current_2,other_2})
-                    BRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,bf);
+                    BRs{current_2,other_2} = comp_pers_cpt(x0_2,x_2,x0_s,'backward');
+                                                BRs_check{current_2,other_2} = comp_pers_single(x0_2,x_2,x0_s,p,1);
+
+    if ~all(abs(BRs{current_2,other_2} - BRs_check{current_2,other_2}) <= eps)
+        disp('BR CHECK:')
+        disp(x0_2)
+        disp(x_2)
+        disp(BRs{current_2,other_2})
+        disp(BRs_check{current_2,other_2})
+        disp(BRs{current_2,other_2}(:) == BRs_check{current_2,other_2}(:))
+    end
                 end
                 prob_p2 = BRs{current_2,other_2};
                 
             elseif (bf == 2)
                 if isempty(FRs{current_1,other_1})
-                    FRs{current_1,other_1} = comp_pers_single(current_1,other_1,x0_s,p,bf);
+                    FRs{current_1,other_1} = comp_pers_cpt(x0_1,x_1,x0_s,'forward');
+                                            FRs_check{current_1,other_1} = comp_pers_single(x0_1,x_1,x0_s,p,2);
+
+    if ~all(abs(FRs{current_1,other_1} - FRs_check{current_1,other_1}) <= eps)
+        disp('FR CHECK:')
+        disp(x0_1)
+        disp(x_1)
+        disp(FRs{current_1,other_1})
+        disp(FRs_check{current_1,other_1})
+        disp(FRs_check2{current_1,other_1})
+        disp(FRs{current_1,other_1}(:) == FRs_check{current_1,other_1}(:))
+    end
                 end
                 prob_p1 = FRs{current_1,other_1};
                 
                 if isempty(FRs{current_2,other_2})
-                    FRs{current_2,other_2} = comp_pers_single(current_2,other_2,x0_s,p,bf);
+                    FRs{current_2,other_2} = comp_pers_cpt(x0_2,x_2,x0_s,'forward');
+                                                                    FRs_check{current_2,other_2} = comp_pers_single(x0_2,x_2,x0_s,p,2);
+
+    if ~all(abs(FRs{current_2,other_2} - FRs_check{current_2,other_2}) <= eps)
+        disp('FR CHECK:')
+        disp(x0_2)
+        disp(x_2)
+        disp(FRs{current_2,other_2})
+        disp(FRs_check{current_2,other_2})
+        disp(FRs_check2{current_2,current_2})
+        disp(FRs{current_2,other_2}(:) == FRs_check{current_2,other_2}(:))
+    end
                 end
                 prob_p2 = FRs{current_2,other_2};
             end
             
-            prob_p = prob_prod_comp(prob_p1(:),prob_p2(:),x,x_1,0);
+%             prob_p = prob_prod_comp(prob_p1(:),prob_p2(:),x,x_1,0);
 
+            if isempty(prob_p1)
+                prob_p = prob_p2(:);
+            elseif isempty(prob_p2)
+                prob_p = prob_p1(:);
+            else
+                prob_p_test = bsxfun(@times,prob_p1,prob_p2);
+                prob_p = prob_p_test(:);
+            end
+                    
 %             if isempty(prob_p1)
 %                 prob_p_test = prob_p2(:);
 %             elseif isempty(prob_p2)

@@ -11,7 +11,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     double *state_size_vec_double, double *state_values;
     mwSize num_nodes;
     
-    decimalValue = mxGetScalar(prhs[0]);
+    decimalValue =  mxGetScalar(prhs[0]);
     state_size_vec_double = mxGetPr(prhs[1]);
     state_size_vec_size = mxGetN(prhs[1]);
 

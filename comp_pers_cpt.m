@@ -20,9 +20,13 @@ num_sys_nodes = nodes(1).num_sys_nodes;
 
 if strcmp(bf_option,'backward')
     
+   
+    
     denom_nodes = nodes(denom_nodes_indices);
     num_nodes_shift = num_nodes_indices + num_sys_nodes;
     numerator_nodes = nodes(num_nodes_shift);
+    
+
     
     % no nodes in numerator means maxent over denom
     if isempty(num_nodes_indices)
@@ -34,33 +38,39 @@ if strcmp(bf_option,'backward')
         
     end
     
+    numerator_conditional_joint_size = ones(1,2*num_sys_nodes);
+    numerator_conditional_joint_size(denom_nodes_indices) = [denom_nodes.num_states];
+    numerator_conditional_joint = ones(numerator_conditional_joint_size);
+    
     % setup cell array for conditioning
     conditioning_indices = cell(1,2*num_sys_nodes);
-    for i = 1:2*num_sys_nodes
-        conditioning_indices{i} = ':';
-    end
+    conditioning_indices(:) = {':'};
+%     conditioning_indices([numerator_nodes.num]) = num2cell(numerator_state(numerator_nodes.num - num_sys_nodes));
+
     
-    % we do the first iteration outside the for main foor loop so we can
-    % initialize the joint
-    this_node_conditioning_indices = conditioning_indices;
-    this_node_conditioning_indices{numerator_nodes(1).num} = numerator_state(numerator_nodes(1).num - num_sys_nodes) + 1;
-    numerator_conditional_joint = numerator_nodes(1).cpt(this_node_conditioning_indices{:});
+%     % we do the first iteration outside the for main foor loop so we can
+%     % initialize the joint
+%     this_node_conditioning_indices = conditioning_indices;
+%     this_node_conditioning_indices{numerator_nodes(1).num} = numerator_state(numerator_nodes(1).num - num_sys_nodes) + 1;
+%     numerator_conditional_joint = numerator_nodes(1).cpt(this_node_conditioning_indices{:});
+%     
+%     prob_current_state = sum(numerator_conditional_joint(:));
+%     
+%     % marginalize over nodes not in denominator, these nodes are outside the
+%     % system for this iteration or they are outside a partition - either
+%     % way we apply maxent prior + marginalization
+%     for j = 1:num_sys_nodes
+%         
+%         if ~any(j == denom_nodes_indices) && any(j == numerator_nodes(1).input_nodes)
+%             numerator_conditional_joint = ...
+%                 sum(numerator_conditional_joint,j)./size(numerator_conditional_joint,j);
+%         end
+%         
+%     end
     
-    prob_current_state = sum(numerator_conditional_joint(:));
+    prob_current_state = 1;
     
-    % marginalize over nodes not in denominator, these nodes are outside the
-    % system for this iteration or they are outside a partition - either
-    % way we apply maxent prior + marginalization
-    for j = 1:num_sys_nodes
-        
-        if ~any(j == denom_nodes_indices) && any(j == numerator_nodes(1).input_nodes)
-            numerator_conditional_joint = ...
-                sum(numerator_conditional_joint,j)./size(numerator_conditional_joint,j);
-        end
-        
-    end
-    
-    for i = 2:length(num_nodes_indices)
+    for i = 1:length(num_nodes_indices)
         
         this_node_conditioning_indices = conditioning_indices;
         this_node_conditioning_indices{numerator_nodes(i).num} = numerator_state(numerator_nodes(i).num - num_sys_nodes) + 1;
@@ -105,30 +115,40 @@ elseif strcmp(bf_option,'forward')
 % % % %         
 % % % %     end
 % % % %     
-    % we do the first iteration outside the for main foor loop so we can
-    % initialize the joint
-    denom_conditional_joint = denom_nodes(1).cpt;
+
+    denom_conditional_joint_size = ones(1,2*num_sys_nodes);
+    denom_conditional_joint_size(denom_nodes_indices + num_sys_nodes) = [denom_nodes.num_states];
+    denom_conditional_joint = ones(denom_conditional_joint_size);
     
+%     % we do the first iteration outside the for main foor loop so we can
+%     % initialize the joint
+%     denom_conditional_joint = denom_nodes(1).cpt;
+%     
     conditioning_indices = cell(1,2*num_sys_nodes);
-    for i = 1:2*num_sys_nodes
-        conditioning_indices{i} = ':';
-    end
+    conditioning_indices(:) = {':'};
+%     conditioning_indices{num_nodes_indices} = numerator_state(num_nodes_indices) + 1;
     
-    % marginalize over nodes not in numerator, these nodes are outside the
-    % system for this iteration or they are outside a partition - either
-    % way we apply maxent prior/marginalization
+%     for i = 1:2*num_sys_nodes
+%         conditioning_indices{i} = ':';
+%     end
+%     
+%     % marginalize over nodes not in numerator, these nodes are outside the
+%     % system for this iteration or they are outside a partition - either
+%     % way we apply maxent prior/marginalization
     for j = 1:num_sys_nodes
-        
-        if ~any(j == num_nodes_indices) && any(j == denom_nodes(1).input_nodes)
-            denom_conditional_joint = ...
-                sum(denom_conditional_joint,j)./size(denom_conditional_joint,j);
-        elseif any(j == num_nodes_indices)
+% %         
+% %         if ~any(j == num_nodes_indices) && any(j == denom_nodes(1).input_nodes)
+% %             denom_conditional_joint = ...
+% %                 sum(denom_conditional_joint,j)./size(denom_conditional_joint,j);
+        if any(j == num_nodes_indices)
             conditioning_indices{j} = numerator_state(j) + 1;
         end
-        
+% %         
     end
     
-    for i = 2:length(denom_nodes)
+    
+    
+    for i = 1:length(denom_nodes)
         
         next_denom_node_distribution = denom_nodes(i).cpt;
         

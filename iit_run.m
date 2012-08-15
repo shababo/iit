@@ -23,15 +23,11 @@ fprintf('\nRunning...\n\n')
 num_nodes = size(tpm,2);
 
 % global inputs
-global grain noise J 
+ 
 % global 
-global BRs FRs b_table options
-global BRs_check FRs_check
-% output
-global output_data
 
-global nodes
-nodes = in_nodes;
+% global BRs_check FRs_check
+% global BRs_check2 FRs_check2
 
 global func_time inline_time cpt_time tpm_time
 func_time = 0;
@@ -39,17 +35,16 @@ inline_time = 0;
 cpt_time = 0;
 tpm_time = 0;
 
-grain = 50;
-noise = in_noise;
-J = in_J;
-options = in_options;
+network.J = in_J;
+network.options = in_options;
+network.nodes = in_nodes;
 % options(10) = 1;
 
 output_data.tpm = tpm;
-output_data.J = J;
+output_data.J = network.J;
 output_data.current_state = current_state;
-output_data.noise = noise;
-output_data.options = options;
+output_data.noise = in_noise;
+output_data.options = network.options;
 output_data.num_nodes = num_nodes;
 
 full_system = 1:num_nodes;
@@ -127,7 +122,7 @@ for z = 1:state_max
     BRs = cell(num_subsets); % backward repertoire
     FRs = cell(num_subsets); % forward repertoire
     
-%     [BRs_check FRs_check] = comp_pers(this_state,tpm,b_table,options);
+%     [BRs_check2 FRs_check2] = comp_pers(this_state,tpm,b_table,options);
     
     fprintf(['State: ' num2str(this_state') '\n'])
    
@@ -243,8 +238,8 @@ toc
 % disp(func_time)
 % disp('INLINE TIME:')
 % disp(inline_time)
-% disp('CPT TIME:')
-% disp(cpt_time)
+disp('CPT TIME:')
+disp(cpt_time)
 % disp('TPM TIME:')
 % disp(tpm_time)
 
