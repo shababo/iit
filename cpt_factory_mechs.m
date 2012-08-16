@@ -1,4 +1,4 @@
-function cpt = cpt_factory(this_node, inputs, num_total_nodes, output_noise)
+function cpt = cpt_factory_mechs(this_node, inputs, num_total_nodes, output_noise)
 
 dim_sizes = ones(1,num_total_nodes);
 dim_sizes(this_node.num) = this_node.num_states;
