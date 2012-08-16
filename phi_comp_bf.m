@@ -108,11 +108,16 @@ end
 [num_numerator_partitions1 num_numerator_partitions2 num_numerator_partitions] = bipartition(numerator,num_nodes_numerator,1); % partition of numerator
 
 
+MIP = cell(2,2,2);
+phi_MIP = zeros(1,2);
+prob_prod_MIP = cell(2,1);
 
 
 phi_cand = zeros(num_denom_partitions,num_numerator_partitions,2,2);
 prob_prod_vec = cell(num_denom_partitions,num_numerator_partitions,2);
 
+for bf = 1:2 % past and future
+  phi_zero_found = 0;  
 for i = 1:num_denom_partitions % past or future
     denom_part1 = denom_past_partitions_1{i};
     denom_part2 = denom_past_partitions_2{i};
@@ -155,7 +160,7 @@ for i = 1:num_denom_partitions % past or future
 %         other_1 = denom_part1;
 %         other_2 = denom_part2;
 
-        for bf = 1:2 % past and future
+        
 
             if Norm ~= 0
 
@@ -345,12 +350,10 @@ for i = 1:num_denom_partitions % past or future
                 phi = Inf;
             end
             
-%             if phi == 0
-%                 phi_MIP = [0 0];
-%                 prob_prod_MIP = cell(2,1);
-%                 MIP = cell(2,2,2);
-%                 return
-%             end
+            if phi == 0
+                phi_zero_found = 1;
+                break
+            end
             
             phi_cand(i,j,bf,1) = phi;
             phi_cand(i,j,bf,2) = phi/Norm;
@@ -367,21 +370,29 @@ for i = 1:num_denom_partitions % past or future
 %                 disp('phi_norm')
 %                 disp(phi/Norm)
 %             end
-        end
     end
+        if phi_zero_found
+            break
+        end
+end
+    
+        if phi_zero_found
+            phi_MIP(bf)  = 0;
+
+        else 
+            [phi_MIP(bf) i j] = min2(phi_cand(:,:,bf,1),phi_cand(:,:,bf,2),op_normalize);
+            prob_prod_MIP{bf} = prob_prod_vec{i,j,bf};
+
+            MIP{1,1,bf} = denom_past_partitions_1{i};
+            MIP{2,1,bf} = denom_past_partitions_2{i};
+            MIP{1,2,bf} = num_numerator_partitions1{j};
+            MIP{2,2,bf} = num_numerator_partitions2{j};
+        end
 end
 
-MIP = cell(2,2,2);
-phi_MIP = zeros(1,2);
-prob_prod_MIP = cell(2,1);
-for bf = 1: 2
-    [phi_MIP(bf) i j] = min2(phi_cand(:,:,bf,1),phi_cand(:,:,bf,2),op_normalize);
-    prob_prod_MIP{bf} = prob_prod_vec{i,j,bf};
 
-    MIP{1,1,bf} = denom_past_partitions_1{i};
-    MIP{2,1,bf} = denom_past_partitions_2{i};
-    MIP{1,2,bf} = num_numerator_partitions1{j};
-    MIP{2,2,bf} = num_numerator_partitions2{j};
+for bf = 1: 2
+
 end
 
 end
