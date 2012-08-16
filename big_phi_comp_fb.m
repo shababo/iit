@@ -1,4 +1,4 @@
-function [Big_phi phi_all_values prob_cell MIP M_IRR] = big_phi_comp_fb(subsystem,whole_sys_state,network)
+function [Big_phi phi_all_values prob_cell MIP M_IRR network] = big_phi_comp_fb(subsystem,whole_sys_state,network)
 
 %%  compute big phi for a subset, subsystem
 % subsystem: a subset of the whole system (can be the whole system itself)
@@ -49,7 +49,7 @@ M_IRR = cell(0,0);
 
 %% computing small phis
 EmptyCon = zeros(num_states_subsys-1,1);
-parfor ci=1: num_states_subsys-1  % loop over purview subsets_subsys
+for ci=1: num_states_subsys-1  % loop over purview subsets_subsys
     numerator = subsets_subsys{ci}; % given data of numerator
     %Larissa smart purviews
     %if any element inside the numerator does not have inputs or outputs,
@@ -61,7 +61,7 @@ parfor ci=1: num_states_subsys-1  % loop over purview subsets_subsys
 %         if op_console
 %             fprintf('C=%s\n',mod_mat2str(numerator));
 %         end
-        [phi_all_values(ci,:) prob{ci} prob_prod{ci} MIP{ci}] ...
+        [phi_all_values(ci,:) prob{ci} prob_prod{ci} MIP{ci} network] ...
             =  phi_comp_ex(subsystem,numerator,whole_sys_state,subsets_subsys,network);
 
     else

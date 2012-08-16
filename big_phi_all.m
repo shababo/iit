@@ -44,7 +44,7 @@ MIP_M = cell(network.num_states-1,1); % the partition that gives Big_phi_MIP for
 M_IRR_M = cell(network.num_states-1,1);
 
 
-for sub_index = 1:network.num_states-1 % for all non empty subsets of the system\
+parfor sub_index = 1:network.num_states-1 % for all non empty subsets of the system\
     
     this_subset = subsets{sub_index}; % get the subset
     if op_console
@@ -61,8 +61,8 @@ for sub_index = 1:network.num_states-1 % for all non empty subsets of the system
     M_IRR_M{sub_index} = M_IRR; % numerators of purviews with non-zero/positive phi
     
     % concept distributions
-    prob_M{sub_index,1} = prob_cell{1}; % first layer is subset, second is purview, third is backward/forward
-    prob_M{sub_index,2} = prob_cell{2}; % same as above but for MIP
+    prob_M(sub_index,:) = prob_cell(:); % first layer is subset, second is purview, third is backward/forward
+%     prob_M{sub_index,2} = prob_cell{2}; % same as above but for MIP
     
 end
 

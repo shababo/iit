@@ -26,6 +26,8 @@ if op_parallel
     matlabpool;
 end
 
+% profile on
+
 tic
 
 fprintf('\nRunning...\n\n')
@@ -160,7 +162,7 @@ for z = 1:state_max
 
 %             [BRs FRs] = comp_pers(this_state,tpm,b_table,options);
 %             (network.full_system,this_state,tpm,network.b_table,network.options)
-            [Big_phi phi prob_cell MIPs M_IRR] = big_phi_comp_fb(network.full_system,this_state,network);
+            [Big_phi phi prob_cell MIPs M_IRR network] = big_phi_comp_fb(network.full_system,this_state,network);
             % irreducible points
 %             [IRR_REP IRR_phi IRR_MIP M_IRR] = IRR_points(prob_cell,phi,MIPs,M, 0,op_fb);
 %             plot_REP(Big_phi, IRR_REP,IRR_phi,IRR_MIP, 1, M, options)
@@ -232,14 +234,21 @@ output_data.purviews_M = purviews_M_st;
 %     end
 % %     fprintf('Big_phi_ave=%f\n',Big_phi_ave);
 % end
-
-op_close = 0;
-isOpen = matlabpool('size');
-if isOpen > 0 && op_close == 1
-    matlabpool close;
-end
-
 toc
+
+
+% profile off
+% profile viewer
+
+fprintf('Loading GUI... \n');
+
+save('output_data_sample.mat','output_data');
+
+iit_explorer(output_data)
+
+if op_parallel
+    matlabpool close force;
+end
 
 
 % disp('FUNCTION TIME:')
@@ -251,8 +260,7 @@ toc
 % disp('TPM TIME:')
 % disp(tpm_time)
 
-fprintf('Loading GUI... \n');
 
-save('output_data_sample.mat','output_data');
 
-iit_explorer(output_data)
+
+% mpiprofile viewer

@@ -10,9 +10,9 @@ function [Big_phi_MIP MIP Big_phi_cand MIP_cand] = MIP_search(M,N,Big_phi_M,M_IR
 
 %%
 
-save('prob_M.mat','prob_M')
+% save('prob_M.mat','prob_M')
 
-global grain;
+% global grain;
 % %debug remove me
 % fprintf('----------------------------------------------\n');
 % fprintf('M = %s\n',mat2str(M));

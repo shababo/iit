@@ -13,7 +13,7 @@ if op_console
     fprintf('\nBig_phi_MIP in subset M:\n\n')
 end
     
-for M_i = 1: 2^N-1
+parfor M_i = 1: 2^N-1
     M = M_cell{M_i};
     if length(M) > 1
         

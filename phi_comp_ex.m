@@ -1,4 +1,4 @@
-function [phi prob prob_prod_MIP MIP] = phi_comp_ex(subsystem,numerator,whole_sys_state,subsets_subsys,network)
+function [phi prob prob_prod_MIP MIP network] = phi_comp_ex(subsystem,numerator,whole_sys_state,subsets_subsys,network)
 
 
 % subsets_subsys: power set of subsystem
@@ -25,9 +25,9 @@ for i=1: num_states_subsys-1
     %Larissa smart purviews: Only test those connections that actually exist
     denom = subsets_subsys{i};
     if nnz(sum(network.J(numerator,denom),1) == 0) > 0 % some denom is not input of numerator (numerator) --> no phiBR
-        if nnz(sum(J(denom,numerator),2) == 0) == 0 % but denom is output
-            [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-                = phi_comp_bORf(numerator,denom,whole_sys_state,network,2); 
+        if nnz(sum(network.J(denom,numerator),2) == 0) == 0 % but denom is output
+            [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i} network] ...
+                = phi_comp_bORf(numerator,denom,whole_sys_state,network,2);
         else
             uniform_dist = ones(1,num_states_subsys)/num_states_subsys;
             prob_cand{i} = {uniform_dist; uniform_dist};
@@ -36,10 +36,10 @@ for i=1: num_states_subsys-1
         end
     else
         if nnz(sum(network.J(denom,numerator),2) == 0) > 0 % denom is not output, but denom is input
-            [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
+            [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i} network] ...
                 = phi_comp_bORf(numerator,denom,whole_sys_state,network,1); 
         else % denom is both
-            [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
+            [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i} network] ...
                 = phi_comp_bf(subsystem,numerator,denom,denom,whole_sys_state,network); 
         end 
     end    

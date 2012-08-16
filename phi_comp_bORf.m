@@ -1,4 +1,4 @@
-function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bORf(numerator,denom,whole_sys_state,network,bf)
+function [phi_MIP prob prob_prod_MIP MIP network] = phi_comp_bORf(numerator,denom,whole_sys_state,network,bf)
 % Larissa: for smart purviews, op_context is assumed 0, op_min is assumed
 % bf is back/forward flag (back = 1, forward = 2)
 
@@ -182,20 +182,42 @@ for i = 1:num_denom_partitions % past or future
 %                 prob_p_test = prob_p_test(:);
 %             end
                 
-
+            prob_prod_vec{i,j,bf} = prob_p;
             if (op_small_phi == 0)
                 phi = KLD(prob{bf},prob_p);
+%                 phi2 = KLD_old(prob{bf},prob_p);
+%                 if (phi ~= phi2)
+%                     disp('ERRROR')
+%                                         disp(phi)
+%                     disp(phi2)
+%                     disp(prob{bf})
+%                     disp(prob_p)
+%                 end
+%                 prob_whole = prob{bf};
+%                 prob_p(prob_p==0) = 1; % avoid log0 when computing entropy
+%                 H1 = - sum(prob_whole.*log2(prob_p)) ;
+% 
+%                 prob_whole(prob_whole==0) = 1;
+%                 H2 = - sum(prob_whole.*log2(prob_whole));
+%                 phi = H1 - H2;
             elseif (op_small_phi == 1)
                 phi = emd_hat_gd_metric_mex(prob{bf}',prob_p',gen_dist_matrix(length(prob_p)));
             elseif (op_small_phi == 2)
                 phi = k_distance(prob{bf},prob_p);
             end
-            prob_prod_vec{i,j,bf} = prob_p;
+            
             
         else
             prob_prod_vec{i,j,bf} = [];
             phi = Inf;
         end
+        
+            if phi == 0
+                phi_MIP = [0 0];
+                prob_prod_MIP = cell(2,1);
+                MIP = cell(2,2,2);
+                return
+            end
 
         phi_cand(i,j,bf,1) = phi;
         phi_cand(i,j,bf,2) = phi/Norm;
