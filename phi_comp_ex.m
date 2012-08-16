@@ -1,47 +1,46 @@
-function [phi prob prob_prod_MIP MIP] = phi_comp_ex(options,M,x0,x0_s,p,M_p,J)
+function [phi prob prob_prod_MIP MIP] = phi_comp_ex(subsystem,numerator,whole_sys_state,subsets_subsys,network)
 
 
-% M_p: power set of M
+% subsets_subsys: power set of subsystem
 % op_disp = 1;
 % op_single = 1;
 
 
-op_context = options(6);
-op_empty = options(8);
-op_min = options(9);
-op_console = options(10);
-op_big_phi = options(11);
+op_context = network.options(6);
+op_big_phi = network.options(11);
 
-N = length(M);
-M_p{2^N} = []; % add empty set
+num_nodes_subsys = length(subsystem);
+num_states_subsys = prod([network.nodes([subsystem]).num_states]);
+
+subsets_subsys{num_states_subsys} = []; % add empty set
 
 
     
-phi_MIP = zeros(2^N-1,2);
-prob_cand = cell(2^N-1,1);
-prob_prod_MIP_cand = cell(2^N-1,1);
-MIP_cand = cell(2^N-1,1);
+phi_MIP = zeros(num_states_subsys-1,2);
+prob_cand = cell(num_states_subsys-1,1);
+prob_prod_MIP_cand = cell(num_states_subsys-1,1);
+MIP_cand = cell(num_states_subsys-1,1);
 
-for i=1: 2^N-1
+for i=1: num_states_subsys-1
     %Larissa smart purviews: Only test those connections that actually exist
-    x = M_p{i};
-    if nnz(sum(J(x0,x),1) == 0) > 0 % some x is not input of x0 (numerator) --> no phiBR
-        if nnz(sum(J(x,x0),2) == 0) == 0 % but x is output
+    denom = subsets_subsys{i};
+    if nnz(sum(network.J(numerator,denom),1) == 0) > 0 % some denom is not input of numerator (numerator) --> no phiBR
+        if nnz(sum(J(denom,numerator),2) == 0) == 0 % but denom is output
             [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-                = phi_comp_bORf(options,x0,x,p,2,x0_s); 
+                = phi_comp_bORf(numerator,denom,whole_sys_state,network,2); 
         else
-            uniform_dist = ones(1,2^N)/2^N;
+            uniform_dist = ones(1,num_states_subsys)/num_states_subsys;
             prob_cand{i} = {uniform_dist; uniform_dist};
             prob_prod_MIP_cand{i} = cell(2,1);
             MIP_cand{i} = cell(2,2,2);
         end
     else
-        if nnz(sum(J(x,x0),2) == 0) > 0 % x is not output, but x is input
+        if nnz(sum(network.J(denom,numerator),2) == 0) > 0 % denom is not output, but denom is input
             [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-                = phi_comp_bORf(options,x0,x,p,1,x0_s); 
-        else % x is both
+                = phi_comp_bORf(numerator,denom,whole_sys_state,network,1); 
+        else % denom is both
             [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i}] ...
-                = phi_comp_bf(options,M,x0,x,x,x0_s,p); 
+                = phi_comp_bf(subsystem,numerator,denom,denom,whole_sys_state,network); 
         end 
     end    
 end
@@ -52,14 +51,14 @@ MIP = cell(2,2,2);
 prob = cell(2,1);
 prob_prod_MIP = cell(2,1);
 for bf = 1:2
-    [max_phi_MIP_bf(bf) j_max] = max_ex(phi_MIP(:,bf),M_p);
+    [max_phi_MIP_bf(bf) j_max] = max_ex(phi_MIP(:,bf),subsets_subsys);
     MIP(:,:,bf) = MIP_cand{j_max}(:,:,bf);
     prob{bf} = prob_cand{j_max}{bf};
     prob_prod_MIP{bf} = prob_prod_MIP_cand{j_max}{bf};
     if bf == 1
-        xp = M_p{j_max};
+        xp = subsets_subsys{j_max};
     else
-        xf = M_p{j_max};
+        xf = subsets_subsys{j_max};
     end
 end
 phi = [0 max_phi_MIP_bf']; % phi = [overall backwards forwards]
@@ -78,31 +77,31 @@ end
 if op_context == 0
     for i = 1:2
         if i == 1
-            x = xp;
+            denom = xp;
         else
-            x = xf;
+            denom = xf;
         end
-        if length(x) ~= N
-            prob{i} = expand_prob(prob{i},M,x);
-            prob_prod_MIP{i} = expand_prob(prob_prod_MIP{i},M,x);
+        if length(denom) ~= num_nodes_subsys
+            prob{i} = expand_prob(prob{i},subsystem,denom);
+            prob_prod_MIP{i} = expand_prob(prob_prod_MIP{i},subsystem,denom);
         end
     end
 end
 
 % if op_console
-%     fprintf('Core concept: x0=%s xp=%s  xf=%s\n',mod_mat2str(x0),mod_mat2str(xp),mod_mat2str(xf));
+%     fprintf('Core concept: numerator=%s xp=%s  xf=%s\n',mod_mat2str(numerator),mod_mat2str(xp),mod_mat2str(xf));
 %     fprintf('phi=%f\n',phi);
 % end
 % figure(1)
 % subplot(1,2,1),imagesc(prob)
 % subplot(1,2,2),imagesc(prob_prod_MIP)
 % phi_MIP
-% [phi i j] = max2(phi_MIP,M_p)
+% [phi i j] = max2(phi_MIP,subsets_subsys)
 % pause;
 
 end
 
-function [X_max i_max j_max] = max2(X,M_p)
+function [X_max i_max j_max] = max2(X,subsets_subsys)
 % exclusion principle: if the value is the same, take the bigger one
 X_max = -Inf;
 i_max = 1;
@@ -110,7 +109,7 @@ j_max = 1;
 s_max = 0;
 for i=1: size(X,1)
     for j=1: size(X,2)
-        s = length(M_p{i}) + length(M_p{j});
+        s = length(subsets_subsys{i}) + length(subsets_subsys{j});
         cond1 = X(i,j) > X_max;
         cond2 = X(i,j) == X_max && s>= s_max;
         if cond1 || cond2
@@ -125,13 +124,13 @@ end
 end
 
 
-function [X_max i_max] = max_ex(X,M_p)
+function [X_max i_max] = max_ex(X,subsets_subsys)
 % exclusion principle: if the value is the same, take the bigger one
 X_max = -Inf;
 i_max = 1;
 s_max = 0;
 for i=1: size(X,1)
-    s = length(M_p{i});
+    s = length(subsets_subsys{i});
     cond1 = X(i) > X_max;
     cond2 = X(i) == X_max && s>= s_max;
     if cond1 || cond2

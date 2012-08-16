@@ -1,82 +1,73 @@
-function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bf(options,M,x0,xp,xf,x0_s,p)
+function [phi_MIP prob prob_prod_MIP MIP] = phi_comp_bf(subsystem,numerator,denom_past,denom_future,whole_sys_state,network)
 % compute small phi of a given purview...?
 % 
 % options = the options
-% M = a system
-% x0 = state of the system??
-% xp = 
-% xf = 
-% x0_s = 
+% subsystem = a system
+% numerator = state of the system??
+% denom_past = 
+% denom_future = 
+% whole_sys_state = 
 % p = TPM as a 2^N x N matrix
 % b_table
 % BRs
 % FRs
 
 
-% op_fb = options(1);
-% op_phi = options(2);
-% op_disp = options(3);
-% op_single = options(4);
-% op_ex = options(5);
-op_context = options(6);
-op_whole = options(7);
-op_min = options(9);
-op_normalize = options(14);
-op_small_phi = options(16);
+op_normalize = network.options(14);
+op_small_phi = network.options(16);
 
-global FRs, global b_table
-global BRs_check, global FRs_check
-global BRs_check2, global FRs_check2
-eps = 1e-10;
-global func_time, global inline_time
-global cpt_time tpm_time
-global nodes
+% global FRs, global b_table
+% global BRs_check, global FRs_check
+% global BRs_check2, global FRs_check2
+% eps = 1e-10;
+% global func_time, global inline_time
+% global cpt_time tpm_time
+% global nodes
 
-N = max(M);
-Np = length(xp);
-N0 = length(x0);
-Nf = length(xf);
+num_nodes_denom_past = length(denom_past);
+num_nodes_numerator = length(numerator);
+num_nodes_denom_future = length(denom_future);
 
 %% unpartitioned transition repertoire
 
-BRs = cell(2^N,2^N);
-% current_convi = convi(x0); past_convi = convi(xp); future_convi = convi(xf);
-current = sum(2.^(x0-1))+1; past = sum(2.^(xp-1))+1; future = sum(2.^(xf-1))+1;
+% BRs = cell(2^N,2^N);
+% current_convi = convi(numerator); past_convi = convi(denom_past); future_convi = convi(denom_future);
+current = sum(2.^(numerator-1))+1; past = sum(2.^(denom_past-1))+1; future = sum(2.^(denom_future-1))+1;
 
 % if (current_convi ~= current) || (past_convi ~= past) || (future_convi ~= future)
 %     disp('ERROR!')
 % end
 
-% current = x0; past = xp; future = xf;
+% current = numerator; past = denom_past; future = denom_future;
 
-if isempty(BRs{current,past})
+if isempty(network.BRs{current,past})
 %     tic
-    BRs{current,past} = comp_pers_cpt(x0,xp,x0_s,'backward');
+    network.BRs{current,past} = comp_pers_cpt(network.nodes,numerator,denom_past,whole_sys_state,'backward');
 % cpt_time = cpt_time + toc;
 % disp('old')
 % tic
-    BRs_check{current,past} = comp_pers_single(x0,xp,x0_s,p,1);
+%     network.BRs_check{current,past} = comp_pers_single(numerator,denom_past,whole_sys_state,p,1);
 % tpm_time = tpm_time + toc;
-%     BRs{current,past} = comp_pers_single(x0,xp,x0_s,p,1);
+%     BRs{current,past} = comp_pers_single(numerator,denom_past,whole_sys_state,p,1);
     
-    if ~all(abs(BRs{current,past} - BRs_check{current,past}) <= eps)
-        disp('BR CHECK:')
-        disp(x0)
-        disp(xp)
-        disp(BRs{current,past})
-        disp(BRs_check{current,past})
-        disp(BRs{current,past}(:) == BRs_check{current,past}(:))
-    end
+%     if ~all(abs(BRs{current,past} - BRs_check{current,past}) <= eps)
+%         disp('BR CHECK:')
+%         disp(numerator)
+%         disp(denom_past)
+%         disp(BRs{current,past})
+%         disp(BRs_check{current,past})
+%         disp(BRs{current,past}(:) == BRs_check{current,past}(:))
+%     end
 end
-prob_bw = BRs{current,past};
+prob_bw = network.BRs{current,past};
 
-if isempty(FRs{current,future})
+if isempty(network.FRs{current,future})
 
 % tic
-    FRs{current,future} = comp_pers_cpt(x0,xf,x0_s,'forward');
+    network.FRs{current,future} = comp_pers_cpt(network.nodes,numerator,denom_future,whole_sys_state,'forward');
 % cpt_time = cpt_time + toc;
 % tic
-    FRs_check{current,future} = comp_pers_single(x0,xf,x0_s,p,2);
+%     FRs_check{current,future} = comp_pers_single(numerator,denom_future,whole_sys_state,p,2);
 % tpm_time = tpm_time + toc;
     
 %     disp('new result:')
@@ -86,17 +77,17 @@ if isempty(FRs{current,future})
 %     disp(size(FRs_check{current,future}))
 %     disp(FRs_check{current,future})
 
-    if ~all(abs(FRs{current,future} - FRs_check{current,future}) <= eps)
-        disp('FR CHECK:')
-        disp(x0)
-        disp(xp)
-        disp(FRs{current,future})
-        disp(FRs_check{current,future})
-        disp(FRs_check2{current,future})
-        disp(FRs{current,future}(:) == FRs_check{current,future}(:))
-    end
+%     if ~all(abs(FRs{current,future} - FRs_check{current,future}) <= eps)
+%         disp('FR CHECK:')
+%         disp(numerator)
+%         disp(denom_past)
+%         disp(FRs{current,future})
+%         disp(FRs_check{current,future})
+%         disp(FRs_check2{current,future})
+%         disp(FRs{current,future}(:) == FRs_check{current,future}(:))
+%     end
 end
-prob_fw = FRs{current,future};
+prob_fw = network.FRs{current,future};
 
 
 prob = cell(2,1);
@@ -104,159 +95,159 @@ prob{1} = prob_bw(:);
 prob{2} = prob_fw(:);
 
 %% more than one
-if Np ~= 0
-    [xp_b1 xp_b2 Np_b] = bipartition(xp,Np); % partition of xp
+if num_nodes_denom_past ~= 0
+    [denom_past_partitions_1 denom_past_partitions_2 num_denom_partitions] = bipartition(denom_past,num_nodes_denom_past); % partition of denom_past
 else
-    xp_b1{1} = []; xp_b2{1} = []; Np_b = 1;
+    denom_past_partitions_1{1} = []; denom_past_partitions_2{1} = []; num_denom_partitions = 1;
 end
-% if Nf ~= 0
-%     [xf_b1 xf_b2 Nf_b] = bipartition(xf,Nf); % partition of xf
+% if num_nodes_denom_future ~= 0
+%     [xf_b1 xf_b2 Nf_b] = bipartition(denom_future,num_nodes_denom_future); % partition of denom_future
 % else
 %     xf_b1{1} = []; xf_b2{1} = []; Nf_b = 1;
 % end
-[x0_b1 x0_b2 N0_b] = bipartition(x0,N0,1); % partition of x0
+[num_numerator_partitions1 num_numerator_partitions2 num_numerator_partitions] = bipartition(numerator,num_nodes_numerator,1); % partition of numerator
 
 
 
 
-phi_cand = zeros(Np_b,N0_b,2,2);
-prob_prod_vec = cell(Np_b,N0_b,2);
+phi_cand = zeros(num_denom_partitions,num_numerator_partitions,2,2);
+prob_prod_vec = cell(num_denom_partitions,num_numerator_partitions,2);
 
-for i=1: Np_b % past or future
-    xp_1 = xp_b1{i};
-    xp_2 = xp_b2{i};
+for i = 1:num_denom_partitions % past or future
+    denom_part1 = denom_past_partitions_1{i};
+    denom_part2 = denom_past_partitions_2{i};
 
-    for j=1: N0_b % present
-        x0_1 = x0_b1{j};
-        x0_2 = x0_b2{j};
+    for j = 1:num_numerator_partitions % present
+        numerator_part1 = num_numerator_partitions1{j};
+        numerator_part2 = num_numerator_partitions2{j};
         
-        Norm = Normalization(xp_1,xp_2,x0_1,x0_2);
+        Norm = Normalization(denom_part1,denom_part2,numerator_part1,numerator_part2);
         
-%         if (all(x0 == [1 2]) && all(xp == [1 2]))
-%             disp('x0_1:')
-%             disp(x0_1)
-%             disp('x0_2:')
-%             disp(x0_2)
-%             disp('xp_1:')
-%             disp(xp_1)
-%             disp('xp_2:')
-%             disp(xp_2)
+%         if (all(numerator == [1 2]) && all(denom_past == [1 2]))
+%             disp('numerator_part1:')
+%             disp(numerator_part1)
+%             disp('numerator_part2:')
+%             disp(numerator_part2)
+%             disp('denom_part1:')
+%             disp(denom_part1)
+%             disp('denom_part2:')
+%             disp(denom_part2)
 %             disp('Norm:')
 %             disp(Norm)
 %         end
-%         current_1_convi = convi(x0_1);
-%         current_2_convi = convi(x0_2);
-%         other_1_convi = convi(xp_1);
-%         other_2_convi = convi(xp_2);
+%         current_1_convi = convi(numerator_part1);
+%         current_2_convi = convi(numerator_part2);
+%         other_1_convi = convi(denom_part1);
+%         other_2_convi = convi(denom_part2);
         
-        current_1 = sum(2.^(x0_1-1))+1;
-        current_2 = sum(2.^(x0_2-1))+1;
-        other_1 = sum(2.^(xp_1-1))+1;
-        other_2 = sum(2.^(xp_2-1))+1;
+        current_1 = sum(2.^(numerator_part1-1))+1;
+        current_2 = sum(2.^(numerator_part2-1))+1;
+        other_1 = sum(2.^(denom_part1-1))+1;
+        other_2 = sum(2.^(denom_part2-1))+1;
         
 %         if (current_1_convi ~= current_1) || (current_2_convi ~= current_2) || (other_1_convi ~= other_1) || (other_2 ~= other_2_convi)
 %             disp('ERROR!')
 %         end
 
         
-%         current_1 = x0_1;
-%         current_2 = x0_2;
-%         other_1 = xp_1;
-%         other_2 = xp_2;
+%         current_1 = numerator_part1;
+%         current_2 = numerator_part2;
+%         other_1 = denom_part1;
+%         other_2 = denom_part2;
 
-        for bf=1: 2 % past and future
+        for bf = 1:2 % past and future
 
             if Norm ~= 0
 
                 if bf == 1
-                    if isempty(BRs{current_1,other_1})
+                    if isempty(network.BRs{current_1,other_1})
 %                             tic
-                            BRs{current_1,other_1} = comp_pers_cpt(x0_1,xp_1,x0_s,'backward');
+                            network.BRs{current_1,other_1} = comp_pers_cpt(network.nodes,numerator_part1,denom_part1,whole_sys_state,'backward');
 %                             cpt_time = cpt_time + toc;
 %                             % disp('old')
 %                             tic
-                                BRs_check{current_1,other_1} = comp_pers_single(x0_1,xp_1,x0_s,p,1);
+%                                 BRs_check{current_1,other_1} = comp_pers_single(numerator_part1,denom_part1,whole_sys_state,p,1);
 %                             tpm_time = tpm_time + toc;
  
-                            if ~all(abs(BRs{current_1,other_1} - BRs_check{current_1,other_1}) <= eps)
-                            disp('BR CHECK:')
-                            disp(x0_1)
-                            disp(xp_1)
-                            disp(BRs{current_1,other_1})
-                            disp(BRs_check{current_1,other_1})
-                            disp(BRs{current_1,other_1}(:) == BRs_check{current_1,other_1}(:))
-                            end
+%                         if ~all(abs(BRs{current_1,other_1} - BRs_check{current_1,other_1}) <= eps)
+%                         disp('BR CHECK:')
+%                         disp(numerator_part1)
+%                         disp(denom_part1)
+%                         disp(BRs{current_1,other_1})
+%                         disp(BRs_check{current_1,other_1})
+%                         disp(BRs{current_1,other_1}(:) == BRs_check{current_1,other_1}(:))
+%                         end
                     end
-                    prob_p1 = BRs{current_1,other_1};
+                    prob_p1 = network.BRs{current_1,other_1};
 
-                    if isempty(BRs{current_2,other_2})
+                    if isempty(network.BRs{current_2,other_2})
 %                             tic
-                            BRs{current_2,other_2} = comp_pers_cpt(x0_2,xp_2,x0_s,'backward');
+                            network.BRs{current_2,other_2} = comp_pers_cpt(network.nodes,numerator_part2,denom_part2,whole_sys_state,'backward');
 %                             cpt_time = cpt_time + toc;
 %                             % disp('old')
 %                             tic
-                                BRs_check{current_2,other_2} = comp_pers_single(x0_2,xp_2,x0_s,p,1);
+%                                 BRs_check{current_2,other_2} = comp_pers_single(numerator_part2,denom_part2,whole_sys_state,p,1);
 %                             tpm_time = tpm_time + toc;
-                        if ~all(abs(BRs{current_2,other_2} - BRs_check{current_2,other_2}) <= eps)
-                            disp('BR CHECK:')
-                            disp(x0_2)
-                            disp(xp_2)
-                            disp(BRs{current_2,other_2})
-                            disp(BRs_check{current_2,other_2})
-                            disp(BRs{current_2,other_2}(:) == BRs_check{current_2,other_2}(:))
-                        end
+%                         if ~all(abs(BRs{current_2,other_2} - BRs_check{current_2,other_2}) <= eps)
+%                             disp('BR CHECK:')
+%                             disp(numerator_part2)
+%                             disp(denom_part2)
+%                             disp(BRs{current_2,other_2})
+%                             disp(BRs_check{current_2,other_2})
+%                             disp(BRs{current_2,other_2}(:) == BRs_check{current_2,other_2}(:))
+%                         end
                     end
-                    prob_p2 = BRs{current_2,other_2};
+                    prob_p2 = network.BRs{current_2,other_2};
 
                 else
 
-                    if isempty(FRs{current_1,other_1})
+                    if isempty(network.FRs{current_1,other_1})
 %                         tic
-                        FRs{current_1,other_1} = comp_pers_cpt(x0_1,xp_1,x0_s,'forward');
+                        network.FRs{current_1,other_1} = comp_pers_cpt(network.nodes,numerator_part1,denom_part1,whole_sys_state,'forward');
 %                         cpt_time = cpt_time + toc;
 %                         tic
-                        FRs_check{current_1,other_1} = comp_pers_single(x0_1,xp_1,x0_s,p,2);
+%                         FRs_check{current_1,other_1} = comp_pers_single(numerator_part1,denom_part1,whole_sys_state,p,2);
 %                         tpm_time = tpm_time + toc;
 %     
-                        if ~all(abs(FRs{current_1,other_1} - FRs_check{current_1,other_1}) <= eps)
-                            disp('FR CHECK:')
-                            disp(x0_1)
-                            disp(xp_1)
-%                             disp('new result')
-                            disp(FRs{current_1,other_1})
-%                             disp('old result')
-                            disp(FRs_check{current_1,other_1})
-                            disp(FRs_check2{current_1,other_1})
-                            disp(FRs{current_1,other_1}(:) == FRs_check{current_1,other_1}(:))
-                        end
+%                         if ~all(abs(FRs{current_1,other_1} - FRs_check{current_1,other_1}) <= eps)
+%                             disp('FR CHECK:')
+%                             disp(numerator_part1)
+%                             disp(denom_part1)
+% %                             disp('new result')
+%                             disp(FRs{current_1,other_1})
+% %                             disp('old result')
+%                             disp(FRs_check{current_1,other_1})
+%                             disp(FRs_check2{current_1,other_1})
+%                             disp(FRs{current_1,other_1}(:) == FRs_check{current_1,other_1}(:))
+%                         end
                     end
-                    prob_p1 = FRs{current_1,other_1};
+                    prob_p1 = network.FRs{current_1,other_1};
 
-                    if isempty(FRs{current_2,other_2})
+                    if isempty(network.FRs{current_2,other_2})
 %                         tic
-                        FRs{current_2,other_2} = comp_pers_cpt(x0_2,xp_2,x0_s,'forward');
+                        network.FRs{current_2,other_2} = comp_pers_cpt(network.nodes,numerator_part2,denom_part2,whole_sys_state,'forward');
 %                         cpt_time = cpt_time + toc;
 %                         tic
-                        FRs_check{current_2,other_2} = comp_pers_single(x0_2,xp_2,x0_s,p,2);
+%                         FRs_check{current_2,other_2} = comp_pers_single(numerator_part2,denom_part2,whole_sys_state,p,2);
 %                         tpm_time = tpm_time + toc;
 %     
-                        if ~all(abs(FRs{current_2,other_2} - FRs_check{current_2,other_2}) <= eps)    
-                            disp('FR CHECK:')
-                            disp(x0_2)
-                            disp(xp_2)
-                            disp(FRs{current_2,other_2})
-                            disp(FRs_check{current_2,other_2})
-                            disp(FRs_check2{current_2,other_2})
-                            disp(FRs{current_2,other_2}(:) == FRs_check{current_2,other_2}(:))
-                        end
+%                         if ~all(abs(FRs{current_2,other_2} - FRs_check{current_2,other_2}) <= eps)    
+%                             disp('FR CHECK:')
+%                             disp(numerator_part2)
+%                             disp(denom_part2)
+%                             disp(FRs{current_2,other_2})
+%                             disp(FRs_check{current_2,other_2})
+%                             disp(FRs_check2{current_2,other_2})
+%                             disp(FRs{current_2,other_2}(:) == FRs_check{current_2,other_2}(:))
+%                         end
                     end
-                    prob_p2 = FRs{current_2,other_2};
+                    prob_p2 = network.FRs{current_2,other_2};
 
                 end
                 
 %                 if exist('prob_prod_comp','file') == 3
 % %                     tic
-%                     prob_p = prob_prod_comp(prob_p1(:),prob_p2(:),xp,xp_1,0); % ADDED (:)
+%                     prob_p = prob_prod_comp(prob_p1(:),prob_p2(:),denom_past,denom_part1,0); % ADDED (:)
 % %                     func_time = func_time + toc;
 %                 
 %                 else    
@@ -266,15 +257,15 @@ for i=1: Np_b % past or future
                     elseif isempty(prob_p2)
                         prob_p = prob_p1(:);
                     else
-    %                     prob_p_test = (expand_prob(prob_p1,xp,xp_1) .* expand_prob(prob_p2,xp,xp_2));
+    %                     prob_p_test = (expand_prob(prob_p1,denom_past,denom_part1) .* expand_prob(prob_p2,denom_past,denom_part2));
     %                     prob_p_test = prob_p_test(:)/sum(prob_p_test);
     %                     prob_p1_reshape = reshape(prob_p1,
 
     %                     repmat_vec = ones(1,N);
-    %                     repmat_vec(xp_2) = 2;
+    %                     repmat_vec(denom_part2) = 2;
     %                     prob_p1_rep = repmat(prob_p1,repmat_vec);
     %                     repmat_vec = ones(1,N);
-    %                     repmat_vec(xp_1) = 2;
+    %                     repmat_vec(denom_part1) = 2;
     %                     prob_p2_rep = repmat(prob_p2,repmat_vec) ;                 
     %                     prob_p_test = prob_p1_rep .* prob_p2_rep;
     %                     prob_p_test = prob_p_test(:);
@@ -298,13 +289,13 @@ for i=1: Np_b % past or future
 %                     disp('****************')
 %                     disp('****************')
 %                     disp('present part 1:')
-%                     disp(x0_1)
+%                     disp(numerator_part1)
 %                     disp('other part 1:')
-%                     disp(xp_1)
+%                     disp(denom_part1)
 %                     disp('present part 2:')
-%                     disp(x0_2)
+%                     disp(numerator_part2)
 %                     disp('other part 2:')
-%                     disp(xp_2)
+%                     disp(denom_part2)
 %                     disp(prob_p1)
 %                     disp(prob_p2)
 %                     disp(prob_p)
@@ -312,13 +303,13 @@ for i=1: Np_b % past or future
 %                     disp('****************')
 % %                 else
 % %                     disp('present part 1:')
-% %                     disp(x0_1)
+% %                     disp(numerator_part1)
 % %                     disp('other part 1:')
-% %                     disp(xp_1)
+% %                     disp(denom_part1)
 % %                     disp('present part 2:')
-% %                     disp(x0_2)
+% %                     disp(numerator_part2)
 % %                     disp('other part 2:')
-% %                     disp(xp_2)
+% %                     disp(denom_part2)
 % %                     disp(prob_p1)
 % %                     disp(prob_p2)
 % %                     disp(prob_p)
@@ -341,7 +332,7 @@ for i=1: Np_b % past or future
             phi_cand(i,j,bf,1) = phi;
             phi_cand(i,j,bf,2) = phi/Norm;
              
-%             if (all(x0 == [1 2]) && all(xp == [1 2])) && (Norm ~= 0)
+%             if (all(numerator == [1 2]) && all(denom_past == [1 2])) && (Norm ~= 0)
 %                 disp('bf:')
 %                 disp(bf)
 %                 disp('full dist')
@@ -364,23 +355,23 @@ for bf = 1: 2
     [phi_MIP(bf) i j] = min2(phi_cand(:,:,bf,1),phi_cand(:,:,bf,2),op_normalize);
     prob_prod_MIP{bf} = prob_prod_vec{i,j,bf};
 
-    MIP{1,1,bf} = xp_b1{i};
-    MIP{2,1,bf} = xp_b2{i};
-    MIP{1,2,bf} = x0_b1{j};
-    MIP{2,2,bf} = x0_b2{j};
+    MIP{1,1,bf} = denom_past_partitions_1{i};
+    MIP{2,1,bf} = denom_past_partitions_2{i};
+    MIP{1,2,bf} = num_numerator_partitions1{j};
+    MIP{2,2,bf} = num_numerator_partitions2{j};
 end
 
 end
 
 
 
-function Norm = Normalization(xp_1,xp_2,x0_1,x0_2,xf_1,xf_2)
+function Norm = Normalization(denom_part1,denom_part2,numerator_part1,numerator_part2,xf_1,xf_2)
 
 if nargin == 4
-    Norm = min(length(x0_1),length(xp_2)) + min(length(x0_2),length(xp_1));
+    Norm = min(length(numerator_part1),length(denom_part2)) + min(length(numerator_part2),length(denom_part1));
 else
-    Norm = min(length(x0_1),length(xp_2)) + min(length(x0_2),length(xp_1)) ...
-        + min(length(x0_1),length(xf_2)) + min(length(x0_2),length(xf_1));
+    Norm = min(length(numerator_part1),length(denom_part2)) + min(length(numerator_part2),length(denom_part1)) ...
+        + min(length(numerator_part1),length(xf_2)) + min(length(numerator_part2),length(xf_1));
 end
 
 end

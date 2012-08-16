@@ -49,10 +49,10 @@ function test_function
 % % end
 
 
-set = [1 2 3 4 5 6 7 8 9];
+nodes(1:10) = struct('num_states',2)
 tic
-ismember(1,set)
+2^10
 toc
 tic
-any(1 == set)
+prod([nodes(1:10).num_states])
 toc

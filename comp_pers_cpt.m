@@ -1,4 +1,4 @@
-function perspective = comp_pers_cpt(num_nodes_indices,denom_nodes_indices,numerator_state,bf_option)
+function perspective = comp_pers_cpt(nodes,num_nodes_indices,denom_nodes_indices,numerator_state,bf_option)
 
 %  compute BRs and FRs for a single perspective but given some fixed
 %  current state
@@ -13,8 +13,6 @@ if isempty(denom_nodes_indices)
 %     denom_conditional_joint = [];
 %     return
 end
-
-global nodes
 
 num_sys_nodes = nodes(1).num_sys_nodes;
 

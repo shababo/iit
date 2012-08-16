@@ -15,12 +15,23 @@ function iit_run(tpm, in_J, current_state, in_noise, in_options, in_nodes)
 %
 %   see also set_options
 
+% parallel computing
+if matlabpool('size')
+    matlabpool close force;
+end
+
+op_parallel = in_options(19);
+
+if op_parallel
+    matlabpool;
+end
+
 tic
 
 fprintf('\nRunning...\n\n')
 
 % get num_nodes, the number of nodes in the whole system
-num_nodes = size(tpm,2);
+num_nodes = length(in_nodes)/2;
 
 % global inputs
  
@@ -29,15 +40,16 @@ num_nodes = size(tpm,2);
 % global BRs_check FRs_check
 % global BRs_check2 FRs_check2
 
-global func_time inline_time cpt_time tpm_time
-func_time = 0;
-inline_time = 0;
-cpt_time = 0;
-tpm_time = 0;
+% global func_time inline_time cpt_time tpm_time
+% func_time = 0;
+% inline_time = 0;
+% cpt_time = 0;
+% tpm_time = 0;
 
 network.J = in_J;
 network.options = in_options;
 network.nodes = in_nodes;
+network.num_nodes = num_nodes;
 network.tpm = tpm;
 % options(10) = 1;
 
@@ -49,24 +61,25 @@ output_data.options = network.options;
 output_data.num_nodes = num_nodes;
 
 network.full_system = 1:num_nodes;
-network.num_subsets = prod([network.nodes.num_states]);
+network.num_subsets = 2^num_nodes;
+network.num_states = prod([network.nodes(network.full_system).num_states]);
 
 % binary table and states list
 % need to rethink use of b_table when allowing for more than binary nodes
 network.b_table = cell(network.num_subsets,network.num_nodes);
-network.states = zeros(network.num_nodes,network.num_subsets);
-for i = full_system
+network.states = zeros(network.num_nodes,network.num_states);
+for i = network.full_system
     for j = 1:2^i
         network.b_table{j,i} = trans2(j-1,i); % CONSIDER FLIPPING THIS LR
-        if i == network.num_nodes
-            network.states(:,j) = trans2(j-1,i);
-        end
+%         if i == network.num_nodes
+%             network.states(:,j) = trans2(j-1,i);
+%         end
     end
 end
 
-
-
-
+for i = 0:network.num_states - 1
+    network.states(:,i+1) = dec2multibase(i,[network.nodes(network.full_system).num_states]);
+end
 
 % determine if we are computing over all states or just one
 op_ave = network.options(18);
@@ -87,16 +100,6 @@ end
 
 output_data.states = network.states;
 
-% parallel computing
-if matlabpool('size')
-    matlabpool close force;
-end
-
-op_parallel = network.options(19);
-
-if op_parallel
-    matlabpool;
-end
 
 % find main complex (do system partitions)
 op_complex = network.options(15);
@@ -121,8 +124,8 @@ for z = 1:state_max
     this_state = network.states(:,z);
     
     % init backward rep and forward reps for each state
-    network.BRs = cell(num_subsets); % backward repertoire
-    network.FRs = cell(num_subsets); % forward repertoire
+    network.BRs = cell(network.num_subsets); % backward repertoire
+    network.FRs = cell(network.num_subsets); % forward repertoire
     
 %     [BRs_check2 FRs_check2] = comp_pers(this_state,tpm,b_table,options);
     
@@ -243,8 +246,8 @@ toc
 % disp(func_time)
 % disp('INLINE TIME:')
 % disp(inline_time)
-disp('CPT TIME:')
-disp(cpt_time)
+% disp('CPT TIME:')
+% disp(cpt_time)
 % disp('TPM TIME:')
 % disp(tpm_time)
 
