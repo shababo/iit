@@ -498,14 +498,15 @@ for i = 1:num_nodes
     input_nodes_indices = input_nodes(logical(connectivity_matrix(i,:)));
     nodes(num_nodes + i).input_nodes = input_nodes_indices;
     
-    input_nodes = nodes(input_nodes_indices);
-    nodes(num_nodes + i).cpt = cpt_factory_mechs(nodes(num_nodes + i),input_nodes,2*num_nodes,noise);
+%     input_nodes = nodes(input_nodes_indices);
+%     nodes(num_nodes + i).cpt = cpt_factory_mechs(nodes(num_nodes + i),input_nodes,2*num_nodes,noise);
 %     disp(nodes(num_nodes + i).cpt)
-    test_cpt = cpt_factor_tpm(nodes(num_nodes + i), input_nodes_indices, nodes, 2*num_nodes, tpm);
+%     test_cpt = cpt_factor_tpm(nodes(num_nodes + i), input_nodes_indices, nodes, 2*num_nodes, tpm);
+    nodes(num_nodes + i).cpt = cpt_factor_tpm(nodes(num_nodes + i), input_nodes_indices, nodes, 2*num_nodes, tpm);
     
-    if any(nodes(num_nodes + i).cpt ~= test_cpt)
-        disp('error')
-    end
+%     if any(nodes(num_nodes + i).cpt ~= test_cpt)
+%         disp('error')
+%     end
     
     
     

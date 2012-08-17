@@ -54,13 +54,13 @@ options = [op_fb op_phi op_disp 1 1 op_context op_whole op_empty op_min op_conso
 save options options
 
 %% define the connectivty of the network
-N = 4; % Number of elements in the network %!!!!!!!!!!!! CAN WE MAKE THIS DEPENDENT?
+N = 6; % Number of elements in the network %!!!!!!!!!!!! CAN WE MAKE THIS DEPENDENT?
 Na = 3; % Number of afferent connections
 
 % current state
 if op_ave == 0
-%     current_state = zeros(N,1); % all OFF
-    current_state = ones(N,1); % all ON
+    current_state = zeros(N,1); % all OFF
+%     current_state = ones(N,1); % all ON
 %     current_state = [1 1 0 0 0 0 0 0]';
 %     current_state = [1 0]';
     z_max = 1;

@@ -8,16 +8,6 @@ function prob_prod = prob_prod_comp(prob1,prob2,whole_set,x0_p1,op_fb)
 % x0_p1 = one of the partitions
 % op_fb = currently unnecessary 
 
-% disp('PROB1');
-% disp(prob1);
-% disp('PROB2');
-% disp(prob2);
-% disp('whole_set');
-% disp(whole_set);
-% disp('x0_p1');
-% disp(x0_p1);
-
-
 N = length(whole_set);
 
 if nargin < 5
