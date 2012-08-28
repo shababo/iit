@@ -478,6 +478,7 @@ nodes(2*num_nodes) = struct('num',2*num_nodes,'name',[num2str(num_nodes) '_c'],'
                             'state_names',{{'0' '1'}},'logic_type',logic_types(num_nodes),'cpt',[],...
                             'num_sys_nodes',num_nodes,'input_nodes',[]);
                         
+                        
 % make past node structs                        
 for i = 1:num_nodes
     

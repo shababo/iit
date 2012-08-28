@@ -96,22 +96,22 @@ if any(strcmp(view_option,{'2D','2D3D'}))
 
 
                 plot(ax{ax_index},part(:,state2), ...
-                    part(:,state1),'*b','Clipping','on');
+                    part(:,state1),'dr','Clipping','on');
 %                 text(part(p_nonhighlight_indices,state2),part(p_nonhighlight_indices,state1),part_nonselected_labels)
                 hold on;
 
 
                 plot(ax{ax_index},whole(w_nonhighlight_indices,state2),...
-                    whole(w_nonhighlight_indices,state1),'*g','Clipping','on')
+                    whole(w_nonhighlight_indices,state1),'*b','Clipping','on')
                 hold on;
 
 
                 plot(ax{ax_index},whole(w_highlight_indices,state2), ...
-                    whole(w_highlight_indices,state1),'or','MarkerSize',8,'Clipping','on');
+                    whole(w_highlight_indices,state1),'og','MarkerSize',8,'Clipping','on');
                 hold on;
 
                 plot(ax{ax_index},part(p_highlight_indices,state2), ...
-                    part(p_highlight_indices,state1),'om','MarkerSize',8,'Clipping','on');
+                    part(p_highlight_indices,state1),'og','MarkerSize',8,'Clipping','on');
                 hold on;
 
                 choices = nchoosek([1 2 3],2);
@@ -166,20 +166,20 @@ if any(strcmp(view_option,{'3D','2D3D'}))
 
 
     scatter3(ax{ax_index},part(:,state_ordering(1)),part(:,state_ordering(2)),...
-        part(:,state_ordering(3)),'Marker','*','MarkerEdgeColor','b','SizeData',75,'Clipping','on')
+        part(:,state_ordering(3)),'Marker','d','MarkerEdgeColor','r','SizeData',75,'Clipping','on')
     hold on
 
     scatter3(ax{ax_index},whole(:,state_ordering(1)),whole(:,state_ordering(2)),...
-        whole(:,state_ordering(3)),'Marker','*','MarkerEdgeColor','g','SizeData',75,'Clipping','on')
+        whole(:,state_ordering(3)),'Marker','*','MarkerEdgeColor','b','SizeData',75,'Clipping','on')
 
     hold on
 
     scatter3(ax{ax_index},whole(w_highlight_indices,state_ordering(1)),whole(w_highlight_indices,state_ordering(2)),...
-        whole(w_highlight_indices,state_ordering(3)),'Marker','o','MarkerEdgeColor','r','SizeData',100,'Clipping','on')
+        whole(w_highlight_indices,state_ordering(3)),'Marker','o','MarkerEdgeColor','g','SizeData',100,'Clipping','on')
     hold on
 
     scatter3(ax{ax_index},part(p_highlight_indices,state_ordering(1)),part(p_highlight_indices,state_ordering(2)),...
-        part(p_highlight_indices,state_ordering(3)),'Marker','o','MarkerEdgeColor','m','SizeData',100,'Clipping','on')
+        part(p_highlight_indices,state_ordering(3)),'Marker','o','MarkerEdgeColor','g','SizeData',100,'Clipping','on')
     hold on
 
     xlabel(ax{ax_index},dec2bin(state_ordering(1)-1,num_nodes))

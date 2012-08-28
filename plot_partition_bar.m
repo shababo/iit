@@ -115,7 +115,7 @@ for i = 1:N
                 labelON = 0;
             end
             
-            plot_BRFR(prob_whole,pos_whole,whole_title,labelON,plot_panel);
+            plot_BRFR(prob_whole,pos_whole,whole_title,labelON,plot_panel,'b');
             
         end
         
@@ -133,7 +133,7 @@ for i = 1:N
                 labelON = 0;
             end
             
-            plot_BRFR(prob_part,pos_part,part_title,labelON,plot_panel)
+            plot_BRFR(prob_part,pos_part,part_title,labelON,plot_panel,'r')
             
         end
 
@@ -158,11 +158,12 @@ end
                 
 
 
-function [] = plot_BRFR(concept,pos,plot_title,labelON,plot_panel)
+function [] = plot_BRFR(concept,pos,plot_title,labelON,plot_panel,color)
 
 
 subplot('Position',pos,'Parent',plot_panel)
 h = bar(0:length(concept)-1,concept,'hist');
+set(h,'FaceColor',color)
 set(gca,'XTick',0:length(concept)-1)
 set(gca,'YTickLabel',[0 .5 1])
 

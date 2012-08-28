@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 26-Jul-2012 16:23:24
+% Last Modified by GUIDE v2.5 28-Aug-2012 07:49:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -80,6 +80,8 @@ else
 end
 
 handles.mip_axes = [];
+guidata(hObject,handles);
+handles.export_plot = 0;
 guidata(hObject,handles);
 
 num_states = 2^handles.data.num_nodes;
@@ -184,11 +186,21 @@ if strcmp(view,'Overview')
                                                  handles.data.concept_MIP_M{state_index},subset, subset_index);
 
 
-% 	disp(handles.overview_scroll_panel)
+                                           
+    if handles.export_plot
+        figure_handle = figure;
+        panel = uipanel('Parent',figure_handle);
+        set(handles.export_plot_button,'BackgroundColor',[0.9294    0.9294    0.9294]);
+    else
+        panel = handles.overview_axes_panel;
+    end
+    
     plot_REP(handles.data.Big_phi_M{state_index}(subset_index), IRR_REP, IRR_phi, IRR_MIP,...
-                                        subset, handles.overview_axes_panel)
+                                        subset, panel)
+	% reset export_panel flag
+    handles.export_plot = 0;
+    guidata(hObject,handles);
 
-    % end    
 
     set(handles.summary_panel,'Visible','on')
     set(handles.overview_axes_panel,'Visible','on')
@@ -555,34 +567,85 @@ dim_choice = dim_choices{get(handles.state_selection_menu,'Value')};
 % display chosen plot view
 if strcmp(plot_choice,'3D & 2D Scatter')
 
+    if handles.export_plot
+        figure_handle = figure;
+        panel = uipanel('Parent',figure_handle);
+        set(handles.export_plot_button,'BackgroundColor','white');
+    else
+        panel = handles.mip_plot_panel;
+    end
     
     set(handles.partition_panel_slider,'Visible','off')
     conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), handles.data.purviews_M{state_index}{subset_index},...
-            part_purviews, highlight_indices, handles.mip_plot_panel, '2D3D', dim_choice);
+            part_purviews, highlight_indices, panel, '2D3D', dim_choice);
+        
+	handles.export_plot = 0;
+    guidata(handles.iit_explorer,handles);
     
 elseif strcmp(plot_choice,'3D Scatter')
+    
+    
+    if handles.export_plot
+        figure_handle = figure;
+        panel = uipanel('Parent',figure_handle);
+        set(handles.export_plot_button,'BackgroundColor',[0.9294    0.9294    0.9294]);
+    else
+        panel = handles.mip_plot_panel;
+    end
 
     
     set(handles.partition_panel_slider,'Visible','off')
     conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), handles.data.purviews_M{state_index}{subset_index},...
-            part_purviews, highlight_indices, handles.mip_plot_panel, '3D',dim_choice);
+            part_purviews, highlight_indices, panel, '3D',dim_choice);
+        
+	handles.export_plot = 0;
+    guidata(handles.iit_explorer,handles);
     
+%     figure_handle = figure(999);
+%     my_panel = uipanel('Parent',figure_handle);
+%     set(handles.partition_panel_slider,'Visible','off')
+%     conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), handles.data.purviews_M{state_index}{subset_index},...
+%             part_purviews, highlight_indices, my_panel, '3D',dim_choice);    
+        
+        
 elseif strcmp(plot_choice,'2D Scatter')
 
     
+    if handles.export_plot
+        figure_handle = figure;
+        panel = uipanel('Parent',figure_handle);
+        set(handles.export_plot_button,'BackgroundColor',[0.9294    0.9294    0.9294]);
+    else
+        panel = handles.mip_plot_panel;
+    end
+    
     set(handles.partition_panel_slider,'Visible','off')
     conceptscatter3D2D(all_concepts,size(w_concept_dists_p,2), handles.data.purviews_M{state_index}{subset_index},...
-            part_purviews, highlight_indices, handles.mip_plot_panel, '2D',dim_choice);    
+            part_purviews, highlight_indices, panel, '2D',dim_choice);  
+        
+	handles.export_plot = 0;
+    guidata(handles.iit_explorer,handles);
     
 elseif strcmp(plot_choice,'Concept Bar Graphs')
+    
+    if handles.export_plot
+        figure_handle = figure;
+        panel = uipanel('Parent',figure_handle);
+        set(handles.export_plot_button,'BackgroundColor',[0.9294    0.9294    0.9294]);
+    else
+        panel = handles.mip_plot_panel;
+    end    
     
     set(handles.partition_panel_slider,'Visible','on')
         
     plot_partition_bar(all_concepts,size(w_concept_dists_p,2), w_phi_concepts, parts_phi_concepts,...
-        highlight_indices, handles.mip_plot_panel, handles.data.purviews_M{state_index}{subset_index},...
+        highlight_indices, panel, handles.data.purviews_M{state_index}{subset_index},...
             part_purviews, handles.data.Big_phi_MIP_all_M{state_index}{subset_index}(partition_index,1));
         
     set(handles.partition_panel_slider,'Value',1.0)
+    
+    handles.export_plot = 0;
+    guidata(handles.iit_explorer,handles);
 
 end
 
@@ -890,3 +953,21 @@ function state_selection_menu_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in export_plot_button.
+function export_plot_button_Callback(hObject, eventdata, handles)
+% hObject    handle to export_plot_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+if handles.export_plot
+    handles.export_plot = 0;
+    set(hObject,'BackgroundColor',[.9294 .9294 .9294])
+else
+    handles.export_plot = 1;
+    set(hObject,'BackgroundColor','red')
+end
+guidata(gcf,handles);
+
+
