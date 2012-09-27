@@ -1,12 +1,12 @@
-function iit_run(tpm, in_J, current_state, in_noise, in_options, in_nodes)
-% IIT_RUN Computes concept, small and big phi, and partition information
+function iit_run(tpm, in_connect_mat, current_state, in_noise, in_options, in_nodes)
+% IIT_RUN Computes concepts, small and big phi, and partition information
 % for all subsets of a system (exluding the empty set) over a binary network.
 %
-%   IIT_RUN(TPM, J, CURRENT_STATE, NOISE, OPTIONS) takes a TPM in
-%   state x node form, that is TPM(i,j) is the probability node_i = 1 at 
-%   time t+1 given that the system is in state j at time t. J is the
-%   connectivity matrix of the network such that J(i,j) = 1 when j has a
-%   directed edge to i, and J(i,j) = 0 otherwise. current_state is the
+%   IIT_RUN(TPM, connect_mat, CURRENT_STATE, NOISE, OPTIONS) takes a TPM in
+%   state X node form, that is TPM(i,j) is the probability node_i = 1 at 
+%   time t+1 given that the system is in state j at time t. connect_mat is the
+%   connectivity matrix of the network such that connect_mat(i,j) = 1 when j has a
+%   directed edge to i, and connect_mat(i,j) = 0 otherwise. current_state is the
 %   state of the system at time t (only used if the options are not set to
 %   compute over all states). NOISE is a global noise put on all
 %   outgoing messages and must take a value on the interval [0,.5]. OPTIONS
@@ -15,73 +15,65 @@ function iit_run(tpm, in_J, current_state, in_noise, in_options, in_nodes)
 %
 %   see also set_options
 
-% parallel computing
+%% parallel computing
+
+% if a pool is open, close it
 if matlabpool('size')
     matlabpool close force;
 end
 
+% if parallel option is on, open a new pool
 op_parallel = in_options(19);
 
 if op_parallel
     matlabpool;
 end
 
-% profile on
 
+%% begin timer and disp notification
 tic
 
 fprintf('\nRunning...\n\n')
 
+%% initialize data
+
 % get num_nodes, the number of nodes in the whole system
+% note that in_nodes is the number of nodes in the GRAPH = 2*num_nodes
 num_nodes = length(in_nodes)/2;
 
-% global inputs
- 
-% global 
-
-% global BRs_check FRs_check
-% global BRs_check2 FRs_check2
-
-% global func_time inline_time cpt_time tpm_time
-% func_time = 0;
-% inline_time = 0;
-% cpt_time = 0;
-% tpm_time = 0;
-
-network.J = in_J;
+network.connect_mat = in_connect_mat;
 network.options = in_options;
 network.nodes = in_nodes;
 network.num_nodes = num_nodes;
 network.tpm = tpm;
-% options(10) = 1;
+network.full_system = 1:num_nodes;
+network.num_subsets = 2^num_nodes;
+network.num_states = prod([network.nodes(network.full_system).num_states]);
 
 output_data.tpm = tpm;
-output_data.J = network.J;
+output_data.connect_mat = network.connect_mat;
 output_data.current_state = current_state;
 output_data.noise = in_noise;
 output_data.options = network.options;
 output_data.num_nodes = num_nodes;
 
-network.full_system = 1:num_nodes;
-network.num_subsets = 2^num_nodes;
-network.num_states = prod([network.nodes(network.full_system).num_states]);
-
 % binary table and states list
 % need to rethink use of b_table when allowing for more than binary nodes
 network.b_table = cell(network.num_subsets,network.num_nodes);
-network.states = zeros(network.num_nodes,network.num_states);
 for i = network.full_system
     for j = 1:2^i
         network.b_table{j,i} = trans2(j-1,i); % CONSIDER FLIPPING THIS LR
-%         if i == network.num_nodes
-%             network.states(:,j) = trans2(j-1,i);
-%         end
     end
 end
 
+network.states = zeros(network.num_nodes,network.num_states);
 for i = 0:network.num_states - 1
     network.states(:,i+1) = dec2multibase(i,[network.nodes(network.full_system).num_states]);
 end
+
+output_data.states = network.states;
+
+%% setup main function call
 
 % determine if we are computing over all states or just one
 op_ave = network.options(18);
@@ -94,14 +86,10 @@ end
 
 % we should deal with different arguments not being included
 % if nargin == 4 
-%     J = ones(num_nodes);
+%     connect_mat = ones(num_nodes);
 % elseif nargin == 5
-%     J = in_J;
+%     connect_mat = in_connect_mat;
 % end
-
-
-output_data.states = network.states;
-
 
 % find main complex (do system partitions)
 op_complex = network.options(15);
@@ -120,6 +108,8 @@ complex_MIP_all_M_st = cell(state_max,1);
 purviews_M_st = cell(state_max,1);
 
 
+%% main loop over states
+
 % for each state
 for z = 1:state_max
     
@@ -128,22 +118,14 @@ for z = 1:state_max
     % init backward rep and forward reps for each state
     network.BRs = cell(network.num_subsets); % backward repertoire
     network.FRs = cell(network.num_subsets); % forward repertoire
-    
-%     [BRs_check2 FRs_check2] = comp_pers(this_state,tpm,b_table,options);
-    
+        
     fprintf(['State: ' num2str(this_state') '\n'])
    
     % is it possible to reach this state
     check_prob = partial_prob_comp(network.full_system,network.full_system,this_state,tpm,network.b_table,1); % last argument is op_fb = 1;
-    state_check1 = sum(check_prob);
+    state_reachable = sum(check_prob);
     
-%     tic
-%     state_check2 = all(tpm(logical(this_state),:) > 0) & all(tpm(pick_rest(full_system,full_system(this_state)),:) < 1)
-%     toc
-    
-%     disp (state_check1 == state_check2)
-
-    if state_check1 == 0
+    if ~state_reachable
         
         fprintf('\tThis state cannot be realized...\n')
         
@@ -210,7 +192,8 @@ for z = 1:state_max
 
 end
 
-% load up output_data struct
+%% store output data
+
 output_data.Big_phi_M = Big_phi_M_st;
 output_data.Big_phi_MIP = Big_phi_MIP_st;
 % KILL THIS ONE BELOW
@@ -226,23 +209,12 @@ output_data.complex_MIP_all_M = complex_MIP_all_M_st;
 output_data.purviews_M = purviews_M_st;
 
 
-% if op_ave == 1
-%     if op_fb == 0
-%         Big_phi_ave = sum(Big_phi_st)/2^num_nodes;
-%     else
-%         Big_phi_ave = sum(p_x1 .* Big_phi_st); %weighted ave/expected value
-%     end
-% %     fprintf('Big_phi_ave=%f\n',Big_phi_ave);
-% end
+%% finish & cleanup: stop timer, save data, open explorer gui, close matlabpool
 toc
-
-
-% profile off
-% profile viewer
 
 fprintf('Loading GUI... \n');
 
-save('output_data_sample.mat','output_data');
+save('last_run_output.mat','output_data','-v7.3');
 
 iit_explorer(output_data)
 
@@ -251,16 +223,3 @@ if op_parallel
 end
 
 
-% disp('FUNCTION TIME:')
-% disp(func_time)
-% disp('INLINE TIME:')
-% disp(inline_time)
-% disp('CPT TIME:')
-% disp(cpt_time)
-% disp('TPM TIME:')
-% disp(tpm_time)
-
-
-
-
-% mpiprofile viewer

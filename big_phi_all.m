@@ -1,25 +1,10 @@
 function [Big_phi_M phi_M prob_M subsets MIP_M M_IRR_M] = big_phi_all(network,whole_sys_state)
 % [Big_phi_M phi_M prob_M subsets MIP_M] = big_phi_all(x0_s,p,b_table,options)
-% this is a test.
-%
-% this should show up.
-% See also: big_phi_comp
 
-% this should not show up
-
-% compute Big-phi in every possible subset
-% x0_s : given data about the current neural state
-% p: transition matrix in the whole system
-% op: the way how small phi is computed (0: difference of entropy, 1: KLD)
-% op_disp: (1: display the results, 0: not)
 
 op_console = network.options(10);
 
-
-% global b_table
-% global BRs, global FRs
-
-N = network.num_nodes; % number of elements in the whole system
+num_nodes = network.num_nodes; % number of elements in the whole system
 nodes_vec = network.full_system;
 
 % subset - build a cell array that contains all of the subsets
@@ -28,9 +13,9 @@ nodes_vec = network.full_system;
 % logicals - perhaps we should make one of these that is global as well
 subsets = cell(network.num_states-1,1); % subtract one since we don't consider the empty system
 
-for i = 1:network.num_states-1 % don't include empty set, this is why for-loop starts at 2
+for i = 1:network.num_states-1 % don't include empty set
     
-    subsets{i} = nodes_vec(logical(network.b_table{i+1,N}));
+    subsets{i} = nodes_vec(logical(network.b_table{i+1,num_nodes}));
     
 end
 

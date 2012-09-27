@@ -22,7 +22,7 @@ function varargout = iit_explorer(varargin)
 
 % Edit the above text to modify the response to help iit_explorer
 
-% Last Modified by GUIDE v2.5 28-Aug-2012 07:49:10
+% Last Modified by GUIDE v2.5 02-Sep-2012 11:04:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -969,5 +969,3 @@ else
     set(hObject,'BackgroundColor','red')
 end
 guidata(gcf,handles);
-
-

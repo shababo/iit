@@ -1,14 +1,4 @@
 function [Big_phi phi_all_values prob_cell MIP M_IRR network] = big_phi_comp_fb(subsystem,whole_sys_state,network)
-
-%%  compute big phi for a subset, subsystem
-% subsystem: a subset of the whole system (can be the whole system itself)
-% whole_sys_state: given data about the current state
-% p: transition probability matrix in the whole system (p(x1|numerator))
-
-% THE FINAL TWO ARGS ARE OPTIONS, IF THEY ARE THERE THEN WE ARE DOING
-% CONSERVATIVE, OTHERWISE PROGRESSIVE...
-
-% global BRs, global FRs
     
 num_nodes_subsys = length(subsystem);
 num_states_subsys = prod([network.nodes(subsystem).num_states]);
@@ -49,12 +39,12 @@ M_IRR = cell(0,0);
 
 %% computing small phis
 EmptyCon = zeros(num_states_subsys-1,1);
-for ci=1: num_states_subsys-1  % loop over purview subsets_subsys
+for ci = 1:num_states_subsys-1  % loop over purview subsets_subsys
     numerator = subsets_subsys{ci}; % given data of numerator
     %Larissa smart purviews
     %if any element inside the numerator does not have inputs or outputs,
     %no need to calculate purview
-    Nconnect = [sum(network.J(numerator,:),2) sum(network.J(:,numerator))'];
+    Nconnect = [sum(network.connect_mat(numerator,:),2) sum(network.connect_mat(:,numerator))'];
     EmptyCon(ci) = numel(Nconnect)-nnz(Nconnect);
     %EmptyCon(ci) =0; % Old version
     if EmptyCon(ci) == 0
@@ -113,7 +103,7 @@ end
     
 
 
-% PRETTY SURE THIS CAN JUST BE DONE WITH A SUM() CALL
+% PRETTY SURE THIS CAN connect_matUST BE DONE WITH A SUM() CALL
 for i_C=1: num_states_subsys-1
     C = subsets_subsys{i_C};
     i = length(C);
@@ -298,31 +288,5 @@ for i_C=1: num_states_subsys-1
     end
 end
 
-% prob_cell2 = cell(num_states_subsys-1,2);
-% for i=1: num_states_subsys-1
-%     prob_cell2{i,1} = prob{i};
-%     prob_cell2{i,2} = prob_prod{i};
-% end
-
-
-% if disp_flag == 1
-%     if op_console
-%         if size(p,2) == num_nodes_subsys
-%             fprintf('\n')
-%             fprintf('------------------------------------------------------------------------\n')
-%             fprintf('Whole system\n')
-%             fprintf('Core concepts: MIP: Small phi\n')
-%         end
-%     end
-% %     plot_REP(prob_cell2,phi,MIP,100, subsystem, op_context, op_min);
-% end
-% 
-% if op_console
-%     for i=1: num_nodes_subsys
-%         fprintf('%d: phi_cum=%f phi_sum=%f phi_mean=%f\n',i,phi_m(i,3),phi_m(i,1),phi_m(i,2));
-%     end
-% 
-%     fprintf('Big phi=%f\n',Big_phi);
-% end
 
 end

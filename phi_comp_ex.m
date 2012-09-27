@@ -24,8 +24,8 @@ MIP_cand = cell(num_states_subsys-1,1);
 for i=1: num_states_subsys-1
     %Larissa smart purviews: Only test those connections that actually exist
     denom = subsets_subsys{i};
-    if nnz(sum(network.J(numerator,denom),1) == 0) > 0 % some denom is not input of numerator (numerator) --> no phiBR
-        if nnz(sum(network.J(denom,numerator),2) == 0) == 0 % but denom is output
+    if nnz(sum(network.connect_mat(numerator,denom),1) == 0) > 0 % some denom is not input of numerator (numerator) --> no phiBR
+        if nnz(sum(network.connect_mat(denom,numerator),2) == 0) == 0 % but denom is output
             [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i} network] ...
                 = phi_comp_bORf(numerator,denom,whole_sys_state,network,2);
         else
@@ -35,7 +35,7 @@ for i=1: num_states_subsys-1
             MIP_cand{i} = cell(2,2,2);
         end
     else
-        if nnz(sum(network.J(denom,numerator),2) == 0) > 0 % denom is not output, but denom is input
+        if nnz(sum(network.connect_mat(denom,numerator),2) == 0) > 0 % denom is not output, but denom is input
             [phi_MIP(i,:) prob_cand{i} prob_prod_MIP_cand{i} MIP_cand{i} network] ...
                 = phi_comp_bORf(numerator,denom,whole_sys_state,network,1); 
         else % denom is both
