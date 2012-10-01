@@ -1,4 +1,4 @@
-function [Big_phi_M phi_M prob_M subsets MIP_M M_IRR_M] = big_phi_all(network,whole_sys_state)
+function [Big_phi_M phi_M concepts subsets MIP_M M_IRR_M] = big_phi_all(network,whole_sys_state)
 % [Big_phi_M phi_M prob_M subsets MIP_M] = big_phi_all(x0_s,p,b_table,options)
 
 
@@ -22,14 +22,19 @@ end
 
 
 % compute big phi in every possible subset
-Big_phi_M = zeros(network.num_states-1,1); % Big_phi for each subset except the empty set
-phi_M = cell(network.num_states-1,1);
-prob_M = cell(network.num_states-1,2); 
-MIP_M = cell(network.num_states-1,1); % the partition that gives Big_phi_MIP for each subset
-M_IRR_M = cell(network.num_states-1,1);
+Big_phi_M = zeros(network.num_subsets-1,1); % Big_phi for each subset except the empty set
+phi_M = cell(network.num_subsets-1,1);
+prob_M = cell(network.num_subsets-1,2); 
+MIP_M = cell(network.num_subsets-1,1); % the partition that gives Big_phi_MIP for each subset
+M_IRR_M = cell(network.num_subsets-1,1);
+
+%init struct array
+concepts(network.num_subsets-1).whole = 0;
+% concepts = cell(network.num_subsets - 1,1);
 
 
-parfor sub_index = 1:network.num_states-1 % for all non empty subsets of the system\
+
+parfor sub_index = 1:network.num_subsets-1 % for all non empty subsets of the system\
     
     this_subset = subsets{sub_index}; % get the subset
     if op_console
@@ -37,7 +42,8 @@ parfor sub_index = 1:network.num_states-1 % for all non empty subsets of the sys
         fprintf('System = %s\n\n',mod_mat2str(this_subset));
     end
     
-    [Big_phi phi prob_cell MIP M_IRR] = big_phi_comp_fb(this_subset,whole_sys_state,network); 
+    
+    [Big_phi phi purview_struct MIP M_IRR] = big_phi_comp_fb(this_subset,whole_sys_state,network); 
 
     MIP_M{sub_index} = MIP;
 
@@ -45,8 +51,9 @@ parfor sub_index = 1:network.num_states-1 % for all non empty subsets of the sys
     phi_M{sub_index} = phi; % Set of small_phis for each purview of each subset
     M_IRR_M{sub_index} = M_IRR; % numerators of purviews with non-zero/positive phi
     
+    concepts(sub_index).purview = purview_struct;
     % concept distributions
-    prob_M(sub_index,:) = prob_cell(:); % first layer is subset, second is purview, third is backward/forward
+%     prob_M(sub_index,:) = prob_cell(:); % first layer is subset, second is purview, third is backward/forward
 %     prob_M{sub_index,2} = prob_cell{2}; % same as above but for MIP
     
 end

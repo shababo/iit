@@ -48,21 +48,20 @@ network.num_nodes = num_nodes;
 network.tpm = tpm;
 network.full_system = 1:num_nodes;
 network.num_subsets = 2^num_nodes;
+network.current_state = current_state;
 network.num_states = prod([network.nodes(network.full_system).num_states]);
 
-output_data.tpm = tpm;
-output_data.connect_mat = network.connect_mat;
-output_data.current_state = current_state;
-output_data.noise = in_noise;
-output_data.options = network.options;
-output_data.num_nodes = num_nodes;
+% output_data.tpm = tpm;
+% output_data.current_state = current_state;
+network.noise = in_noise;
+% output_data.num_nodes = num_nodes;
 
 % binary table and states list
 % need to rethink use of b_table when allowing for more than binary nodes
 network.b_table = cell(network.num_subsets,network.num_nodes);
 for i = network.full_system
     for j = 1:2^i
-        network.b_table{j,i} = trans2(j-1,i); % CONSIDER FLIPPING THIS LR
+        network.b_table{j,i} = trans2(j-1,i);
     end
 end
 
@@ -71,17 +70,16 @@ for i = 0:network.num_states - 1
     network.states(:,i+1) = dec2multibase(i,[network.nodes(network.full_system).num_states]);
 end
 
-output_data.states = network.states;
 
 %% setup main function call
 
-% determine if we are computing over all states or just one
-op_ave = network.options(18);
-if op_ave == 0
+% determine if we are averaging over all states or just one
+op_average = network.options(18);
+if op_average == 0
     state_max = 1;
-    network.states(:,1) = current_state;
+%     network.states(:,1) = current_state;
 else
-    state_max = network.num_subsets;
+    state_max = network.num_states;
 end
 
 % we should deal with different arguments not being included
@@ -95,8 +93,8 @@ end
 op_complex = network.options(15);
 
 % init cell arrays for results
-Big_phi_M_st = cell(state_max,1);
-Big_phi_MIP_st = cell(state_max,1);
+output_data.results(state_max).Big_phi = zeros(network.num_subsets,1); % scalar value per subset per state
+output_data.results(state_max).Big_phi_MIP = zeros(network.num_subsets,1); % scalar value per subset per state 
 MIP_st = cell(state_max,1);
 Complex_st = cell(state_max,1);
 prob_M_st = cell(state_max,1);
@@ -108,12 +106,19 @@ complex_MIP_all_M_st = cell(state_max,1);
 purviews_M_st = cell(state_max,1);
 
 
+
+
 %% main loop over states
 
 % for each state
 for z = 1:state_max
     
-    this_state = network.states(:,z);
+    
+    if op_average
+        this_state = network.states(:,z);
+    else
+        this_state = current_state;
+    end
     
     % init backward rep and forward reps for each state
     network.BRs = cell(network.num_subsets); % backward repertoire
@@ -154,31 +159,32 @@ for z = 1:state_max
             
             % TODO: WE NEED TO HANDLE MIP IN THIS CASE EVEN WE DON'T FIND
             % THE COMPLEX
+
+        % find the complex
+        elseif op_complex == 1
             
-        % find the complex    
-        elseif op_complex == 1 
             
-            
-%             [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M...
-%                 concept_MIP_M complex_MIP_M M_cell Big_phi_MIP_all_M complex_MIP_M_all purviews_M] ...
-%                 = big_phi_complex(this_state,tpm);
-%             
-%             
-%             [MIP Complex Big_phi_M Big_phi_MIP_M prob_M phi_M concept_MIP_M complex_MIP_M M_cell Big_phi_MIP_all_M complex_MIP_M_all M_IRR_M]
-%             big_phi_all(this_state,tpm,options)
-            [Big_phi_M phi_M prob_M M_cell concept_MIP_M purviews_M] = big_phi_all(network, this_state);
+            [Phi phi_M prob_M M_cell concept_MIP_M purviews_M] = big_phi_all(network, this_state);
                                                                 
             % complex search
-            [Big_phi_MIP MIP Complex M_i_max  Big_phi_MIP_M complex_MIP_M Big_phi_MIP_all_M complex_MIP_M_all] = ...
+            [Big_phi_MIP MIP complex_set M_i_max  Phi_MIP complex_MIP_M Big_phi_MIP_all_M complex_MIP_M_all] = ...
                 complex_search(Big_phi_M,M_cell, purviews_M, network.num_nodes,prob_M,phi_M,network.options);
             
+%             Big_phi_M_st{z}.Phi = Big_phi_M;
+            output_data.results(z).Phi = Phi; 
             
-
-            Big_phi_M_st{z} = Big_phi_M;
-            Big_phi_MIP_st{z} = Big_phi_MIP_M;
-            MIP_st{z} = MIP;
-            Complex_st{z} = Complex;
+%             Big_phi_MIP_st{z} = Phi_MIP;
+            output_data.results(z).Phi_MIP = Phi_MIP;
+            
+            % it looks like MIP is never  used
+%             MIP_st{z} = MIP;
+            
+%             Complex_st{z} = complex_set;
+            output_data.results(z).complex_set = complex_set;
+            
             prob_M_st{z} = prob_M;
+            output_data.results(z).concepts
+            
             phi_M_st{z} = phi_M;
             concept_MIP_M_st{z} = concept_MIP_M;
             complex_MIP_M_st{z} = complex_MIP_M;
@@ -193,6 +199,10 @@ for z = 1:state_max
 end
 
 %% store output data
+
+output_data.network = network;
+
+
 
 output_data.Big_phi_M = Big_phi_M_st;
 output_data.Big_phi_MIP = Big_phi_MIP_st;

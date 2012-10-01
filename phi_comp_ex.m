@@ -53,7 +53,14 @@ prob_prod_MIP = cell(2,1);
 for bf = 1:2
     [max_phi_MIP_bf(bf) j_max] = max_ex(phi_MIP(:,bf),subsets_subsys);
     MIP(:,:,bf) = MIP_cand{j_max}(:,:,bf);
-    prob{bf} = prob_cand{j_max}{bf};
+    if bf == 1
+        prob.backwards.whole = prob_cand{j_max}{bf};
+        prob.backwards.partition = prob_prod_MIP_cand{j_max}{bf};
+    else
+        prob.forwards.whole = prob_cand{j_max}{bf};
+        prob.forwards.partition = prob_prod_MIP_cand{j_max}{bf};
+    end
+%     prob{bf} = prob_cand{j_max}{bf};
     prob_prod_MIP{bf} = prob_prod_MIP_cand{j_max}{bf};
     if bf == 1
         xp = subsets_subsys{j_max};
