@@ -14,13 +14,23 @@ if op_console
 end
     
 parfor M_i = 1: 2^N-1
+
     M = M_cell{M_i};
+    
     if length(M) > 1
         
         [Big_phi_MIP_M(M_i) MIP_M{M_i} Big_phi_MIP_all_M{M_i} MIP_all_M{M_i}] = ...
                                     MIP_search(M,N,Big_phi_M, M_IRR_M, prob_M, phi_M,options);
+                                
+    else
+        
+        Big_phi_MIP_M(M_i) = Big_phi_M(M_i);
+        MIP_M{M_i} = M;
+        Big_phi_MIP_all_M{M_i} = Big_phi_M(M_i);
+        MIP_all_M{M_i} = M;
         
     end
+    
 end
 
 [Big_phi_MIP M_i_max] = max_complex(Big_phi_MIP_M,M_cell);

@@ -502,8 +502,8 @@ for i = 1:num_nodes
 %     input_nodes = nodes(input_nodes_indices);
 %     nodes(num_nodes + i).cpt = cpt_factory_mechs(nodes(num_nodes + i),input_nodes,2*num_nodes,noise);
 %     disp(nodes(num_nodes + i).cpt)
-%     test_cpt = cpt_factor_tpm(nodes(num_nodes + i), input_nodes_indices, nodes, 2*num_nodes, tpm);
-    nodes(num_nodes + i).cpt = cpt_factor_tpm(nodes(num_nodes + i), input_nodes_indices, nodes, 2*num_nodes, tpm);
+%     test_cpt = cpt_factory_tpm(nodes(num_nodes + i), input_nodes_indices, nodes, 2*num_nodes, tpm);
+    nodes(num_nodes + i).cpt = cpt_factory_tpm(nodes(num_nodes + i), input_nodes_indices, nodes, 2*num_nodes, tpm);
     
 %     if any(nodes(num_nodes + i).cpt ~= test_cpt)
 %         disp('error')
@@ -759,7 +759,7 @@ if (filename ~= 0)
     
     tpm_def = 1;
     set(handles.net_definition_method,'Value',tpm_def);
-    net_definition_method_Callback(handles.net_definition, eventdata, handles);
+    net_definition_method_Callback(handles.net_definitioactn_method, eventdata, handles);
     set(handles.num_nodes,'String',num_nodes)
     num_nodes_Callback(handles.num_nodes,eventdata,handles)
     

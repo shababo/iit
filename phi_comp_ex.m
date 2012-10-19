@@ -48,7 +48,7 @@ end
 % exlusion principle
 max_phi_MIP_bf = zeros(2,1); % backward and forward phi
 MIP = cell(2,2,2);
-prob = cell(2,1);
+% prob = cell(2,1);
 prob_prod_MIP = cell(2,1);
 for bf = 1:2
     [max_phi_MIP_bf(bf) j_max] = max_ex(phi_MIP(:,bf),subsets_subsys);
@@ -61,20 +61,22 @@ for bf = 1:2
         prob.forwards.partition = prob_prod_MIP_cand{j_max}{bf};
     end
 %     prob{bf} = prob_cand{j_max}{bf};
-    prob_prod_MIP{bf} = prob_prod_MIP_cand{j_max}{bf};
+%     prob_prod_MIP{bf} = prob_prod_MIP_cand{j_max}{bf};
     if bf == 1
         xp = subsets_subsys{j_max};
     else
         xf = subsets_subsys{j_max};
     end
 end
-phi = [0 max_phi_MIP_bf']; % phi = [overall backwards forwards]
+% phi = [0 max_phi_MIP_bf']; % phi = [overall backwards forwards]
+phi.backwards = max_phi_MIP_bf(1);
+phi.forwards = max_phi_MIP_bf(2);
 
 if (op_big_phi == 1 || op_big_phi == 2)
-   phi(1) = max_phi_MIP_bf(1);
+   phi.min = max_phi_MIP_bf(1);
 
 else
-   phi(1) = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
+   phi.min = min(max_phi_MIP_bf(1),max_phi_MIP_bf(2));
 end
 
 %     phi(find(phi < 10e-4)) = 0;
@@ -89,9 +91,16 @@ if op_context == 0
             denom = xf;
         end
         if length(denom) ~= num_nodes_subsys
-            prob{i} = expand_prob(prob{i},subsystem,denom);
-            prob_prod_MIP{i} = expand_prob(prob_prod_MIP{i},subsystem,denom);
+            if i == 1
+                prob.backwards.whole = expand_prob(prob.backwards.whole,subsystem,denom);
+                prob.backwards.partition = expand_prob(prob.backwards.partition,subsystem,denom);
+            else
+                prob.forwards.whole = expand_prob(prob.forwards.whole,subsystem,denom);
+                prob.forwards.partition = expand_prob(prob.forwards.partition,subsystem,denom);
+            end
         end
+        
+            
     end
 end
 

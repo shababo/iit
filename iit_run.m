@@ -164,11 +164,11 @@ for z = 1:state_max
         elseif op_complex == 1
             
             
-            [Phi phi_M prob_M M_cell concept_MIP_M purviews_M] = big_phi_all(network, this_state);
+            [Phi phi_M concepts M_cell concept_MIP_M purviews_M] = big_phi_all(network, this_state);
                                                                 
             % complex search
             [Big_phi_MIP MIP complex_set M_i_max  Phi_MIP complex_MIP_M Big_phi_MIP_all_M complex_MIP_M_all] = ...
-                complex_search(Big_phi_M,M_cell, purviews_M, network.num_nodes,prob_M,phi_M,network.options);
+                complex_search(Phi,M_cell, purviews_M, network.num_nodes,concepts,phi_M,network.options);
             
 %             Big_phi_M_st{z}.Phi = Big_phi_M;
             output_data.results(z).Phi = Phi; 
@@ -182,10 +182,12 @@ for z = 1:state_max
 %             Complex_st{z} = complex_set;
             output_data.results(z).complex_set = complex_set;
             
-            prob_M_st{z} = prob_M;
-            output_data.results(z).concepts
+%             prob_M_st{z} = prob_M;
+            output_data.results(z).concepts = concepts;
             
             phi_M_st{z} = phi_M;
+            
+            
             concept_MIP_M_st{z} = concept_MIP_M;
             complex_MIP_M_st{z} = complex_MIP_M;
             Big_phi_MIP_all_M_st{z} = Big_phi_MIP_all_M;

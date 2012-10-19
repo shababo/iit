@@ -1,4 +1,4 @@
-function cpt = cpt_factor_tpm(this_node, inputs, nodes, num_total_nodes, tpm)
+function cpt = cpt_factory_tpm(this_node, inputs, nodes, num_total_nodes, tpm)
 
 % THIS FUNCTION CURRENTLY ONLY WORKS FOR BINARY NODES!
 

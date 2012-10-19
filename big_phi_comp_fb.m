@@ -1,4 +1,4 @@
-function [Big_phi phi_all_values concepts MIP M_IRR network] = big_phi_comp_fb(subsystem,whole_sys_state,network)
+function [Big_phi phi_all_values concepts_array MIP M_IRR network] = big_phi_comp_fb(subsystem,whole_sys_state,network)
     
 num_nodes_subsys = length(subsystem);
 num_states_subsys = prod([network.nodes(subsystem).num_states]);
@@ -16,8 +16,8 @@ op_big_phi = network.options(11);
 % set)
 subsets_subsys = cell(num_states_subsys - 1, 1);
 
-% initialize struct array for concepts
-concepts(num_states_subsys - 1).denom = 'initializer';
+% % initialize struct array for concepts
+% concepts(num_states_subsys - 1).denom = 'initializer';
 
 % we can do this better for sure - TODO
 k = 1;
@@ -33,11 +33,16 @@ for subset_size = 1:num_nodes_subsys % can this be done in one for-loop over k =
 end
 
 MIP = cell(num_states_subsys-1,1); % MIP in the past, the present, and the future <--?
-phi_all_values = zeros(num_states_subsys-1,3); % small phis (for each purview) overall, backward, and forward
+% phi_all_values = zeros(num_states_subsys-1,3); % small phis (for each purview) overall, backward, and forward
+phi_all_values(num_states_subsys-1).backwards = 0;
+phi_all_values(num_states_subsys-1).forwards = 0;
+phi_all_values(num_states_subsys-1).min = 0;
 
 prob = cell(num_states_subsys-1,1); % transition repertoire
 prob_prod = cell(num_states_subsys-1,1); % partitioned transition repertoire
-concepts(num_states_subsys-1).whole = 'initializer';
+concepts_array(num_states_subsys-1).backwards = 'initializer';
+concepts_array(num_states_subsys-1).forwards = 'initializer';
+
 
 M_IRR = cell(0,0);
 
@@ -55,11 +60,13 @@ for ci = 1:num_states_subsys-1  % loop over purview subsets_subsys
 %         if op_console
 %             fprintf('C=%s\n',mod_mat2str(numerator));
 %         end
-        [phi_all_values(ci,:) concepts(ci) prob_prod{ci} MIP{ci} network] ...
+        [phi_all_values(ci) concepts_array(ci) prob_prod{ci} MIP{ci} network] ...
             =  phi_comp_ex(subsystem,numerator,whole_sys_state,subsets_subsys,network);
 
     else
-        phi_all_values(ci,:) = [0 0 0];
+        phi_all_values(ci).min = 0;
+        phi_all_values(ci).backwards = 0;
+        phi_all_values(ci).forwards = 0;
         uniform_dist = ones(1,num_states_subsys)/num_states_subsys;
         prob{ci} = uniform_dist; 
         prob_prod{ci} = uniform_dist; 
@@ -67,15 +74,15 @@ for ci = 1:num_states_subsys-1  % loop over purview subsets_subsys
     end    
 end
 
-concepts(ci).whole = prob;
-concepts(ci).partition = prob_prod;
+% concepts(ci).whole = prob;
+% concepts(ci).partition = prob_prod;
 
 prob_cell = cell(2,1);
 prob_cell{1} = prob;
 prob_cell{2} = prob_prod;
 
 
-phi = phi_all_values(:,1);
+phi = phi_all_values.min;
 phi_m = zeros(num_nodes_subsys,3); % cumulative sum
 
 index_vec_IRR = find(phi ~= 0);
@@ -92,7 +99,7 @@ if(N_IRR~=0)
 
         if (phi(i) ~= 0)
 
-            concepts(:,j) = prob{i}{1};
+            concepts(:,j) = concepts_array(i).backwards.whole;
             concept_phis(j) = phi(i);
             j = j + 1;
         end
@@ -178,7 +185,7 @@ elseif (op_big_phi == 2 || op_big_phi == 4 || op_big_phi == 5)
 
             if (phi(i) ~= 0)
 
-                concepts(:,j) = prob{i}{1};
+                concepts(:,j) = concepts_array(i).backwards.whole;
                 concept_phis(j) = phi(i);
                 j = j + 1;
             end
@@ -222,8 +229,8 @@ elseif (op_big_phi == 3)
 
             if (phi(i) ~= 0)
 
-                concepts_past(:,j) = prob{i}{1};
-                concepts_future(:,j) = prob{i}{2};
+                concepts_past(:,j) = concepts_array(i).backwards.whole;
+                concepts_future(:,j) = concepts_array(i).forwards.whole;
                 concept_phis(j) = phi(i);
                 j = j + 1;
 
@@ -275,13 +282,13 @@ for i_C=1: num_states_subsys-1
                 [string_p string] = make_title_fb(MIP{i_C},op_context,op_min);
                 fprintf('C = %s: Core Concept: %s\n',mod_mat2str(C),string{3});
                 fprintf('MIP = %s\n', string_p{3});
-                fprintf('\tPast: phi_b = %f\n',phi_all_values(i_C,2));
+                fprintf('\tPast: phi_b = %f\n',phi_all_values(i_C).backwards);
 %                 fprintf('Partition: %s\n',string_p{3});
 %                 fprintf('Distribution (full):\n');
 %                 disp(prob{i_C}{1}');
 %                 fprintf('Distribution (partitioned):\n');
 %                 disp(prob_prod{i_C}{1}');
-                fprintf('\tFuture: phi_f = %f\n',phi_all_values(i_C,3));
+                fprintf('\tFuture: phi_f = %f\n',phi_all_values(i_C).forwards);
 %                 fprintf('Distribution (full):\n');
 %                 disp(prob{i_C}{2}');
 %                 fprintf('Distribution (partitioned):\n');

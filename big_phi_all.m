@@ -1,5 +1,5 @@
-function [Big_phi_M phi_M concepts subsets MIP_M M_IRR_M] = big_phi_all(network,whole_sys_state)
-% [Big_phi_M phi_M prob_M subsets MIP_M] = big_phi_all(x0_s,p,b_table,options)
+function [Big_phi_M phi_values concepts subsets MIP_M M_IRR_M] = big_phi_all(network,whole_sys_state)
+% [Big_phi_M phi_values prob_M subsets MIP_M] = big_phi_all(x0_s,p,b_table,options)
 
 
 op_console = network.options(10);
@@ -23,13 +23,14 @@ end
 
 % compute big phi in every possible subset
 Big_phi_M = zeros(network.num_subsets-1,1); % Big_phi for each subset except the empty set
-phi_M = cell(network.num_subsets-1,1);
+% phi_values = cell(network.num_subsets-1,1);
 prob_M = cell(network.num_subsets-1,2); 
 MIP_M = cell(network.num_subsets-1,1); % the partition that gives Big_phi_MIP for each subset
 M_IRR_M = cell(network.num_subsets-1,1);
 
-%init struct array
+%init struct arrays
 concepts(network.num_subsets-1).whole = 0;
+phi_values(network.num_subsets-1).phi = 0;
 % concepts = cell(network.num_subsets - 1,1);
 
 
@@ -48,7 +49,7 @@ parfor sub_index = 1:network.num_subsets-1 % for all non empty subsets of the sy
     MIP_M{sub_index} = MIP;
 
     Big_phi_M(sub_index) = Big_phi; % Big_phi for each subset
-    phi_M{sub_index} = phi; % Set of small_phis for each purview of each subset
+    phi_values(sub_index).phi = phi; % Set of small_phis for each purview of each subset
     M_IRR_M{sub_index} = M_IRR; % numerators of purviews with non-zero/positive phi
     
     concepts(sub_index).purview = purview_struct;
