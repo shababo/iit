@@ -91,7 +91,7 @@ end
 %     Big_phi = sum(phi);
 sy = ['Big Phi=',num2str(Big_phi)];
     
-    
+  assignin('base','MIP_Cell',MIP_cell);  
 for i = 1:N
         
 
@@ -105,6 +105,7 @@ for i = 1:N
         FR_p = prob_prod{2};
         phi_b = phi(i,2);
         phi_f = phi(i,3);
+        
         [string_p string] = make_title_fb(MIP_cell{i},0,1);
         
         s_title = cell(2,1);
