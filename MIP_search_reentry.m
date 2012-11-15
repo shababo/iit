@@ -1,4 +1,4 @@
-function [Big_phi_MIP MIP Big_phi_cand MIP_cand] = MIP_search(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,options)
+function [Big_phi_MIP MIP Big_phi_cand MIP_cand] = MIP_search_reentry(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,options)
 
 %%
 % Find the Big-phi MIP in a subset M
@@ -36,38 +36,41 @@ MIP_cand = cell(N_Bp,1);
 whole_i = trans_M(M,N);
 Big_phi_w = Big_phi_M(whole_i);
 
-if (any(op_big_phi == [4 5]))
+if (any(op_big_phi == [0 4 5])) %Larissa: For 0 I need to know the concepts it has, but actually not the distributions...
     
     phi_whole = phi_M{whole_i}(:,1)';
+    concept_numind = find(phi_whole ~= 0);
     phi_w_concepts = phi_whole(phi_whole ~= 0);
     IRR_whole = M_IRR_M{whole_i};
-    concepts_whole_p = zeros(2^N_M,length(phi_w_concepts));
-    concepts_whole_f = zeros(2^N_M,length(phi_w_concepts));
-    
-    z = 1;
-    for i = 1:length(phi_whole)
-        if (phi_whole(i) ~= 0)
-            
-            if ~isempty(prob_M{whole_i,1}{i}{1})
-                concepts_whole_p(:,z) = prob_M{whole_i,1}{i}{1};
+    if any(op_big_phi == [4 5])
+        concepts_whole_p = zeros(2^N_M,length(phi_w_concepts));
+        concepts_whole_f = zeros(2^N_M,length(phi_w_concepts));
+
+        z = 1;
+        for i = 1:length(phi_whole)  %Larissa: Why not length(phi_w_concepts)?
+            if (phi_whole(i) ~= 0)
+
+                if ~isempty(prob_M{whole_i,1}{i}{1})
+                    concepts_whole_p(:,z) = prob_M{whole_i,1}{i}{1};
+                end
+                if ~isempty(prob_M{whole_i,1}{i}{2})
+                    concepts_whole_f(:,z) = prob_M{whole_i,1}{i}{2};
+                end
+                z = z + 1;
             end
-            if ~isempty(prob_M{whole_i,1}{i}{2})
-                concepts_whole_f(:,z) = prob_M{whole_i,1}{i}{2};
-            end
-            z = z + 1;
+        end  
+
+        whole_concepts_cell_p = cell(length(phi_w_concepts),2);
+        whole_concepts_cell_f = cell(length(phi_w_concepts),2);
+
+        for i = 1:length(phi_w_concepts)
+
+           whole_concepts_cell_p{i,1} = concepts_whole_p(:,i);  %Larissa: do I need these?
+           whole_concepts_cell_f{i,1} = concepts_whole_f(:,i); 
+           whole_concepts_cell_p{i,2} = phi_w_concepts(i);
+           whole_concepts_cell_f{i,2} = phi_w_concepts(i);
+
         end
-    end  
-    
-    whole_concepts_cell_p = cell(length(phi_w_concepts),2);
-    whole_concepts_cell_f = cell(length(phi_w_concepts),2);
-    
-    for i = 1:length(phi_w_concepts)
-        
-       whole_concepts_cell_p{i,1} = concepts_whole_p(:,i);
-       whole_concepts_cell_f{i,1} = concepts_whole_f(:,i); 
-       whole_concepts_cell_p{i,2} = phi_w_concepts(i);
-       whole_concepts_cell_f{i,2} = phi_w_concepts(i);
-       
     end
 %     
 %     phi_whole = phi_w_concepts;
@@ -93,8 +96,62 @@ for i=1: floor(N_M/2)
         
         if(op_sum == 1 || op_big_phi == 0)
             
-            Big_phi_partition = Big_phi_M(M1_i) + Big_phi_M(M2_i);
-                      
+            %Big_phi_partition = Big_phi_M(M1_i) + Big_phi_M(M2_i);
+            PhiCutSum = [0; 0];  %Larissa: cutting first M1 <- M2 (causes on M1, effects from M2) and then M1 -> M2 (causes on M2, effects from M1)
+            for k = 1:length(phi_w_concepts)
+                IRR_w = IRR_whole{k};
+                if all(ismember(IRR_w,M1)) 
+                    % for M1 <- M2 take BR of M1 and FR from M
+                    
+                    %Larissa: As long as the denominators are still not
+                    %ordered according to trans_M...
+                    % Now definitely NOT NICE!
+                    indm = 0;
+                    m = 1;
+                    mfound = 0;
+                    for subset_size = 1:length(M1)
+                        M1_purviews = nchoosek(M1,subset_size);
+                        N_M1_pur = size(M1_purviews,1);
+                        for q = 1:N_M1_pur % for all combos of size i
+                            if numel(M1_purviews(q,:)) == numel(IRR_w) && all(M1_purviews(q,:) == IRR_w)
+                               indm = m; 
+                               break;
+                            end   
+                            m = m + 1;
+                        end
+                        if mfound, break, end;
+                    end
+                                        
+                    phi_BRcut = min(phi_M{M1_i}(indm,2), phi_M{whole_i}(concept_numind(k),3));
+                    phi_FRcut = min(phi_M{whole_i}(concept_numind(k),2), phi_M{M1_i}(indm,3));
+                elseif all(ismember(IRR_w,M2))
+                    
+                    indm = 0;
+                    m = 1;
+                    mfound = 0;
+                    for subset_size = 1:length(M2)
+                        M2_purviews = nchoosek(M2,subset_size);
+                        N_M2_pur = size(M2_purviews,1);
+                        for q = 1:N_M2_pur % for all combos of size i
+                            if numel(M2_purviews(q,:)) == numel(IRR_w) && all(M2_purviews(q,:) == IRR_w)
+                               indm = m; 
+                               mfound = 1;
+                               break;
+                            end   
+                            m = m + 1;
+                        end
+                        if mfound, break, end;
+                    end
+                    
+                    phi_BRcut = min(phi_M{whole_i}(concept_numind(k),2), phi_M{M2_i}(indm,3));
+                    phi_FRcut = min(phi_M{M2_i}(indm,2), phi_M{whole_i}(concept_numind(k),3));
+                else % if numerator has elements from both sides, concept got destroyed by cut!
+                    phi_BRcut = 0;
+                    phi_FRcut = 0;
+                end % if 
+                PhiCutSum = PhiCutSum + [phi_BRcut; phi_FRcut];
+             end %for k 
+             Big_phi_partition = max(PhiCutSum);       % max here means the minimum of the difference between whole and partitioned system   
         elseif(op_big_phi == 1)
             
             phi = [phi_M{M1_i}(:,1)' phi_M{M2_i}(:,1)'];
@@ -373,7 +430,7 @@ for i=1: floor(N_M/2)
         
             
 %         
-%        Norm = min(length(M1),length(M2)) + min(length(M1),length(M2));
+        % Norm = min(length(M1),length(M2)) + min(length(M1),length(M2));
         % Norm = 1; % No normalization
         Norm = 2^min(length(M1),length(M2))-1;
         Big_phi_cand(l,1) = d_Big_phi;

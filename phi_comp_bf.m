@@ -454,12 +454,14 @@ phi_norm_min = Inf; % minimum of normalized phi
 phi_min = Inf; % minimum of phi
 i_min = 1;
 j_min = 1;
+epsilon = 10^-10;
 
 if (op_normalize == 1 || op_normalize == 2)
     for i=1: size(phi,1)
         for j=1: size(phi,2)
 %             if phi_norm(i,j) <= phi_norm_min && phi(i,j) <= phi_min
-            if phi_norm(i,j) <= phi_norm_min
+            dif = phi_norm_min - phi_norm(i,j); 
+            if dif > epsilon || abs(dif) < epsilon  %Larissa: instead of phi <= phi_min
                 phi_min = phi(i,j);
                 phi_norm_min = phi_norm(i,j);
                 i_min = i;
@@ -470,7 +472,8 @@ if (op_normalize == 1 || op_normalize == 2)
 else
     for i=1: size(phi,1)
         for j=1: size(phi,2)
-            if phi(i,j) <= phi_min
+            dif = phi_min - phi(i,j); 
+            if dif > epsilon || abs(dif) < epsilon
                 phi_min = phi(i,j);
                 phi_norm_min = phi_norm(i,j);
                 i_min = i;

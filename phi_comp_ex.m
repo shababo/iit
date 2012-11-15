@@ -126,13 +126,14 @@ end
 
 function [X_max i_max] = max_ex(X,subsets_subsys)
 % exclusion principle: if the value is the same, take the bigger one
+epsilon = 10^-10;
 X_max = -Inf;
 i_max = 1;
 s_max = 0;
 for i=1: size(X,1)
     s = length(subsets_subsys{i});
     cond1 = X(i) > X_max;
-    cond2 = X(i) == X_max && s>= s_max;
+    cond2 = abs(X(i) - X_max) < epsilon && s>= s_max;
     if cond1 || cond2
         X_max = X(i);
         i_max = i;
