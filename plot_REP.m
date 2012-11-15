@@ -115,9 +115,10 @@ for i = 1:N
 %         s_title_p{1} = [string_p{1},': \phi_b=',num2str(phi_b)];
 %         s_title_p{2} = [string_p{2},': \phi_f=',num2str(phi_f)];
         
-        s_title{1}= {['FULL:    ', string{1}, ',  \phi_b=',num2str(phi_b)],['PARTITIONED:    ', string_p{1}]};
-        s_title{2}= {['FULL:    ', string{2}, ',  \phi_f=',num2str(phi_f)],['PARTITIONED:    ', string_p{2}]};
-        
+        s_title{1}= {['FULL:    ', string{1}, ',  \phi_b =',num2str(phi_b)],['PARTITIONED:    ', string_p{1}]};
+        s_title{2}= {['FULL:    ', string{2}, ',  \phi_f =',num2str(phi_f)],['PARTITIONED:    ', string_p{2}]};
+%          s_title{1} = {'test1','test2'};
+%          s_title{2} = {'test3','test4'};
 %         s = [string{3}, ', ', string_p{3},', phi = ',num2str(phi(i))];
 %         fprintf('%s\n',s);
         

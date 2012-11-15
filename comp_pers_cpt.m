@@ -3,6 +3,7 @@ function perspective = comp_pers_cpt(nodes,num_nodes_indices,denom_nodes_indices
 %  compute BRs and FRs for a single perspective but given some fixed
 %  current state
 
+
 if isempty(denom_nodes_indices)
     perspective = [];
     return
@@ -117,9 +118,14 @@ elseif strcmp(bf_option,'forward')
     denom_conditional_joint_size = ones(1,2*num_sys_nodes);
     denom_conditional_joint_size(denom_nodes_indices + num_sys_nodes) = [denom_nodes.num_states];
     denom_conditional_joint = ones(denom_conditional_joint_size);
+    denom_inputs = [];
+    for i = 1:length(denom_nodes)
+        denom_inputs = union(denom_inputs,denom_nodes(i).input_nodes);
+    end
     
-%     % we do the first iteration outside the for main foor loop so we can
+%     % we do the first iteration outside the main for loop so we can
 %     % initialize the joint
+
 %     denom_conditional_joint = denom_nodes(1).cpt;
 %     
     conditioning_indices = cell(1,2*num_sys_nodes);
@@ -138,7 +144,7 @@ elseif strcmp(bf_option,'forward')
 % %         if ~any(j == num_nodes_indices) && any(j == denom_nodes(1).input_nodes)
 % %             denom_conditional_joint = ...
 % %                 sum(denom_conditional_joint,j)./size(denom_conditional_joint,j);
-        if any(j == num_nodes_indices)
+        if any(j == num_nodes_indices) && any(j == denom_inputs)
             conditioning_indices{j} = numerator_state(j) + 1;
         end
 % %         
@@ -153,7 +159,7 @@ elseif strcmp(bf_option,'forward')
         % marginalize over nodes not in denom, these nodes are outside the
         % system for this iteration or they are outside a partition - either
         % way we apply maxent prior/marginalization
-        for j = 1:num_sys_nodes
+        for j = num_sys_nodes:-1:1
 
             if ~any(j == num_nodes_indices) && any(j == denom_nodes(i).input_nodes)
                 next_denom_node_distribution = ...

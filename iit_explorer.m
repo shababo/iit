@@ -843,6 +843,9 @@ function [subset subset_index] = get_subset(handles)
 subset = get(handles.nodes_list,'Value');
 subset_index = convi(subset) - 1;
 
+% make sure we don't return the empty set:
+if subset_index == 0; subset_index = 1; end
+
 
 % --- Executes on selection change in partition_plot_menu.
 function partition_plot_menu_Callback(hObject, eventdata, handles)

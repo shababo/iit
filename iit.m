@@ -1,3 +1,5 @@
+%VERSION v0.04 - 11.14.2012
+
 function varargout = iit(varargin)
 % IIT MATLAB code for iit.fig
 %      IIT, by itself, creates a new IIT or raises the existing
@@ -491,7 +493,7 @@ end
 % make current node structs and their tpms
 for i = 1:num_nodes
     
-    nodes(num_nodes + i) = struct('num',num_nodes + i,'name',[num2str(i) '_p'],'num_states',2,...
+    nodes(num_nodes + i) = struct('num',num_nodes + i,'name',[num2str(i) '_c'],'num_states',2,...
                             'state_names',{{'0' '1'}},'logic_type',logic_types(i),'cpt',[],...
                             'num_sys_nodes',num_nodes,'input_nodes',[]);
 

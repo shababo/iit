@@ -252,8 +252,8 @@ toc
 fprintf('Loading GUI... \n');
 
 save('last_run_output.mat','output_data','-v7.3');
-save('save_test1.mat','output_data');
-save('save_test2.mat','output_data','-v7.3');
+% save('save_test1.mat','output_data');
+% save('save_test2.mat','output_data','-v7.3');
 
 iit_explorer(output_data)
 
