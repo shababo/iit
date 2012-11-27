@@ -47,10 +47,10 @@ elseif logic_type == 6
     return;
 
 % MAJORITY
-elseif logic_type == 7
+elseif logic_type == 7  %Larissa: Majority should be more than half? 2 out of 4 is not majority, but is minority??
     
     N = length(input);
-    output = (sum(input)/N >= .5);
+    output = (sum(input)/N > .5);
 
 % MINORITY
 elseif logic_type == 8

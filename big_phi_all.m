@@ -1,4 +1,4 @@
-function [Big_phi_M phi_M prob_M subsets MIP_M M_IRR_M] = big_phi_all(network,whole_sys_state)
+function [Big_phi_M phi_M prob_M subsets MIP_M M_IRR_M network] = big_phi_all(network,whole_sys_state)
 % [Big_phi_M phi_M prob_M subsets MIP_M] = big_phi_all(x0_s,p,b_table,options)
 % this is a test.
 %
@@ -43,7 +43,9 @@ prob_M = cell(network.num_states-1,2);
 MIP_M = cell(network.num_states-1,1); % the partition that gives Big_phi_MIP for each subset
 M_IRR_M = cell(network.num_states-1,1);
 
-
+% Larissa: other option would be to output network from big_phi_comp_fb here
+% Then the parfor doesn't work though, but the Complex Search could access
+% all the distributions in BRs and FRs
 parfor sub_index = 1:network.num_states-1 % for all non empty subsets of the system\
     
     this_subset = subsets{sub_index}; % get the subset

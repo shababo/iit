@@ -181,11 +181,11 @@ for z = 1:state_max
             
             
             
-            [Big_phi_M phi_M prob_M M_cell concept_MIP_M purviews_M] = big_phi_all(network, this_state);
+            [Big_phi_M phi_M prob_M M_cell concept_MIP_M purviews_M network] = big_phi_all(network, this_state); %Larissa: this_state should be obsolete as it is in network
                                                                 
             % complex search
             [Big_phi_MIP MIP Complex M_i_max  Big_phi_MIP_M complex_MIP_M Big_phi_MIP_all_M complex_MIP_M_all] = ...
-                complex_search(Big_phi_M,M_cell, purviews_M, network.num_nodes,prob_M,phi_M,network.options);
+                complex_search(Big_phi_M,M_cell, purviews_M, network.num_nodes,prob_M,phi_M,network.options,concept_MIP_M,network);
             
             
             
@@ -251,7 +251,9 @@ toc
 
 fprintf('Loading GUI... \n');
 
-save('last_run_output.mat','output_data','-v7.3');
+%The tag is only necessary for large networks and then it is very big anyways
+%save('last_run_output.mat','output_data','-v7.3'); 
+save('last_run_output.mat','output_data');
 % save('save_test1.mat','output_data');
 % save('save_test2.mat','output_data','-v7.3');
 

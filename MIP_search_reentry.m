@@ -1,4 +1,4 @@
-function [Big_phi_MIP MIP Big_phi_cand MIP_cand] = MIP_search_reentry(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,options)
+function [Big_phi_MIP MIP Big_phi_cand MIP_cand] = MIP_search_reentry(M,N,Big_phi_M,M_IRR_M,prob_M, phi_M,options, concept_MIP_M, network)
 
 %%
 % Find the Big-phi MIP in a subset M
@@ -101,9 +101,9 @@ for i=1: floor(N_M/2)
             for k = 1:length(phi_w_concepts)
                 IRR_w = IRR_whole{k};
                 if all(ismember(IRR_w,M1)) 
-                    % for M1 <- M2 take BR of M1 and FR from M
+                    % for M1 <- M2 cut take BR of M1 and FR from M
                     
-                    %Larissa: As long as the denominators are still not
+                    %Larissa: As long as the concepts are still not
                     %ordered according to trans_M...
                     % Now definitely NOT NICE!
                     indm = 0;
@@ -145,9 +145,64 @@ for i=1: floor(N_M/2)
                     
                     phi_BRcut = min(phi_M{whole_i}(concept_numind(k),2), phi_M{M2_i}(indm,3));
                     phi_FRcut = min(phi_M{M2_i}(indm,2), phi_M{whole_i}(concept_numind(k),3));
-                else % if numerator has elements from both sides, concept got destroyed by cut!
-                    phi_BRcut = 0;
-                    phi_FRcut = 0;
+                else % if numerator has elements from both sides
+                    denom_p = sort([concept_MIP_M{whole_i}{concept_numind(k)}{:,1,1}]);    %Larissa: The sort may be important 
+                    denom_f = sort([concept_MIP_M{whole_i}{concept_numind(k)}{:,1,2}]);
+                    % for BRcut (M1 <- M2 is cut) M1M2/[M1]p[M2]f is still intact
+                    if all(ismember(denom_p,M1))
+                        phi_BRcut_BR = phi_M{whole_i}(concept_numind(k),2); %stays the same
+                        if all(ismember(denom_f,M2))
+                            phi_BRcut_FR = phi_M{whole_i}(concept_numind(k),3);
+                        else
+                            % check the new forward phi_mip M1M2/[M1M2]f for all
+                            % possible denominators
+                            [phi_BRcut_FR, denom_fnew, network] = phi_comp_ex_unidir(M,M1,M2,IRR_w,network.current_state,network,'forward','BRcut');
+                        end    
+                    else
+                        if all(ismember(denom_f,M2))
+                            phi_BRcut_FR = phi_M{whole_i}(concept_numind(k),3);
+                            % check the new backward phi_mip M1M2/[M1M2]p for all
+                            % possible denominators
+                            [phi_BRcut_BR, denom_pnew, network] = phi_comp_ex_unidir(M,M1,M2,IRR_w,network.current_state,network,'backward','BRcut');
+                        else
+                            % check the new back and forward phi_mip M1M2/[M1M2]p[M1M2]f for all
+                            % possible denominators
+                            [phi_BRcut_BR, denom_pnew, network] = phi_comp_ex_unidir(M,M1,M2,IRR_w,network.current_state,network,'backward','BRcut');
+                            [phi_BRcut_FR, denom_fnew, network] = phi_comp_ex_unidir(M,M1,M2,IRR_w,network.current_state,network,'forward','BRcut');
+                        end    
+                    end
+                                        
+                    % for FRcut (M1 -> M2 is cut) M1M2/[M2]p[M1]f is still intact
+                    if all(ismember(denom_p,M2))
+                        phi_FRcut_BR = phi_M{whole_i}(concept_numind(k),2); %stays the same
+                        if all(ismember(denom_f,M1))
+                            phi_FRcut_FR = phi_M{whole_i}(concept_numind(k),3);
+                        else
+                            % check the new forward phi_mip M1M2/[M1M2]f for all
+                            % possible denominators
+                            [phi_FRcut_FR, denom_fnew, network] = phi_comp_ex_unidir(M,M1,M2,IRR_w,network.current_state,network,'forward','FRcut');
+                        end    
+                    else
+                        if all(ismember(denom_f,M1))
+                            phi_FRcut_FR = phi_M{whole_i}(concept_numind(k),3);
+                            % check the new backward phi_mip M1M2/[M1M2]p for all
+                            % possible denominators
+                            [phi_FRcut_BR, denom_pnew, network] = phi_comp_ex_unidir(M,M1,M2,IRR_w,network.current_state,network,'backward','FRcut');
+                        else
+                            % check the new back and forward phi_mip M1M2/[M1M2]p[M1M2]f for all
+                            % possible denominators
+                            [phi_FRcut_BR, denom_pnew, network] = phi_comp_ex_unidir(M,M1,M2,IRR_w,network.current_state,network,'backward','FRcut');
+                            [phi_FRcut_FR, denom_fnew, network] = phi_comp_ex_unidir(M,M1,M2,IRR_w,network.current_state,network,'forward','FRcut');
+                        end    
+                    end
+                    
+                    %Larissa: if we would want to take op_big_phi into
+                    %account still, this has to be changed
+                    phi_BRcut = min(phi_BRcut_BR, phi_BRcut_FR);
+                    phi_FRcut = min(phi_FRcut_BR, phi_FRcut_FR);
+%                     if phi_BRcut ~= 0
+%                         [M1; M2; IRR_w; denom_p; denom_pnew]
+%                     end
                 end % if 
                 PhiCutSum = PhiCutSum + [phi_BRcut; phi_FRcut];
              end %for k 
