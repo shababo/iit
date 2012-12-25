@@ -204,6 +204,8 @@ for i = 1:num_denom_partitions % past or future
                 phi = emd_hat_gd_metric_mex(prob{bf},prob_p,gen_dist_matrix(length(prob_p)));
             elseif (op_small_phi == 2)
                 phi = k_distance(prob{bf},prob_p);
+            elseif (op_small_phi == 3)
+                phi = L1norm(prob{bf},prob_p);
             end
             
             
@@ -212,12 +214,12 @@ for i = 1:num_denom_partitions % past or future
             phi = Inf;
         end
         
-            if phi == 0
-                phi_MIP = [0 0];
-                prob_prod_MIP = cell(2,1);
-                MIP = cell(2,2,2);
-                return
-            end
+        if phi == 0
+            phi_MIP = [0 0];
+            prob_prod_MIP = cell(2,1);
+            MIP = cell(2,2,2);
+            return
+        end
 
         phi_cand(i,j,bf,1) = phi;
         phi_cand(i,j,bf,2) = phi/Norm;

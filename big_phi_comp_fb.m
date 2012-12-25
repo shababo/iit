@@ -9,7 +9,6 @@ function [Big_phi phi_all_values prob_cell MIP M_IRR network] = big_phi_comp_fb(
 % CONSERVATIVE, OTHERWISE PROGRESSIVE...
 
 % global BRs, global FRs
-    
 num_nodes_subsys = length(subsystem);
 num_states_subsys = prod([network.nodes(subsystem).num_states]);
 
@@ -26,7 +25,8 @@ op_big_phi = network.options(11);
 % set)
 subsets_subsys = cell(num_states_subsys - 1, 1);
 
-% we can do this better for sure - TODO
+% we can do this better for sure - TODO Larissa: Do it as in big_phi_all
+% the subsets!!
 k = 1;
 for subset_size = 1:num_nodes_subsys % can this be done in one for-loop over k = 1:num_states_subsys-1 ?
     C = nchoosek(subsystem,subset_size); % create a matrix of combinations of subsystem of size i
@@ -131,11 +131,12 @@ for i=1: num_nodes_subsys
 end
 
 
-if (op_big_phi == 0)
+if (op_big_phi == 0 || op_big_phi == 6 || op_big_phi == 7) %Larissa: 6 is now L1 distance, was not assigned before anyways
 
     Big_phi = phi_m(end,3);
 
-
+% Larissa: All that follows seems to be a mess. Not sure what is working at
+% all
 elseif (op_big_phi == 1)
 
 
@@ -165,7 +166,7 @@ elseif (op_big_phi == 1)
     else
         Big_phi = 0;
     end
-elseif (op_big_phi == 2 || op_big_phi == 4 || op_big_phi == 5)
+elseif (op_big_phi == 2 ||op_big_phi == 4 || op_big_phi == 5)
 
     index_vec_IRR = find(phi ~= 0);
     N_IRR = length(index_vec_IRR);
@@ -195,7 +196,7 @@ elseif (op_big_phi == 2 || op_big_phi == 4 || op_big_phi == 5)
             M_IRR{i} = subsets_subsys{j};
         end
 
-        if (op_big_phi == 2)
+        if (op_big_phi == 2)    %Larissa ?? So for 4 and 5 it is always NaN anyways? Why calculate something before?
             Big_phi = big_phi_info(M_IRR,concepts,concept_phis);
         else
             Big_phi = NaN;

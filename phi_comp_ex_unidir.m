@@ -1,33 +1,45 @@
-function [max_phi_MIP, j_max, network] = phi_comp_ex_unidir(subsystem,M1,M2,numerator,whole_sys_state,network,bf_option,bfcut_option)
+function [max_phi_MIP, prob, j_max, network] = phi_comp_ex_unidir(subsystem,M1,M2,numerator,whole_sys_state,network,bf_option,bfcut_option)
 %pf_tag is 1 for past and 2 for future
 
 nodes_vec = subsystem;
 N = numel(nodes_vec);
-% Larissa: The "2^N" has to be changed for non binary systems!
-num_states_subsys = 2^N; 
+num_states_subsys = prod([network.nodes([subsystem]).num_states]);
 subsets_subsys = cell(num_states_subsys-1,1); % subtract one since we don't consider the empty system
-for i = 1:2^N-1 % don't include empty set, this is why for-loop starts at 2
+for i = 1:num_states_subsys-1 % don't include empty set, this is why for-loop starts at 2
     subsets_subsys{i} = nodes_vec(logical(network.b_table{i+1,N}));
 end
 
 phi_MIP = zeros(num_states_subsys-1,1);
+prob_cand = cell(num_states_subsys-1,1);
+
 for i=1: num_states_subsys-1
     %Larissa smart purviews: Only test those connections that actually exist
     % could made even smarter here for unidirectional noise
     denom = subsets_subsys{i};
     if strcmp(bf_option,'backward')
-        if nnz(sum(network.connect_mat(numerator,denom),1) == 0) == 0 % all denom is input of numerator (numerator) --> no phiBR
-            [phi_MIP(i) network] = phi_comp_bORf_unidir(M1,M2,numerator,denom,whole_sys_state,network,bf_option,bfcut_option);
+        if nnz(sum(network.connect_mat(numerator,denom),1) == 0) == 0 % all denom is input of numerator (numerator) --> phiBR
+            [phi_MIP(i) prob_cand{i} network] = phi_comp_bORf_unidir(M1,M2,numerator,denom,whole_sys_state,network,bf_option,bfcut_option);
+        else 
+            uniform_dist = ones(num_states_subsys,1)/num_states_subsys;
+            prob_cand{i} = uniform_dist;
         end
     elseif strcmp(bf_option,'forward')
-        if nnz(sum(network.connect_mat(denom,numerator),2) == 0) == 0 % but denom is output
-            [phi_MIP(i) network] = phi_comp_bORf_unidir(M1,M2,numerator,denom,whole_sys_state,network,bf_option,bfcut_option);
+        if nnz(sum(network.connect_mat(denom,numerator),2) == 0) == 0 % denom is output
+            [phi_MIP(i) prob_cand{i} network] = phi_comp_bORf_unidir(M1,M2,numerator,denom,whole_sys_state,network,bf_option,bfcut_option);
+        else 
+            uniform_dist = ones(num_states_subsys,1)/num_states_subsys;
+            prob_cand{i} = uniform_dist;
         end
     end  
 end
 
 % now take the largest phi, if equal take the bigger set
 [max_phi_MIP j_max] = max_ex(phi_MIP,subsets_subsys);
+denom = subsets_subsys{j_max};
+prob = prob_cand{j_max};
+if length(denom) ~= N
+    prob = expand_prob(prob,subsystem,denom);
+end
 end
 
 %% subfunction

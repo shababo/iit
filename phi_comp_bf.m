@@ -343,6 +343,8 @@ for i = 1:num_denom_partitions % past or future
                     phi = emd_hat_gd_metric_mex(prob{bf},prob_p,gen_dist_matrix(length(prob_p)));
                 elseif op_small_phi == 2
                     phi = k_distance(prob{bf},prob_p);
+                elseif (op_small_phi == 3)
+                    phi = L1norm(prob{bf},prob_p); 
                 end
                 
             else
@@ -389,12 +391,6 @@ end
             MIP{2,2,bf} = num_numerator_partitions2{j};
         end
 end
-
-
-for bf = 1: 2
-
-end
-
 end
 
 

@@ -1,4 +1,4 @@
-function [phi_MIP network] = phi_comp_bORf_unidir(M1,M2,numerator,denom,whole_sys_state,network,bf_option,bfcut_option)
+function [phi_MIP prob network] = phi_comp_bORf_unidir(M1,M2,numerator,denom,whole_sys_state,network,bf_option,bfcut_option)
 % compute small phi of a given higher order purview...?
 % if the system is cut unidirectionally
 
@@ -203,6 +203,8 @@ for i = 1:num_denom_partitions % past or future
                 phi = emd_hat_gd_metric_mex(prob,prob_p,gen_dist_matrix(length(prob_p)));
             elseif op_small_phi == 2
                 phi = k_distance(prob,prob_p);
+            elseif (op_small_phi == 3)
+                phi = L1norm(prob,prob_p);
             end
 
         else

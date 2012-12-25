@@ -12,7 +12,7 @@ op_big_phi = network.options(11);
 num_nodes_subsys = length(subsystem);
 num_states_subsys = prod([network.nodes([subsystem]).num_states]);
 
-subsets_subsys{num_states_subsys} = []; % add empty set
+subsets_subsys{num_states_subsys} = []; % add empty set Larissa; where do we need that actually??
 
 
     
@@ -63,7 +63,7 @@ for bf = 1:2
 end
 phi = [0 max_phi_MIP_bf']; % phi = [overall backwards forwards]
 
-if (op_big_phi == 1 || op_big_phi == 2)
+if (op_big_phi == 1)
    phi(1) = max_phi_MIP_bf(1);
 
 else

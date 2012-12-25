@@ -28,8 +28,6 @@ op_parallel = in_options(19);
 if op_parallel
     matlabpool;
 end
-
-
 %% begin timer and disp notification
 tic
 
