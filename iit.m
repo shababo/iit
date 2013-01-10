@@ -24,7 +24,7 @@ function varargout = iit(varargin)
 
 % Edit the above text to modify the response to help iit
 
-% Last Modified by GUIDE v2.5 17-Jul-2012 20:49:31
+% Last Modified by GUIDE v2.5 29-Nov-2012 11:00:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1201,3 +1201,13 @@ if (filename ~= 0)
     updateLogicTypesView(handles);
         
 end
+
+
+% --- Executes on key press with focus on big_phi_alg_menu and none of its controls.
+function big_phi_alg_menu_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to big_phi_alg_menu (see GCBO)
+% eventdata  structure with the following fields (see UICONTROL)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
